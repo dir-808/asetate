@@ -15,7 +15,8 @@ A local-first DJ library manager for vinyl collectors. Sync your Discogs collect
 ### Prerequisites
 
 - Python 3.10+
-- A Discogs account with a personal access token
+- A Discogs account
+- Discogs OAuth application credentials (for self-hosting)
 
 ### Installation
 
@@ -41,9 +42,15 @@ pip install -e ".[dev]"
 # Copy the example environment file
 cp .env.example .env
 
-# Edit .env with your Discogs credentials
-# Get your token at: https://www.discogs.com/settings/developers
+# Edit .env with your Discogs OAuth credentials
 ```
+
+To get Discogs OAuth credentials:
+1. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
+2. Click "Add New Application"
+3. Fill in the application details
+4. Set the callback URL to `http://localhost:5000/auth/callback`
+5. Copy the Consumer Key and Consumer Secret to your `.env` file
 
 ### Database Setup
 
@@ -88,13 +95,9 @@ asetate/
 - **Crates** - Hierarchical folders for organizing releases and tracks
 - **Tags** - Custom labels for categorizing tracks
 
-## Discogs API
+## Authentication
 
-Asetate uses the Discogs API to sync your collection. You'll need a personal access token:
-
-1. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
-2. Click "Generate new token"
-3. Copy the token to your `.env` file
+Asetate uses Discogs OAuth for authentication. Users sign in with their Discogs account, which also grants access to sync their collection. No separate account creation is required.
 
 Note: Discogs limits API requests to 60/minute. Large collections sync automatically with rate limiting and can be paused/resumed.
 

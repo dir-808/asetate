@@ -1,4 +1,4 @@
-"""User model - authentication and Discogs credentials storage."""
+"""User model - Discogs OAuth authentication."""
 
 from datetime import datetime
 
@@ -8,24 +8,21 @@ from asetate import db
 
 
 class User(UserMixin, db.Model):
-    """A user account for storing Discogs credentials.
+    """A user account authenticated via Discogs OAuth.
 
-    Uses Google OAuth for authentication. Discogs OAuth 1.0a tokens
-    are stored per-user for syncing their collection.
+    Uses Discogs OAuth 1.0a for authentication. The discogs_id serves
+    as the unique identifier for each user.
     """
 
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # Google OAuth info
-    google_id = db.Column(db.String(100), unique=True, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    name = db.Column(db.String(255))
-    picture = db.Column(db.String(500))  # Profile picture URL
+    # Discogs identity (from OAuth)
+    discogs_id = db.Column(db.Integer, unique=True, nullable=False)
+    discogs_username = db.Column(db.String(100), nullable=False)
 
     # Discogs OAuth 1.0a credentials (tokens are encrypted)
-    discogs_username = db.Column(db.String(100))
     _discogs_token_encrypted = db.Column("discogs_token", db.String(500))
     _discogs_token_secret_encrypted = db.Column("discogs_token_secret", db.String(500))
 
@@ -40,7 +37,7 @@ class User(UserMixin, db.Model):
     sync_progress = db.relationship("SyncProgress", back_populates="user", lazy="dynamic")
 
     def __repr__(self):
-        return f"<User {self.email}>"
+        return f"<User {self.discogs_username}>"
 
     @property
     def discogs_token(self) -> str:
@@ -78,21 +75,13 @@ class User(UserMixin, db.Model):
 
     @property
     def has_discogs_credentials(self) -> bool:
-        """Check if user has configured Discogs credentials."""
+        """Check if user has valid Discogs credentials."""
         return bool(
-            self.discogs_username
-            and self._discogs_token_encrypted
+            self._discogs_token_encrypted
             and self._discogs_token_secret_encrypted
         )
 
-    def update_discogs_credentials(self, username: str, token: str, token_secret: str):
-        """Update the user's Discogs OAuth credentials."""
-        self.discogs_username = username
+    def update_tokens(self, token: str, token_secret: str):
+        """Update the user's Discogs OAuth tokens."""
         self.discogs_token = token
         self.discogs_token_secret = token_secret
-
-    def clear_discogs_credentials(self):
-        """Remove the user's Discogs credentials."""
-        self.discogs_username = None
-        self._discogs_token_encrypted = None
-        self._discogs_token_secret_encrypted = None
