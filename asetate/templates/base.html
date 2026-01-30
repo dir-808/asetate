@@ -21,10 +21,12 @@
         <div class="nav-user">
             {% if current_user.is_authenticated %}
             <a href="{{ url_for('auth.settings') }}" class="user-link">
-                <span>{{ current_user.discogs_username }}</span>
+                <span>{{ current_user.discogs_username if current_user.discogs_username != 'local_user' else 'Settings' }}</span>
             </a>
-            {% else %}
+            {% elif oauth_mode %}
             <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Sign in with Discogs</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Get Started</a>
             {% endif %}
         </div>
     </nav>

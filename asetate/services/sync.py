@@ -19,32 +19,66 @@ class SyncService:
     - Upserting releases and tracks (no duplicates)
     - Detecting removed releases
     - Progress tracking and resume capability
+
+    Supports both OAuth and Personal Access Token authentication modes.
     """
 
     def __init__(
         self,
         user_id: int,
-        discogs_token: str | None = None,
-        discogs_token_secret: str | None = None,
-        discogs_username: str | None = None,
+        discogs_username: str,
+        oauth_token: str | None = None,
+        oauth_token_secret: str | None = None,
+        personal_token: str | None = None,
         progress_callback: Callable[[SyncProgress], None] | None = None,
     ):
         """Initialize the sync service.
 
         Args:
             user_id: The user ID to sync for (required for user isolation).
-            discogs_token: Discogs OAuth access token.
-            discogs_token_secret: Discogs OAuth access token secret.
-            discogs_username: Discogs username. If None, fetches from API.
+            discogs_username: Discogs username (required).
+            oauth_token: Discogs OAuth access token (for OAuth mode).
+            oauth_token_secret: Discogs OAuth access token secret (for OAuth mode).
+            personal_token: Discogs Personal Access Token (for PAT mode).
             progress_callback: Optional callback called after each release is processed.
                               Receives the current SyncProgress object.
         """
         self.user_id = user_id
-        self.discogs_token = discogs_token
-        self.discogs_token_secret = discogs_token_secret
         self.discogs_username = discogs_username
+        self.oauth_token = oauth_token
+        self.oauth_token_secret = oauth_token_secret
+        self.personal_token = personal_token
         self.progress_callback = progress_callback
         self.client: DiscogsClient | None = None
+
+    @classmethod
+    def from_user(cls, user, progress_callback=None) -> "SyncService":
+        """Create a SyncService from a User object.
+
+        Automatically detects whether to use OAuth or PAT based on user's credentials.
+
+        Args:
+            user: User model instance
+            progress_callback: Optional callback for progress updates
+
+        Returns:
+            Configured SyncService
+        """
+        if user._personal_token_encrypted:
+            return cls(
+                user_id=user.id,
+                discogs_username=user.discogs_username,
+                personal_token=user.personal_token,
+                progress_callback=progress_callback,
+            )
+        else:
+            return cls(
+                user_id=user.id,
+                discogs_username=user.discogs_username,
+                oauth_token=user.oauth_token,
+                oauth_token_secret=user.oauth_token_secret,
+                progress_callback=progress_callback,
+            )
 
     def start_sync(self, resume: bool = False) -> SyncProgress:
         """Start or resume a collection sync.
@@ -55,11 +89,15 @@ class SyncService:
         Returns:
             SyncProgress object tracking this sync
         """
-        self.client = DiscogsClient(
-            oauth_token=self.discogs_token,
-            oauth_token_secret=self.discogs_token_secret,
-        )
-        username = self.discogs_username or self.client.get_username()
+        # Create client based on available credentials
+        if self.personal_token:
+            self.client = DiscogsClient(personal_token=self.personal_token)
+        else:
+            self.client = DiscogsClient(
+                oauth_token=self.oauth_token,
+                oauth_token_secret=self.oauth_token_secret,
+            )
+        username = self.discogs_username
 
         # Get or create sync progress for this user
         if resume:

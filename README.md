@@ -16,7 +16,6 @@ A local-first DJ library manager for vinyl collectors. Sync your Discogs collect
 
 - Python 3.10+
 - A Discogs account
-- Discogs OAuth application credentials (for self-hosting)
 
 ### Installation
 
@@ -42,15 +41,8 @@ pip install -e ".[dev]"
 # Copy the example environment file
 cp .env.example .env
 
-# Edit .env with your Discogs OAuth credentials
+# Edit .env and set a SECRET_KEY
 ```
-
-To get Discogs OAuth credentials:
-1. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
-2. Click "Add New Application"
-3. Fill in the application details
-4. Set the callback URL to `http://localhost:5000/auth/callback`
-5. Copy the Consumer Key and Consumer Secret to your `.env` file
 
 ### Database Setup
 
@@ -72,6 +64,30 @@ FLASK_DEBUG=1 flask run
 ```
 
 Visit `http://localhost:5000` in your browser.
+
+## Authentication Modes
+
+Asetate supports two authentication modes:
+
+### Self-Hosted Mode (Default)
+
+Best for single-user deployments. No OAuth app registration required.
+
+1. Run the app with default `.env` (no Discogs OAuth credentials)
+2. Click "Get Started" when you visit the app
+3. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
+4. Click "Generate new token" to create a Personal Access Token
+5. Enter your Discogs username and token in the Settings page
+
+### Hosted Mode (Multi-user)
+
+Best for hosting Asetate as a service for multiple users.
+
+1. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
+2. Click "Add New Application"
+3. Set the callback URL to `http://yourdomain.com/auth/callback`
+4. Add `DISCOGS_CONSUMER_KEY` and `DISCOGS_CONSUMER_SECRET` to your `.env`
+5. Users sign in with "Sign in with Discogs" button
 
 ## Project Structure
 
@@ -95,11 +111,9 @@ asetate/
 - **Crates** - Hierarchical folders for organizing releases and tracks
 - **Tags** - Custom labels for categorizing tracks
 
-## Authentication
+## Rate Limiting
 
-Asetate uses Discogs OAuth for authentication. Users sign in with their Discogs account, which also grants access to sync their collection. No separate account creation is required.
-
-Note: Discogs limits API requests to 60/minute. Large collections sync automatically with rate limiting and can be paused/resumed.
+Discogs limits API requests to 60/minute. Large collections sync automatically with rate limiting and can be paused/resumed.
 
 ## Contributing
 

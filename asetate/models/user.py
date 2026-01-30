@@ -1,4 +1,4 @@
-"""User model - Discogs OAuth authentication."""
+"""User model - supports both OAuth and Personal Access Token modes."""
 
 from datetime import datetime
 
@@ -8,23 +8,27 @@ from asetate import db
 
 
 class User(UserMixin, db.Model):
-    """A user account authenticated via Discogs OAuth.
+    """A user account for Asetate.
 
-    Uses Discogs OAuth 1.0a for authentication. The discogs_id serves
-    as the unique identifier for each user.
+    Supports two authentication modes:
+    - OAuth mode (hosted): discogs_id is set, uses oauth_token + oauth_token_secret
+    - PAT mode (self-hosted): discogs_id is null, uses personal_access_token
     """
 
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # Discogs identity (from OAuth)
-    discogs_id = db.Column(db.Integer, unique=True, nullable=False)
+    # Discogs identity
+    discogs_id = db.Column(db.Integer, unique=True, nullable=True)  # Null in PAT mode
     discogs_username = db.Column(db.String(100), nullable=False)
 
-    # Discogs OAuth 1.0a credentials (tokens are encrypted)
-    _discogs_token_encrypted = db.Column("discogs_token", db.String(500))
-    _discogs_token_secret_encrypted = db.Column("discogs_token_secret", db.String(500))
+    # OAuth 1.0a credentials (used in hosted/OAuth mode)
+    _oauth_token_encrypted = db.Column("oauth_token", db.String(500))
+    _oauth_token_secret_encrypted = db.Column("oauth_token_secret", db.String(500))
+
+    # Personal Access Token (used in self-hosted/PAT mode)
+    _personal_token_encrypted = db.Column("personal_token", db.String(500))
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -39,49 +43,105 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f"<User {self.discogs_username}>"
 
-    @property
-    def discogs_token(self) -> str:
-        """Decrypt and return the Discogs OAuth token."""
-        if not self._discogs_token_encrypted:
-            return ""
-        from asetate.utils import decrypt_token
-        return decrypt_token(self._discogs_token_encrypted)
-
-    @discogs_token.setter
-    def discogs_token(self, value: str):
-        """Encrypt and store the Discogs OAuth token."""
-        if not value:
-            self._discogs_token_encrypted = None
-        else:
-            from asetate.utils import encrypt_token
-            self._discogs_token_encrypted = encrypt_token(value)
+    # =========================================================================
+    # OAuth token properties (for hosted mode)
+    # =========================================================================
 
     @property
-    def discogs_token_secret(self) -> str:
-        """Decrypt and return the Discogs OAuth token secret."""
-        if not self._discogs_token_secret_encrypted:
+    def oauth_token(self) -> str:
+        """Decrypt and return the OAuth token."""
+        if not self._oauth_token_encrypted:
             return ""
         from asetate.utils import decrypt_token
-        return decrypt_token(self._discogs_token_secret_encrypted)
+        return decrypt_token(self._oauth_token_encrypted)
 
-    @discogs_token_secret.setter
-    def discogs_token_secret(self, value: str):
-        """Encrypt and store the Discogs OAuth token secret."""
+    @oauth_token.setter
+    def oauth_token(self, value: str):
+        """Encrypt and store the OAuth token."""
         if not value:
-            self._discogs_token_secret_encrypted = None
+            self._oauth_token_encrypted = None
         else:
             from asetate.utils import encrypt_token
-            self._discogs_token_secret_encrypted = encrypt_token(value)
+            self._oauth_token_encrypted = encrypt_token(value)
+
+    @property
+    def oauth_token_secret(self) -> str:
+        """Decrypt and return the OAuth token secret."""
+        if not self._oauth_token_secret_encrypted:
+            return ""
+        from asetate.utils import decrypt_token
+        return decrypt_token(self._oauth_token_secret_encrypted)
+
+    @oauth_token_secret.setter
+    def oauth_token_secret(self, value: str):
+        """Encrypt and store the OAuth token secret."""
+        if not value:
+            self._oauth_token_secret_encrypted = None
+        else:
+            from asetate.utils import encrypt_token
+            self._oauth_token_secret_encrypted = encrypt_token(value)
+
+    # =========================================================================
+    # Personal Access Token properties (for self-hosted mode)
+    # =========================================================================
+
+    @property
+    def personal_token(self) -> str:
+        """Decrypt and return the Personal Access Token."""
+        if not self._personal_token_encrypted:
+            return ""
+        from asetate.utils import decrypt_token
+        return decrypt_token(self._personal_token_encrypted)
+
+    @personal_token.setter
+    def personal_token(self, value: str):
+        """Encrypt and store the Personal Access Token."""
+        if not value:
+            self._personal_token_encrypted = None
+        else:
+            from asetate.utils import encrypt_token
+            self._personal_token_encrypted = encrypt_token(value)
+
+    # =========================================================================
+    # Credential helpers
+    # =========================================================================
 
     @property
     def has_discogs_credentials(self) -> bool:
-        """Check if user has valid Discogs credentials."""
-        return bool(
-            self._discogs_token_encrypted
-            and self._discogs_token_secret_encrypted
-        )
+        """Check if user has valid Discogs credentials (either mode)."""
+        has_oauth = bool(self._oauth_token_encrypted and self._oauth_token_secret_encrypted)
+        has_pat = bool(self._personal_token_encrypted)
+        return has_oauth or has_pat
 
-    def update_tokens(self, token: str, token_secret: str):
-        """Update the user's Discogs OAuth tokens."""
-        self.discogs_token = token
-        self.discogs_token_secret = token_secret
+    @property
+    def is_oauth_user(self) -> bool:
+        """Check if this user authenticated via OAuth."""
+        return self.discogs_id is not None
+
+    def update_oauth_tokens(self, token: str, token_secret: str):
+        """Update the user's OAuth tokens."""
+        self.oauth_token = token
+        self.oauth_token_secret = token_secret
+        # Clear PAT if switching to OAuth
+        self._personal_token_encrypted = None
+
+    def update_personal_token(self, username: str, token: str):
+        """Update the user's Personal Access Token."""
+        self.discogs_username = username
+        self.personal_token = token
+        # Clear OAuth tokens if switching to PAT
+        self._oauth_token_encrypted = None
+        self._oauth_token_secret_encrypted = None
+
+    # Legacy property aliases for backward compatibility with sync service
+    @property
+    def discogs_token(self) -> str:
+        """Get the appropriate token for API calls."""
+        if self._personal_token_encrypted:
+            return self.personal_token
+        return self.oauth_token
+
+    @property
+    def discogs_token_secret(self) -> str:
+        """Get the OAuth token secret (empty for PAT mode)."""
+        return self.oauth_token_secret

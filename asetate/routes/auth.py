@@ -1,4 +1,4 @@
-"""Authentication routes - Discogs OAuth 1.0a login."""
+"""Authentication routes - supports both OAuth and Personal Access Token modes."""
 
 from datetime import datetime
 
@@ -20,24 +20,52 @@ DISCOGS_IDENTITY_URL = "https://api.discogs.com/oauth/identity"
 USER_AGENT = "Asetate/0.1 +https://github.com/asetate/asetate"
 
 
+def is_oauth_mode() -> bool:
+    """Check if the app is configured for OAuth mode (hosted) or PAT mode (self-hosted)."""
+    consumer_key = current_app.config.get("DISCOGS_CONSUMER_KEY")
+    consumer_secret = current_app.config.get("DISCOGS_CONSUMER_SECRET")
+    return bool(consumer_key and consumer_secret)
+
+
+def get_or_create_local_user() -> User:
+    """Get or create the local user for PAT mode (single-user self-hosted)."""
+    user = User.query.first()
+    if not user:
+        user = User(discogs_username="local_user")
+        db.session.add(user)
+        db.session.commit()
+    return user
+
+
 # =============================================================================
-# Discogs OAuth 1.0a Login Routes
+# Mode-aware login
 # =============================================================================
 
 
 @bp.route("/login")
 @limiter.limit("10 per minute")
 def login():
-    """Start Discogs OAuth 1.0a login flow."""
+    """Start login flow - OAuth or auto-login for PAT mode."""
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
 
+    if is_oauth_mode():
+        # OAuth mode: redirect to Discogs
+        return _oauth_login()
+    else:
+        # PAT mode: auto-login as local user, redirect to settings to configure
+        user = get_or_create_local_user()
+        login_user(user)
+        if not user.has_discogs_credentials:
+            flash("Welcome! Please configure your Discogs credentials to get started.", "info")
+            return redirect(url_for("auth.settings"))
+        return redirect(url_for("main.index"))
+
+
+def _oauth_login():
+    """Start Discogs OAuth 1.0a login flow."""
     consumer_key = current_app.config.get("DISCOGS_CONSUMER_KEY")
     consumer_secret = current_app.config.get("DISCOGS_CONSUMER_SECRET")
-
-    if not consumer_key or not consumer_secret:
-        flash("Discogs OAuth not configured. Please contact the administrator.", "error")
-        return redirect(url_for("main.index"))
 
     # Create OAuth1 session for request token
     oauth = OAuth1Session(
@@ -70,6 +98,9 @@ def login():
 @limiter.limit("10 per minute")
 def callback():
     """Handle Discogs OAuth 1.0a callback and log user in."""
+    if not is_oauth_mode():
+        return redirect(url_for("main.index"))
+
     # Check for denied authorization
     if request.args.get("denied"):
         flash("Discogs authorization was denied.", "error")
@@ -160,7 +191,7 @@ def callback():
         user.last_login = datetime.utcnow()
 
     # Always update tokens (they may have changed)
-    user.update_tokens(access_token, access_token_secret)
+    user.update_oauth_tokens(access_token, access_token_secret)
     db.session.commit()
 
     # Log the user in
@@ -187,4 +218,47 @@ def logout():
 @login_required
 def settings():
     """User settings page."""
-    return render_template("auth/settings.html")
+    return render_template(
+        "auth/settings.html",
+        oauth_mode=is_oauth_mode(),
+    )
+
+
+@bp.route("/settings/token", methods=["POST"])
+@login_required
+@limiter.limit("10 per minute")
+def save_token():
+    """Save Personal Access Token (PAT mode only)."""
+    if is_oauth_mode():
+        flash("Cannot set token in OAuth mode.", "error")
+        return redirect(url_for("auth.settings"))
+
+    username = request.form.get("username", "").strip()
+    token = request.form.get("token", "").strip()
+
+    if not username or not token:
+        flash("Please provide both username and token.", "error")
+        return redirect(url_for("auth.settings"))
+
+    # Validate the token by trying to access the collection
+    from asetate.services.discogs import DiscogsClient, DiscogsAuthError
+
+    try:
+        client = DiscogsClient(personal_token=token)
+        if not client.verify_token(username):
+            flash("Invalid token or username. Please check your credentials.", "error")
+            return redirect(url_for("auth.settings"))
+    except DiscogsAuthError as e:
+        flash(f"Authentication failed: {e}", "error")
+        return redirect(url_for("auth.settings"))
+    except Exception as e:
+        current_app.logger.error(f"Token validation error: {e}")
+        flash("Failed to validate token. Please try again.", "error")
+        return redirect(url_for("auth.settings"))
+
+    # Save the token
+    current_user.update_personal_token(username, token)
+    db.session.commit()
+
+    flash(f"Successfully connected to Discogs as {username}!", "success")
+    return redirect(url_for("auth.settings"))

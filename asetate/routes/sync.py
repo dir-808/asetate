@@ -49,10 +49,11 @@ def start_sync():
     if not current_user.has_discogs_credentials:
         return jsonify({"error": "Discogs credentials not configured. Go to Settings to add them."}), 400
 
-    # Capture credentials for background thread
-    discogs_token = current_user.discogs_token
-    discogs_token_secret = current_user.discogs_token_secret
+    # Capture credentials for background thread (works for both OAuth and PAT modes)
     discogs_username = current_user.discogs_username
+    oauth_token = current_user.oauth_token
+    oauth_token_secret = current_user.oauth_token_secret
+    personal_token = current_user.personal_token
 
     # Start sync in background thread
     def run_sync():
@@ -60,9 +61,10 @@ def start_sync():
             try:
                 service = SyncService(
                     user_id=user_id,
-                    discogs_token=discogs_token,
-                    discogs_token_secret=discogs_token_secret,
-                    discogs_username=discogs_username
+                    discogs_username=discogs_username,
+                    oauth_token=oauth_token,
+                    oauth_token_secret=oauth_token_secret,
+                    personal_token=personal_token,
                 )
                 service.start_sync(resume=False)
             except DiscogsAuthError as e:
@@ -106,10 +108,11 @@ def resume_sync():
     if not latest or not latest.can_resume:
         return jsonify({"error": "No sync to resume"}), 400
 
-    # Capture credentials for background thread
-    discogs_token = current_user.discogs_token
-    discogs_token_secret = current_user.discogs_token_secret
+    # Capture credentials for background thread (works for both OAuth and PAT modes)
     discogs_username = current_user.discogs_username
+    oauth_token = current_user.oauth_token
+    oauth_token_secret = current_user.oauth_token_secret
+    personal_token = current_user.personal_token
 
     # Start sync in background thread
     def run_sync():
@@ -117,9 +120,10 @@ def resume_sync():
             try:
                 service = SyncService(
                     user_id=user_id,
-                    discogs_token=discogs_token,
-                    discogs_token_secret=discogs_token_secret,
-                    discogs_username=discogs_username
+                    discogs_username=discogs_username,
+                    oauth_token=oauth_token,
+                    oauth_token_secret=oauth_token_secret,
+                    personal_token=personal_token,
                 )
                 service.start_sync(resume=True)
             except DiscogsRateLimitError:

@@ -45,6 +45,14 @@ def create_app(config_name: str = "default") -> Flask:
         from .models import User
         return User.query.get(int(user_id))
 
+    # Context processor to expose mode info to templates
+    @app.context_processor
+    def inject_app_mode():
+        """Make OAuth mode flag available to all templates."""
+        consumer_key = app.config.get("DISCOGS_CONSUMER_KEY")
+        consumer_secret = app.config.get("DISCOGS_CONSUMER_SECRET")
+        return {"oauth_mode": bool(consumer_key and consumer_secret)}
+
     # Register blueprints
     from .routes import main, releases, crates, sync, export, tags, auth
 

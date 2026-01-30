@@ -6,12 +6,15 @@
 <div class="settings-page">
     <header class="page-header">
         <h1>Settings</h1>
-        <p class="text-secondary">Manage your account</p>
+        <p class="text-secondary">Manage your Discogs connection</p>
     </header>
 
-    <!-- Discogs Account Info -->
+    <!-- Discogs Connection -->
     <section class="settings-section card">
         <h2>Discogs Account</h2>
+
+        {% if oauth_mode %}
+        {# OAuth mode - show connected status #}
         <div class="discogs-connected">
             <div class="connection-status">
                 <span class="status-indicator status-completed"></span>
@@ -27,12 +30,126 @@
         <p class="text-muted" style="margin-top: var(--space-md);">
             Your collection can be synced from the <a href="{{ url_for('sync.sync_page') }}">Sync page</a>.
         </p>
+
+        {% else %}
+        {# PAT mode - show token configuration form #}
+        {% if current_user.has_discogs_credentials %}
+        <div class="discogs-connected">
+            <div class="connection-status">
+                <span class="status-indicator status-completed"></span>
+                <span>Connected as <strong>{{ current_user.discogs_username }}</strong></span>
+            </div>
+            <a href="https://www.discogs.com/user/{{ current_user.discogs_username }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="btn btn-secondary btn-sm">
+                View Profile
+            </a>
+        </div>
+        <p class="text-muted" style="margin-top: var(--space-md);">
+            Your collection can be synced from the <a href="{{ url_for('sync.sync_page') }}">Sync page</a>.
+        </p>
+
+        <details style="margin-top: var(--space-lg);">
+            <summary class="text-muted" style="cursor: pointer;">Update credentials</summary>
+            <form action="{{ url_for('auth.save_token') }}" method="POST" class="token-form" style="margin-top: var(--space-md);">
+                <div class="form-group">
+                    <label for="username">Discogs Username</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           value="{{ current_user.discogs_username }}"
+                           required
+                           class="form-control"
+                           placeholder="your_discogs_username">
+                </div>
+                <div class="form-group">
+                    <label for="token">Personal Access Token</label>
+                    <input type="password"
+                           id="token"
+                           name="token"
+                           required
+                           class="form-control"
+                           placeholder="Enter new token to update">
+                    <small class="text-muted">
+                        Get your token at <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">Discogs Developer Settings</a>
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Credentials</button>
+            </form>
+        </details>
+
+        {% else %}
+        <div class="discogs-not-connected">
+            <p class="text-muted" style="margin-bottom: var(--space-md);">
+                Connect your Discogs account to sync your vinyl collection.
+            </p>
+
+            <form action="{{ url_for('auth.save_token') }}" method="POST" class="token-form">
+                <div class="form-group">
+                    <label for="username">Discogs Username</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           required
+                           class="form-control"
+                           placeholder="your_discogs_username">
+                    <small class="text-muted">Your Discogs username (visible in your profile URL)</small>
+                </div>
+                <div class="form-group">
+                    <label for="token">Personal Access Token</label>
+                    <input type="password"
+                           id="token"
+                           name="token"
+                           required
+                           class="form-control"
+                           placeholder="Paste your token here">
+                    <small class="text-muted">
+                        Generate a token at <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">Discogs Developer Settings</a>
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">Connect to Discogs</button>
+            </form>
+        </div>
+        {% endif %}
+        {% endif %}
     </section>
 
     <!-- Account Actions -->
     <section class="settings-section card">
         <h2>Account Actions</h2>
+        {% if oauth_mode %}
         <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Sign Out</a>
+        {% else %}
+        <p class="text-muted">
+            This is a self-hosted instance. Your data is stored locally.
+        </p>
+        {% endif %}
     </section>
 </div>
+
+<style>
+.token-form {
+    max-width: 400px;
+}
+.token-form .form-group {
+    margin-bottom: var(--space-md);
+}
+.token-form label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+}
+.token-form .form-control {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+.token-form small {
+    display: block;
+    margin-top: var(--space-xs);
+}
+</style>
 {% endblock %}
