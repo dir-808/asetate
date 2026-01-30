@@ -9,27 +9,221 @@
         <p class="text-secondary">Keep your collection up to date</p>
     </header>
 
-    <div class="sync-card card">
+    <div class="sync-card card" id="sync-card">
         <div class="sync-status">
-            <span class="status-indicator"></span>
-            <span class="status-text">Not synced yet</span>
+            <span class="status-indicator" id="status-indicator"></span>
+            <span class="status-text" id="status-text">{{ sync_status.message }}</span>
         </div>
 
-        <div class="sync-progress" style="display: none;">
+        <div class="sync-progress" id="sync-progress" style="display: {% if sync_status.status == 'running' %}block{% else %}none{% endif %};">
             <div class="progress-bar">
-                <div class="progress-fill" style="width: 0%"></div>
+                <div class="progress-fill" id="progress-fill" style="width: {{ sync_status.progress_percent or 0 }}%"></div>
             </div>
-            <p class="progress-text">0 / 0 releases</p>
+            <p class="progress-text" id="progress-text">
+                {{ sync_status.processed or 0 }} / {{ sync_status.total or 0 }} releases
+            </p>
         </div>
+
+        <div class="sync-stats" id="sync-stats" style="display: {% if sync_status.status == 'completed' %}grid{% else %}none{% endif %};">
+            <div class="sync-stat">
+                <span class="sync-stat-value" id="stat-added">{{ sync_status.added or 0 }}</span>
+                <span class="sync-stat-label">Added</span>
+            </div>
+            <div class="sync-stat">
+                <span class="sync-stat-value" id="stat-updated">{{ sync_status.updated or 0 }}</span>
+                <span class="sync-stat-label">Updated</span>
+            </div>
+            <div class="sync-stat">
+                <span class="sync-stat-value" id="stat-removed">{{ sync_status.removed or 0 }}</span>
+                <span class="sync-stat-label">Removed</span>
+            </div>
+        </div>
+
+        {% if sync_status.last_error %}
+        <div class="sync-error" id="sync-error">
+            <p>{{ sync_status.last_error }}</p>
+        </div>
+        {% else %}
+        <div class="sync-error" id="sync-error" style="display: none;"></div>
+        {% endif %}
 
         <div class="sync-actions">
-            <button class="btn btn-primary" id="sync-start">Pull from Discogs</button>
+            <button class="btn btn-primary" id="btn-sync"
+                {% if not sync_status.can_sync %}disabled{% endif %}>
+                Pull from Discogs
+            </button>
+            <button class="btn btn-secondary" id="btn-resume"
+                style="display: {% if sync_status.can_resume %}inline-flex{% else %}none{% endif %};">
+                Resume Sync
+            </button>
+            <button class="btn btn-secondary" id="btn-cancel"
+                style="display: {% if sync_status.status == 'running' %}inline-flex{% else %}none{% endif %};">
+                Pause
+            </button>
         </div>
     </div>
 
-    <section class="sync-history">
-        <h2>Sync History</h2>
-        <p class="text-muted">No previous syncs</p>
+    <section class="sync-info card">
+        <h2>How it works</h2>
+        <ul class="info-list">
+            <li>Asetate pulls your entire collection from Discogs</li>
+            <li>New releases are added, existing ones are updated</li>
+            <li>Releases you've removed from Discogs are flagged for review</li>
+            <li>Your DJ metadata (BPM, key, crates) is always preserved</li>
+            <li>Discogs limits requests to 60/minute - large collections may take a while</li>
+        </ul>
     </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const statusText = document.getElementById('status-text');
+    const statusIndicator = document.getElementById('status-indicator');
+    const progressSection = document.getElementById('sync-progress');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const statsSection = document.getElementById('sync-stats');
+    const errorSection = document.getElementById('sync-error');
+    const btnSync = document.getElementById('btn-sync');
+    const btnResume = document.getElementById('btn-resume');
+    const btnCancel = document.getElementById('btn-cancel');
+
+    let pollInterval = null;
+
+    function updateUI(status) {
+        statusText.textContent = status.message;
+        statusIndicator.className = 'status-indicator status-' + status.status;
+
+        // Progress bar
+        if (status.status === 'running') {
+            progressSection.style.display = 'block';
+            progressFill.style.width = status.progress_percent + '%';
+            progressText.textContent = status.processed + ' / ' + status.total + ' releases';
+            statsSection.style.display = 'none';
+        } else {
+            progressSection.style.display = 'none';
+        }
+
+        // Stats (show when completed)
+        if (status.status === 'completed') {
+            statsSection.style.display = 'grid';
+            document.getElementById('stat-added').textContent = status.added;
+            document.getElementById('stat-updated').textContent = status.updated;
+            document.getElementById('stat-removed').textContent = status.removed;
+        }
+
+        // Error
+        if (status.last_error && status.status === 'failed') {
+            errorSection.style.display = 'block';
+            errorSection.innerHTML = '<p>' + status.last_error + '</p>';
+        } else {
+            errorSection.style.display = 'none';
+        }
+
+        // Buttons
+        btnSync.disabled = !status.can_sync;
+        btnResume.style.display = status.can_resume ? 'inline-flex' : 'none';
+        btnCancel.style.display = status.status === 'running' ? 'inline-flex' : 'none';
+
+        // Start/stop polling based on status
+        if (status.status === 'running' && !pollInterval) {
+            startPolling();
+        } else if (status.status !== 'running' && pollInterval) {
+            stopPolling();
+        }
+    }
+
+    function startPolling() {
+        if (pollInterval) return;
+        pollInterval = setInterval(fetchStatus, 2000);
+    }
+
+    function stopPolling() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
+    }
+
+    async function fetchStatus() {
+        try {
+            const response = await fetch('/sync/status');
+            const status = await response.json();
+            updateUI(status);
+        } catch (err) {
+            console.error('Failed to fetch status:', err);
+        }
+    }
+
+    async function startSync() {
+        btnSync.disabled = true;
+        btnSync.textContent = 'Starting...';
+
+        try {
+            const response = await fetch('/sync/start', { method: 'POST' });
+            const result = await response.json();
+
+            if (response.ok) {
+                startPolling();
+                fetchStatus();
+            } else {
+                alert(result.error || 'Failed to start sync');
+                btnSync.disabled = false;
+            }
+        } catch (err) {
+            alert('Failed to start sync: ' + err.message);
+            btnSync.disabled = false;
+        }
+
+        btnSync.textContent = 'Pull from Discogs';
+    }
+
+    async function resumeSync() {
+        btnResume.disabled = true;
+
+        try {
+            const response = await fetch('/sync/resume', { method: 'POST' });
+            const result = await response.json();
+
+            if (response.ok) {
+                startPolling();
+                fetchStatus();
+            } else {
+                alert(result.error || 'Failed to resume sync');
+            }
+        } catch (err) {
+            alert('Failed to resume sync: ' + err.message);
+        }
+
+        btnResume.disabled = false;
+    }
+
+    async function cancelSync() {
+        try {
+            const response = await fetch('/sync/cancel', { method: 'POST' });
+            const result = await response.json();
+
+            if (response.ok) {
+                fetchStatus();
+            } else {
+                alert(result.error || 'Failed to pause sync');
+            }
+        } catch (err) {
+            alert('Failed to pause sync: ' + err.message);
+        }
+    }
+
+    // Event listeners
+    btnSync.addEventListener('click', startSync);
+    btnResume.addEventListener('click', resumeSync);
+    btnCancel.addEventListener('click', cancelSync);
+
+    // Start polling if sync is running
+    {% if sync_status.status == 'running' %}
+    startPolling();
+    {% endif %}
+})();
+</script>
 {% endblock %}

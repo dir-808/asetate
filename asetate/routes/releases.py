@@ -1,6 +1,10 @@
 """Release routes - viewing and managing vinyl releases."""
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
+from sqlalchemy import or_
+
+from asetate import db
+from asetate.models import Release, Track
 
 bp = Blueprint("releases", __name__)
 
@@ -8,19 +12,189 @@ bp = Blueprint("releases", __name__)
 @bp.route("/")
 def list_releases():
     """List all releases in the collection."""
-    # TODO: Implement release listing with pagination and filtering
-    return render_template("releases/list.html")
+    # Get query parameters
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 24, type=int)
+    search = request.args.get("q", "").strip()
+    filter_type = request.args.get("filter", "")
+
+    # Build base query - exclude removed releases by default
+    query = Release.query.filter(Release.discogs_removed_at.is_(None))
+
+    # Apply search
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                Release.title.ilike(search_term),
+                Release.artist.ilike(search_term),
+                Release.label.ilike(search_term),
+            )
+        )
+
+    # Apply filters
+    if filter_type == "playable":
+        # Releases with at least one playable track
+        query = query.filter(
+            Release.id.in_(
+                db.session.query(Track.release_id)
+                .filter(Track.is_playable == True)
+                .distinct()
+            )
+        )
+    elif filter_type == "needs_metadata":
+        # Releases with tracks missing BPM or key
+        query = query.filter(
+            Release.id.in_(
+                db.session.query(Track.release_id)
+                .filter(
+                    or_(Track.bpm.is_(None), Track.musical_key.is_(None)),
+                    Track.is_playable == True,
+                )
+                .distinct()
+            )
+        )
+
+    # Order by most recently synced
+    query = query.order_by(Release.synced_at.desc())
+
+    # Paginate
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Get stats for the header
+    total_releases = Release.query.filter(Release.discogs_removed_at.is_(None)).count()
+    total_tracks = Track.query.join(Release).filter(Release.discogs_removed_at.is_(None)).count()
+    playable_tracks = (
+        Track.query.join(Release)
+        .filter(Release.discogs_removed_at.is_(None), Track.is_playable == True)
+        .count()
+    )
+
+    return render_template(
+        "releases/list.html",
+        releases=pagination.items,
+        pagination=pagination,
+        search=search,
+        filter_type=filter_type,
+        stats={
+            "releases": total_releases,
+            "tracks": total_tracks,
+            "playable": playable_tracks,
+        },
+    )
 
 
 @bp.route("/<int:release_id>")
 def view_release(release_id: int):
     """View a single release and its tracks."""
-    # TODO: Implement release detail view
-    return render_template("releases/detail.html", release_id=release_id)
+    release = Release.query.get_or_404(release_id)
+    tracks = release.tracks.order_by(Track.position).all()
+
+    # Calculate release stats
+    playable_count = sum(1 for t in tracks if t.is_playable)
+    has_bpm = sum(1 for t in tracks if t.bpm is not None)
+
+    return render_template(
+        "releases/detail.html",
+        release=release,
+        tracks=tracks,
+        stats={
+            "total": len(tracks),
+            "playable": playable_count,
+            "has_bpm": has_bpm,
+        },
+    )
 
 
 @bp.route("/<int:release_id>/tracks/<int:track_id>", methods=["PATCH"])
 def update_track(release_id: int, track_id: int):
     """Update DJ metadata for a track (BPM, key, energy, playable, notes)."""
-    # TODO: Implement track update
-    return jsonify({"status": "ok"})
+    track = Track.query.filter_by(id=track_id, release_id=release_id).first_or_404()
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    # Update allowed fields
+    if "bpm" in data:
+        bpm = data["bpm"]
+        if bpm is not None and bpm != "":
+            bpm = int(bpm)
+            if not (20 <= bpm <= 300):
+                return jsonify({"error": "BPM must be between 20 and 300"}), 400
+            track.bpm = bpm
+        else:
+            track.bpm = None
+
+    if "musical_key" in data:
+        track.musical_key = data["musical_key"] or None
+
+    if "camelot" in data:
+        track.camelot = data["camelot"] or None
+
+    if "energy" in data:
+        energy = data["energy"]
+        if energy is not None and energy != "":
+            energy = int(energy)
+            if not (1 <= energy <= 10):
+                return jsonify({"error": "Energy must be between 1 and 10"}), 400
+            track.energy = energy
+        else:
+            track.energy = None
+
+    if "is_playable" in data:
+        track.is_playable = bool(data["is_playable"])
+
+    if "notes" in data:
+        track.notes = data["notes"] or None
+
+    db.session.commit()
+
+    return jsonify(
+        {
+            "status": "ok",
+            "track": {
+                "id": track.id,
+                "bpm": track.bpm,
+                "musical_key": track.musical_key,
+                "camelot": track.camelot,
+                "energy": track.energy,
+                "is_playable": track.is_playable,
+                "notes": track.notes,
+            },
+        }
+    )
+
+
+@bp.route("/<int:release_id>/corrections", methods=["PATCH"])
+def update_corrections(release_id: int):
+    """Update user corrections for a release (local overrides for Discogs data)."""
+    release = Release.query.get_or_404(release_id)
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    # Initialize corrections dict if needed
+    if not release.user_corrections:
+        release.user_corrections = {}
+
+    # Only allow correcting specific fields
+    allowed_fields = {"title", "artist", "label", "year"}
+    for field, value in data.items():
+        if field in allowed_fields:
+            if value and value.strip():
+                release.user_corrections[field] = value.strip()
+            elif field in release.user_corrections:
+                # Remove correction if empty (revert to Discogs data)
+                del release.user_corrections[field]
+
+    db.session.commit()
+
+    return jsonify(
+        {
+            "status": "ok",
+            "corrections": release.user_corrections,
+            "discogs_edit_url": release.discogs_edit_url,
+        }
+    )

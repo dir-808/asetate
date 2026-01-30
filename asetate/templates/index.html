@@ -11,30 +11,36 @@
 
     <div class="dashboard-stats">
         <div class="stat-card">
-            <span class="stat-value">--</span>
+            <span class="stat-value">{{ stats.releases }}</span>
             <span class="stat-label">Releases</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value">--</span>
+            <span class="stat-value">{{ stats.tracks }}</span>
             <span class="stat-label">Tracks</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value">--</span>
+            <span class="stat-value">{{ stats.playable }}</span>
             <span class="stat-label">Playable</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value">--</span>
+            <span class="stat-value">{{ stats.crates }}</span>
             <span class="stat-label">Crates</span>
         </div>
     </div>
 
     <div class="dashboard-actions">
-        <a href="{{ url_for('sync.sync_status') }}" class="btn btn-primary">
+        {% if stats.releases == 0 %}
+        <a href="{{ url_for('sync.sync_page') }}" class="btn btn-primary">
             Pull from Discogs
         </a>
-        <a href="{{ url_for('releases.list_releases') }}" class="btn btn-secondary">
+        {% else %}
+        <a href="{{ url_for('releases.list_releases') }}" class="btn btn-primary">
             Browse Collection
         </a>
+        <a href="{{ url_for('sync.sync_page') }}" class="btn btn-secondary">
+            Sync
+        </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
