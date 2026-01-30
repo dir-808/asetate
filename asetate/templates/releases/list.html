@@ -3,23 +3,112 @@
 {% block title %}Collection - Asetate{% endblock %}
 
 {% block content %}
-<div class="releases-page">
-    <header class="page-header">
-        <h1>Your Collection</h1>
-        <p class="text-secondary">Browse and manage your vinyl releases</p>
+<div class="collection-page">
+    <header class="collection-header">
+        <div class="collection-title">
+            <h1>Your Collection</h1>
+            <div class="collection-stats">
+                <span>{{ stats.releases }} releases</span>
+                <span class="stat-divider">•</span>
+                <span>{{ stats.tracks }} tracks</span>
+                <span class="stat-divider">•</span>
+                <span class="text-success">{{ stats.playable }} playable</span>
+            </div>
+        </div>
     </header>
 
-    <div class="releases-toolbar">
-        <input type="search" placeholder="Search releases..." class="search-input">
-        <select class="filter-select">
-            <option value="">All releases</option>
-            <option value="playable">Has playable tracks</option>
-            <option value="untagged">Needs BPM/key</option>
-        </select>
+    <div class="collection-toolbar">
+        <form class="search-form" method="get" action="{{ url_for('releases.list_releases') }}">
+            <input
+                type="search"
+                name="q"
+                placeholder="Search artist, title, label..."
+                value="{{ search }}"
+                class="search-input"
+            >
+            {% if filter_type %}
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+            {% endif %}
+        </form>
+
+        <div class="filter-buttons">
+            <a href="{{ url_for('releases.list_releases', q=search) }}"
+               class="filter-btn {% if not filter_type %}active{% endif %}">
+                All
+            </a>
+            <a href="{{ url_for('releases.list_releases', q=search, filter='playable') }}"
+               class="filter-btn {% if filter_type == 'playable' %}active{% endif %}">
+                Has Playable
+            </a>
+            <a href="{{ url_for('releases.list_releases', q=search, filter='needs_metadata') }}"
+               class="filter-btn {% if filter_type == 'needs_metadata' %}active{% endif %}">
+                Needs BPM/Key
+            </a>
+        </div>
     </div>
 
+    {% if releases %}
     <div class="releases-grid">
-        <p class="text-muted">No releases yet. Pull your collection from Discogs to get started.</p>
+        {% for release in releases %}
+        <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="release-card">
+            <div class="release-cover">
+                {% if release.cover_art_url %}
+                <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}" loading="lazy">
+                {% else %}
+                <div class="cover-placeholder">
+                    <span>No Cover</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="release-info">
+                <h3 class="release-title">{{ release.display_title }}</h3>
+                <p class="release-artist">{{ release.display_artist }}</p>
+                {% if release.label or release.year %}
+                <p class="release-meta">
+                    {% if release.label %}{{ release.label }}{% endif %}
+                    {% if release.label and release.year %} • {% endif %}
+                    {% if release.year %}{{ release.year }}{% endif %}
+                </p>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
     </div>
+
+    {% if pagination.pages > 1 %}
+    <nav class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('releases.list_releases', page=pagination.prev_num, q=search, filter=filter_type) }}"
+           class="pagination-btn">
+            Previous
+        </a>
+        {% endif %}
+
+        <span class="pagination-info">
+            Page {{ pagination.page }} of {{ pagination.pages }}
+        </span>
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('releases.list_releases', page=pagination.next_num, q=search, filter=filter_type) }}"
+           class="pagination-btn">
+            Next
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        {% if search or filter_type %}
+        <h2>No releases found</h2>
+        <p>Try adjusting your search or filters</p>
+        <a href="{{ url_for('releases.list_releases') }}" class="btn btn-secondary">Clear filters</a>
+        {% else %}
+        <h2>Your collection is empty</h2>
+        <p>Pull your vinyl collection from Discogs to get started</p>
+        <a href="{{ url_for('sync.sync_page') }}" class="btn btn-primary">Pull from Discogs</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

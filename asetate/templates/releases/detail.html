@@ -1,40 +1,273 @@
 {% extends "base.html" %}
 
-{% block title %}Release Details - Asetate{% endblock %}
+{% block title %}{{ release.display_artist }} - {{ release.display_title }} - Asetate{% endblock %}
 
 {% block content %}
-<div class="release-detail">
+<div class="release-detail" data-release-id="{{ release.id }}">
+    <a href="{{ url_for('releases.list_releases') }}" class="back-link">Back to collection</a>
+
     <header class="release-header">
-        <div class="release-cover">
-            <div class="cover-placeholder">No cover</div>
+        <div class="release-cover-large">
+            {% if release.cover_art_url %}
+            <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
+            {% else %}
+            <div class="cover-placeholder-large">
+                <span>No Cover</span>
+            </div>
+            {% endif %}
         </div>
-        <div class="release-info">
-            <h1>Release Title</h1>
-            <p class="release-artist">Artist Name</p>
-            <p class="release-meta text-secondary">Label - Year</p>
+        <div class="release-info-large">
+            <h1>{{ release.display_title }}</h1>
+            <p class="release-artist-large">{{ release.display_artist }}</p>
+            <div class="release-meta-large">
+                {% if release.label %}<span>{{ release.label }}</span>{% endif %}
+                {% if release.year %}<span>{{ release.year }}</span>{% endif %}
+            </div>
+            <div class="release-stats">
+                <span>{{ stats.total }} tracks</span>
+                <span class="stat-divider">•</span>
+                <span class="text-success">{{ stats.playable }} playable</span>
+                <span class="stat-divider">•</span>
+                <span>{{ stats.has_bpm }} with BPM</span>
+            </div>
+            <div class="release-actions">
+                <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+                    View on Discogs
+                </a>
+                {% if release.discogs_edit_url %}
+                <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+                    Suggest Edit
+                </a>
+                {% endif %}
+            </div>
         </div>
     </header>
 
     <section class="tracks-section">
-        <h2>Tracklist</h2>
-        <table class="tracks-table">
-            <thead>
-                <tr>
-                    <th>Pos</th>
-                    <th>Title</th>
-                    <th>Duration</th>
-                    <th>BPM</th>
-                    <th>Key</th>
-                    <th>Energy</th>
-                    <th>Playable</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="7" class="text-muted">No tracks found</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="tracks-header">
+            <h2>Tracklist</h2>
+            <span class="save-indicator" id="save-indicator"></span>
+        </div>
+
+        {% if tracks %}
+        <div class="tracks-table-wrapper">
+            <table class="tracks-table">
+                <thead>
+                    <tr>
+                        <th class="col-pos">Side</th>
+                        <th class="col-title">Title</th>
+                        <th class="col-duration">Length</th>
+                        <th class="col-bpm">BPM</th>
+                        <th class="col-key">Key</th>
+                        <th class="col-energy">Energy</th>
+                        <th class="col-playable">Playable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for track in tracks %}
+                    <tr class="track-row {% if track.is_playable %}track-playable{% endif %}"
+                        data-track-id="{{ track.id }}">
+                        <td class="col-pos">{{ track.display_position }}</td>
+                        <td class="col-title">
+                            <span class="track-title">{{ track.title }}</span>
+                            {% if track.notes %}
+                            <span class="track-notes-indicator" title="{{ track.notes }}">Notes</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-duration">{{ track.display_duration }}</td>
+                        <td class="col-bpm">
+                            <input
+                                type="number"
+                                class="track-input track-bpm"
+                                value="{{ track.bpm or '' }}"
+                                placeholder="—"
+                                min="20"
+                                max="300"
+                                data-field="bpm"
+                            >
+                        </td>
+                        <td class="col-key">
+                            <input
+                                type="text"
+                                class="track-input track-key"
+                                value="{{ track.camelot or track.musical_key or '' }}"
+                                placeholder="—"
+                                data-field="camelot"
+                                list="camelot-keys"
+                            >
+                        </td>
+                        <td class="col-energy">
+                            <input
+                                type="number"
+                                class="track-input track-energy"
+                                value="{{ track.energy or '' }}"
+                                placeholder="—"
+                                min="1"
+                                max="10"
+                                data-field="energy"
+                            >
+                        </td>
+                        <td class="col-playable">
+                            <label class="toggle">
+                                <input
+                                    type="checkbox"
+                                    class="track-playable"
+                                    {% if track.is_playable %}checked{% endif %}
+                                    data-field="is_playable"
+                                >
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Camelot key datalist for autocomplete -->
+        <datalist id="camelot-keys">
+            <option value="1A"><option value="1B">
+            <option value="2A"><option value="2B">
+            <option value="3A"><option value="3B">
+            <option value="4A"><option value="4B">
+            <option value="5A"><option value="5B">
+            <option value="6A"><option value="6B">
+            <option value="7A"><option value="7B">
+            <option value="8A"><option value="8B">
+            <option value="9A"><option value="9B">
+            <option value="10A"><option value="10B">
+            <option value="11A"><option value="11B">
+            <option value="12A"><option value="12B">
+        </datalist>
+
+        {% else %}
+        <p class="text-muted">No tracks found for this release.</p>
+        {% endif %}
     </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const releaseId = document.querySelector('.release-detail').dataset.releaseId;
+    const saveIndicator = document.getElementById('save-indicator');
+    let saveTimeout = null;
+
+    function showSaving() {
+        saveIndicator.textContent = 'Saving...';
+        saveIndicator.className = 'save-indicator saving';
+    }
+
+    function showSaved() {
+        saveIndicator.textContent = 'Saved';
+        saveIndicator.className = 'save-indicator saved';
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveIndicator.textContent = '';
+            saveIndicator.className = 'save-indicator';
+        }, 2000);
+    }
+
+    function showError(message) {
+        saveIndicator.textContent = message || 'Error saving';
+        saveIndicator.className = 'save-indicator error';
+    }
+
+    async function updateTrack(trackId, field, value) {
+        showSaving();
+
+        const data = {};
+        data[field] = value;
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/tracks/${trackId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showSaved();
+
+                // Update row styling for playable status
+                if (field === 'is_playable') {
+                    const row = document.querySelector(`tr[data-track-id="${trackId}"]`);
+                    if (value) {
+                        row.classList.add('track-playable');
+                    } else {
+                        row.classList.remove('track-playable');
+                    }
+                }
+            } else {
+                showError(result.error);
+            }
+        } catch (err) {
+            showError('Network error');
+            console.error('Failed to update track:', err);
+        }
+    }
+
+    // Handle input changes with debouncing
+    let debounceTimers = {};
+
+    function handleInputChange(e) {
+        const input = e.target;
+        const row = input.closest('tr');
+        const trackId = row.dataset.trackId;
+        const field = input.dataset.field;
+        let value = input.value;
+
+        // For checkboxes, use checked state
+        if (input.type === 'checkbox') {
+            value = input.checked;
+            updateTrack(trackId, field, value);
+            return;
+        }
+
+        // Debounce text/number inputs
+        clearTimeout(debounceTimers[trackId + field]);
+        debounceTimers[trackId + field] = setTimeout(() => {
+            // Convert empty strings to null
+            if (value === '') value = null;
+            updateTrack(trackId, field, value);
+        }, 500);
+    }
+
+    // Attach listeners to all track inputs
+    document.querySelectorAll('.track-input, .track-playable').forEach(input => {
+        if (input.type === 'checkbox') {
+            input.addEventListener('change', handleInputChange);
+        } else {
+            input.addEventListener('input', handleInputChange);
+            // Also save on blur for immediate feedback
+            input.addEventListener('blur', (e) => {
+                clearTimeout(debounceTimers[e.target.closest('tr').dataset.trackId + e.target.dataset.field]);
+                handleInputChange(e);
+            });
+        }
+    });
+
+    // Keyboard navigation between cells
+    document.querySelectorAll('.track-input').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                // Let browser handle Tab normally
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // Move to next row, same column
+                    const row = input.closest('tr');
+                    const nextRow = row.nextElementSibling;
+                    if (nextRow) {
+                        const nextInput = nextRow.querySelector(`.${input.classList[1]}`);
+                        if (nextInput) nextInput.focus();
+                    }
+                }
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}
