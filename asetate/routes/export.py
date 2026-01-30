@@ -30,6 +30,8 @@ def build_track_query(user_id: int, filters: dict):
             - has_key: Only tracks with key set
             - tags: List of tag names to filter by
             - search: Text search on track/release/artist
+            - not_exported: Only tracks that haven't been exported yet
+            - track_ids: Specific track IDs to export (for queue)
 
     Returns:
         SQLAlchemy query for Track
@@ -38,6 +40,17 @@ def build_track_query(user_id: int, filters: dict):
         Release.user_id == user_id,
         Release.discogs_removed_at.is_(None)
     )
+
+    # Specific track IDs (for queue export)
+    track_ids = filters.get("track_ids")
+    if track_ids:
+        query = query.filter(Track.id.in_(track_ids))
+        # When exporting specific tracks, skip other filters
+        return query.order_by(Release.artist, Release.title, Track.position)
+
+    # Not exported filter
+    if filters.get("not_exported"):
+        query = query.filter(Release.last_exported_at.is_(None))
 
     # Crate filter
     crate_id = filters.get("crate_id")
@@ -129,10 +142,21 @@ def build_track_query(user_id: int, filters: dict):
     return query
 
 
-def track_to_dict(track: Track, columns: list[str]) -> dict:
-    """Convert a track to a dictionary with only specified columns."""
+def track_to_dict(track: Track, columns: list[str], include_ids: bool = False) -> dict:
+    """Convert a track to a dictionary with only specified columns.
+
+    Args:
+        track: The Track object to convert
+        columns: List of column names to include
+        include_ids: If True, always include track_id and release_id (for queue selection)
+    """
     release = track.release
     data = {}
+
+    # Always include IDs for queue selection if requested
+    if include_ids:
+        data["track_id"] = track.id
+        data["release_id"] = release.id
 
     column_map = {
         "artist": lambda: release.display_artist,
@@ -244,11 +268,15 @@ def preview_export():
     if filters.get("search"):
         parsed_filters["search"] = filters["search"]
 
+    if filters.get("not_exported"):
+        parsed_filters["not_exported"] = True
+
     query = build_track_query(current_user.id, parsed_filters)
     total_count = query.count()
     tracks = query.limit(limit).all()
 
-    track_data = [track_to_dict(t, columns) for t in tracks]
+    # Include IDs for queue selection
+    track_data = [track_to_dict(t, columns, include_ids=True) for t in tracks]
 
     return jsonify({
         "tracks": track_data,
@@ -265,43 +293,52 @@ def download_csv():
     data = request.get_json() or {}
     filters = data.get("filters", {})
     columns = data.get("columns", ExportPreset.get_default_columns())
+    track_ids = data.get("track_ids")  # For queue export
+    mark_exported = data.get("mark_exported", False)  # Mark releases as exported
 
     # Parse filters same as preview
     parsed_filters = {}
 
-    if filters.get("crate_id"):
-        parsed_filters["crate_id"] = int(filters["crate_id"])
+    # If specific track IDs provided, use those directly
+    if track_ids:
+        parsed_filters["track_ids"] = [int(tid) for tid in track_ids]
+    else:
+        if filters.get("crate_id"):
+            parsed_filters["crate_id"] = int(filters["crate_id"])
 
-    if filters.get("bpm_min"):
-        parsed_filters["bpm_min"] = int(filters["bpm_min"])
-    if filters.get("bpm_max"):
-        parsed_filters["bpm_max"] = int(filters["bpm_max"])
+        if filters.get("bpm_min"):
+            parsed_filters["bpm_min"] = int(filters["bpm_min"])
+        if filters.get("bpm_max"):
+            parsed_filters["bpm_max"] = int(filters["bpm_max"])
 
-    if filters.get("energy_min"):
-        parsed_filters["energy_min"] = int(filters["energy_min"])
-    if filters.get("energy_max"):
-        parsed_filters["energy_max"] = int(filters["energy_max"])
+        if filters.get("energy_min"):
+            parsed_filters["energy_min"] = int(filters["energy_min"])
+        if filters.get("energy_max"):
+            parsed_filters["energy_max"] = int(filters["energy_max"])
 
-    if filters.get("playable_only"):
-        parsed_filters["playable_only"] = True
+        if filters.get("playable_only"):
+            parsed_filters["playable_only"] = True
 
-    if filters.get("has_bpm"):
-        parsed_filters["has_bpm"] = True
+        if filters.get("has_bpm"):
+            parsed_filters["has_bpm"] = True
 
-    if filters.get("has_key"):
-        parsed_filters["has_key"] = True
+        if filters.get("has_key"):
+            parsed_filters["has_key"] = True
 
-    if filters.get("key"):
-        parsed_filters["key"] = filters["key"]
+        if filters.get("key"):
+            parsed_filters["key"] = filters["key"]
 
-    if filters.get("tags"):
-        tags = filters["tags"]
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(",") if t.strip()]
-        parsed_filters["tags"] = tags
+        if filters.get("tags"):
+            tags = filters["tags"]
+            if isinstance(tags, str):
+                tags = [t.strip() for t in tags.split(",") if t.strip()]
+            parsed_filters["tags"] = tags
 
-    if filters.get("search"):
-        parsed_filters["search"] = filters["search"]
+        if filters.get("search"):
+            parsed_filters["search"] = filters["search"]
+
+        if filters.get("not_exported"):
+            parsed_filters["not_exported"] = True
 
     query = build_track_query(current_user.id, parsed_filters)
     tracks = query.all()
@@ -316,10 +353,22 @@ def download_csv():
     # Header row
     writer.writerow([column_labels.get(col, col) for col in columns])
 
+    # Track exported releases to update
+    exported_release_ids = set()
+
     # Data rows
     for track in tracks:
         row_data = track_to_dict(track, columns)
         writer.writerow([row_data.get(col, "") for col in columns])
+        exported_release_ids.add(track.release_id)
+
+    # Mark releases as exported if requested
+    if mark_exported and exported_release_ids:
+        Release.query.filter(Release.id.in_(exported_release_ids)).update(
+            {"last_exported_at": datetime.utcnow()},
+            synchronize_session=False
+        )
+        db.session.commit()
 
     csv_content = output.getvalue()
 
