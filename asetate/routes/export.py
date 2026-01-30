@@ -149,6 +149,7 @@ def track_to_dict(track: Track, columns: list[str]) -> dict:
         "notes": lambda: track.notes or "",
         "tags": lambda: ", ".join(t.name for t in track.tags),
         "crates": lambda: ", ".join(c.name for c in track.crates),
+        "release_url": lambda: release.discogs_uri or f"https://www.discogs.com/release/{release.discogs_id}",
     }
 
     for col in columns:

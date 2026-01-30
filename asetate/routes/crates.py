@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 
 from asetate import db
 from asetate.models import Crate, Release, Track, crate_releases, crate_tracks
+from asetate.models.crate import CRATE_COLORS, CRATE_ICONS
 
 bp = Blueprint("crates", __name__)
 
@@ -36,7 +37,13 @@ def list_crates():
     crate_tree = [build_tree(c) for c in top_level]
     total_crates = Crate.query.filter_by(user_id=current_user.id).count()
 
-    return render_template("crates/list.html", crate_tree=crate_tree, total_crates=total_crates)
+    return render_template(
+        "crates/list.html",
+        crate_tree=crate_tree,
+        total_crates=total_crates,
+        crate_colors=CRATE_COLORS,
+        crate_icons=CRATE_ICONS,
+    )
 
 
 @bp.route("/", methods=["POST"])
@@ -72,6 +79,8 @@ def create_crate():
         name=name,
         parent_id=parent_id,
         description=data.get("description", "").strip() or None,
+        icon=data.get("icon") or None,
+        color=data.get("color") or None,
     )
     db.session.add(crate)
     db.session.commit()
@@ -84,6 +93,8 @@ def create_crate():
                 "name": crate.name,
                 "parent_id": crate.parent_id,
                 "description": crate.description,
+                "icon": crate.icon,
+                "color": crate.color,
             },
         }
     )
@@ -151,9 +162,23 @@ def update_crate(crate_id: int):
     if "description" in data:
         crate.description = data["description"].strip() or None
 
+    if "icon" in data:
+        crate.icon = data["icon"] or None
+
+    if "color" in data:
+        crate.color = data["color"] or None
+
     db.session.commit()
 
-    return jsonify({"status": "ok", "crate": {"id": crate.id, "name": crate.name}})
+    return jsonify({
+        "status": "ok",
+        "crate": {
+            "id": crate.id,
+            "name": crate.name,
+            "icon": crate.icon,
+            "color": crate.color,
+        }
+    })
 
 
 @bp.route("/<int:crate_id>", methods=["DELETE"])

@@ -67,6 +67,7 @@ class ExportPreset(db.Model):
         ("notes", "Notes"),
         ("tags", "Tags"),
         ("crates", "Crates"),
+        ("release_url", "Discogs URL"),
     ]
 
     @classmethod

@@ -155,6 +155,8 @@ class BackupService:
             crate_data = {
                 "name": crate.name,
                 "description": crate.description,
+                "icon": crate.icon,
+                "color": crate.color,
                 "sort_order": crate.sort_order,
                 "parent_path": crate.parent.full_path if crate.parent else None,
                 "releases": [r.discogs_id for r in crate.releases],
@@ -405,12 +407,19 @@ class BackupService:
 
             if existing:
                 crate = existing
+                # Update icon and color if provided
+                if "icon" in crate_data:
+                    crate.icon = crate_data["icon"]
+                if "color" in crate_data:
+                    crate.color = crate_data["color"]
             else:
                 crate = Crate(
                     user_id=self.user_id,
                     parent_id=parent.id if parent else None,
                     name=name,
                     description=crate_data.get("description"),
+                    icon=crate_data.get("icon"),
+                    color=crate_data.get("color"),
                     sort_order=crate_data.get("sort_order", 0),
                 )
                 db.session.add(crate)
@@ -480,6 +489,8 @@ class BackupService:
                     parent_id=parent.id,
                     name=name,
                     description=crate_data.get("description"),
+                    icon=crate_data.get("icon"),
+                    color=crate_data.get("color"),
                     sort_order=crate_data.get("sort_order", 0),
                 )
                 db.session.add(crate)
