@@ -1,5 +1,6 @@
 """Authentication routes - supports both OAuth and Personal Access Token modes."""
 
+import json
 from datetime import datetime
 
 from flask import Blueprint, redirect, url_for, request, current_app, session, flash, render_template
@@ -261,4 +262,71 @@ def save_token():
     db.session.commit()
 
     flash(f"Successfully connected to Discogs as {username}!", "success")
+    return redirect(url_for("auth.settings"))
+
+
+# =============================================================================
+# Backup / Export / Import
+# =============================================================================
+
+
+@bp.route("/settings/export")
+@login_required
+def export_data():
+    """Export all user data as JSON download."""
+    from flask import Response
+    from asetate.services import BackupService
+
+    service = BackupService(current_user.id)
+    json_data = service.export_to_json(pretty=True)
+
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    filename = f"asetate_backup_{timestamp}.json"
+
+    return Response(
+        json_data,
+        mimetype="application/json",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@bp.route("/settings/import", methods=["POST"])
+@login_required
+@limiter.limit("5 per hour")
+def import_data():
+    """Import user data from uploaded JSON file."""
+    from asetate.services import BackupService
+
+    if "file" not in request.files:
+        flash("No file uploaded.", "error")
+        return redirect(url_for("auth.settings"))
+
+    file = request.files["file"]
+    if not file.filename:
+        flash("No file selected.", "error")
+        return redirect(url_for("auth.settings"))
+
+    if not file.filename.endswith(".json"):
+        flash("Please upload a JSON file.", "error")
+        return redirect(url_for("auth.settings"))
+
+    try:
+        json_data = file.read().decode("utf-8")
+        service = BackupService(current_user.id)
+        stats = service.import_from_json(json_data)
+
+        flash(
+            f"Import complete! Tags: {stats['tags_created']}, "
+            f"Tracks updated: {stats['tracks_updated']}, "
+            f"Crates: {stats['crates_created']}",
+            "success",
+        )
+    except json.JSONDecodeError:
+        flash("Invalid JSON file.", "error")
+    except ValueError as e:
+        flash(f"Import error: {e}", "error")
+    except Exception as e:
+        current_app.logger.error(f"Import error: {e}")
+        flash("Failed to import data. Please check the file format.", "error")
+
     return redirect(url_for("auth.settings"))

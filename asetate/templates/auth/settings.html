@@ -115,6 +115,51 @@
         {% endif %}
     </section>
 
+    <!-- Backup & Export -->
+    <section class="settings-section card">
+        <h2>Backup & Export</h2>
+        <p class="text-muted" style="margin-bottom: var(--space-md);">
+            Export your DJ metadata (BPM, keys, crates, tags) to a JSON file.
+            This backup can be imported later or on another instance.
+        </p>
+
+        <div class="backup-actions">
+            <a href="{{ url_for('auth.export_data') }}" class="btn btn-primary">
+                Export Data
+            </a>
+
+            <form action="{{ url_for('auth.import_data') }}" method="POST" enctype="multipart/form-data" class="import-form">
+                <label for="import-file" class="btn btn-secondary">
+                    Import Backup
+                </label>
+                <input type="file"
+                       id="import-file"
+                       name="file"
+                       accept=".json"
+                       style="display: none;"
+                       onchange="this.form.submit()">
+            </form>
+        </div>
+
+        <details style="margin-top: var(--space-lg);">
+            <summary class="text-muted" style="cursor: pointer;">What's included in the backup?</summary>
+            <ul class="text-muted" style="margin-top: var(--space-sm); padding-left: var(--space-lg);">
+                <li>Track DJ metadata (BPM, key, energy, playable status, notes)</li>
+                <li>Crates and their contents</li>
+                <li>Tags and tag assignments</li>
+                <li>Release corrections</li>
+            </ul>
+            <p class="text-muted" style="margin-top: var(--space-sm);">
+                <strong>Not included:</strong> Collection data (releases, tracks) - these are re-synced from Discogs.
+            </p>
+        </details>
+
+        <p class="text-muted" style="margin-top: var(--space-md); font-size: 0.85rem;">
+            <strong>Tip:</strong> Save your backup to a cloud-synced folder (Dropbox, Google Drive, etc.)
+            for automatic offsite backup.
+        </p>
+    </section>
+
     <!-- Account Actions -->
     <section class="settings-section card">
         <h2>Account Actions</h2>
@@ -122,7 +167,7 @@
         <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Sign Out</a>
         {% else %}
         <p class="text-muted">
-            This is a self-hosted instance. Your data is stored locally.
+            This is a self-hosted instance. Your data is stored locally in SQLite.
         </p>
         {% endif %}
     </section>
@@ -150,6 +195,15 @@
 .token-form small {
     display: block;
     margin-top: var(--space-xs);
+}
+.backup-actions {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    flex-wrap: wrap;
+}
+.import-form {
+    display: inline-block;
 }
 </style>
 {% endblock %}

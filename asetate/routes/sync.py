@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, jsonify, current_app
 from flask_login import login_required, current_user
 
 from asetate import db, limiter
-from asetate.services import SyncService, get_sync_status, DiscogsAuthError, DiscogsRateLimitError
+from asetate.services import SyncService, get_sync_status, DiscogsAuthError, DiscogsRateLimitError, create_auto_backup
 from asetate.models import SyncProgress
 from asetate.models.sync_progress import SyncStatus
 
@@ -48,6 +48,12 @@ def start_sync():
     # Check for valid credentials
     if not current_user.has_discogs_credentials:
         return jsonify({"error": "Discogs credentials not configured. Go to Settings to add them."}), 400
+
+    # Auto-backup before sync (in case sync overwrites data)
+    try:
+        create_auto_backup(user_id, reason="pre_sync")
+    except Exception as e:
+        current_app.logger.warning(f"Auto-backup failed: {e}")
 
     # Capture credentials for background thread (works for both OAuth and PAT modes)
     discogs_username = current_user.discogs_username
