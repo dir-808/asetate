@@ -19,19 +19,19 @@
 
     <div class="export-layout">
         <aside class="export-sidebar">
-            <!-- Export Queue -->
-            <div class="export-section card export-queue-section" id="export-queue-section" style="display: none;">
-                <div class="queue-header">
-                    <h3>Export Queue</h3>
-                    <span class="queue-count badge" id="queue-count">0</span>
+            <!-- Export Cue -->
+            <div class="export-section card export-cue-section" id="export-cue-section" style="display: none;">
+                <div class="cue-header">
+                    <h3>Export Cue</h3>
+                    <span class="cue-count badge" id="cue-count">0</span>
                 </div>
-                <p class="text-muted queue-hint">Selected items for export</p>
-                <div class="queue-list" id="queue-list">
-                    <!-- Queue items will be loaded here -->
+                <p class="text-muted cue-hint">Selected items for export</p>
+                <div class="cue-list" id="cue-list">
+                    <!-- Cue items will be loaded here -->
                 </div>
-                <div class="queue-actions">
-                    <button class="btn btn-secondary btn-sm" id="btn-clear-queue">Clear Queue</button>
-                    <button class="btn btn-primary btn-sm" id="btn-export-queue">Export Queue</button>
+                <div class="cue-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-clear-cue">Clear Cue</button>
+                    <button class="btn btn-primary btn-sm" id="btn-export-cue">Export Cue</button>
                 </div>
             </div>
 
@@ -155,7 +155,7 @@
                         <input type="checkbox" id="select-all-checkbox">
                         <span>Select All</span>
                     </label>
-                    <button class="btn btn-secondary" id="btn-add-selected">Add to Queue</button>
+                    <button class="btn btn-secondary" id="btn-add-selected">Add to Cue</button>
                     <button class="btn btn-secondary" id="btn-save-preset">Save Preset</button>
                     <button class="btn btn-primary" id="btn-download">Download CSV</button>
                 </div>
@@ -217,19 +217,19 @@
     border-bottom-color: var(--primary);
 }
 
-/* Export queue */
-.export-queue-section {
+/* Export cue */
+.export-cue-section {
     border-left: 3px solid var(--primary);
 }
-.queue-header {
+.cue-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.queue-header h3 {
+.cue-header h3 {
     margin: 0;
 }
-.queue-count {
+.cue-count {
     background: var(--primary);
     color: var(--bg-body);
     padding: 2px 8px;
@@ -237,16 +237,16 @@
     font-size: 0.8rem;
     font-weight: 600;
 }
-.queue-hint {
+.cue-hint {
     font-size: 0.85rem;
     margin: var(--space-xs) 0;
 }
-.queue-list {
+.cue-list {
     max-height: 200px;
     overflow-y: auto;
     margin: var(--space-sm) 0;
 }
-.queue-item {
+.cue-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -254,16 +254,16 @@
     border-bottom: 1px solid var(--bg-surface);
     font-size: 0.85rem;
 }
-.queue-item:last-child {
+.cue-item:last-child {
     border-bottom: none;
 }
-.queue-item-info {
+.cue-item-info {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     flex: 1;
 }
-.queue-item-remove {
+.cue-item-remove {
     background: none;
     border: none;
     color: var(--text-secondary);
@@ -271,10 +271,10 @@
     padding: 2px 6px;
     font-size: 1rem;
 }
-.queue-item-remove:hover {
+.cue-item-remove:hover {
     color: var(--text-primary);
 }
-.queue-actions {
+.cue-actions {
     display: flex;
     gap: var(--space-xs);
     margin-top: var(--space-sm);
@@ -305,7 +305,7 @@
 (function() {
     let debounceTimer = null;
     let currentMode = 'dj'; // 'dj' or 'seller'
-    let exportQueue = JSON.parse(localStorage.getItem('asetate_export_queue') || '[]');
+    let exportCue = JSON.parse(localStorage.getItem('asetate_export_cue') || '[]');
 
     // Column categories
     const djColumns = ['artist', 'release_title', 'track_title', 'position', 'label', 'year', 'bpm', 'musical_key', 'camelot', 'energy', 'duration', 'notes', 'tags', 'crates', 'release_url'];
@@ -418,60 +418,60 @@
         });
     }
 
-    // Export Queue Management
-    function updateQueueUI() {
-        const section = document.getElementById('export-queue-section');
-        const countEl = document.getElementById('queue-count');
-        const listEl = document.getElementById('queue-list');
+    // Export Cue Management
+    function updateCueUI() {
+        const section = document.getElementById('export-cue-section');
+        const countEl = document.getElementById('cue-count');
+        const listEl = document.getElementById('cue-list');
 
-        countEl.textContent = exportQueue.length;
+        countEl.textContent = exportCue.length;
 
-        if (exportQueue.length === 0) {
+        if (exportCue.length === 0) {
             section.style.display = 'none';
             return;
         }
 
         section.style.display = 'block';
 
-        listEl.innerHTML = exportQueue.map((item, idx) => `
-            <div class="queue-item">
-                <span class="queue-item-info" title="${item.artist} - ${item.title}">
+        listEl.innerHTML = exportCue.map((item, idx) => `
+            <div class="cue-item">
+                <span class="cue-item-info" title="${item.artist} - ${item.title}">
                     ${item.artist} - ${item.title}
                 </span>
-                <button class="queue-item-remove" data-idx="${idx}">&times;</button>
+                <button class="cue-item-remove" data-idx="${idx}">&times;</button>
             </div>
         `).join('');
 
         // Add remove handlers
-        listEl.querySelectorAll('.queue-item-remove').forEach(btn => {
+        listEl.querySelectorAll('.cue-item-remove').forEach(btn => {
             btn.addEventListener('click', () => {
                 const idx = parseInt(btn.dataset.idx);
-                exportQueue.splice(idx, 1);
-                saveQueue();
-                updateQueueUI();
+                exportCue.splice(idx, 1);
+                saveCue();
+                updateCueUI();
             });
         });
     }
 
-    function saveQueue() {
-        localStorage.setItem('asetate_export_queue', JSON.stringify(exportQueue));
+    function saveCue() {
+        localStorage.setItem('asetate_export_cue', JSON.stringify(exportCue));
     }
 
-    function addToQueue(items) {
+    function addToCue(items) {
         items.forEach(item => {
             // Avoid duplicates by track_id
-            if (!exportQueue.some(q => q.track_id === item.track_id)) {
-                exportQueue.push(item);
+            if (!exportCue.some(q => q.track_id === item.track_id)) {
+                exportCue.push(item);
             }
         });
-        saveQueue();
-        updateQueueUI();
+        saveCue();
+        updateCueUI();
     }
 
-    document.getElementById('btn-clear-queue').addEventListener('click', () => {
-        exportQueue = [];
-        saveQueue();
-        updateQueueUI();
+    document.getElementById('btn-clear-cue').addEventListener('click', () => {
+        exportCue = [];
+        saveCue();
+        updateCueUI();
     });
 
     // Update preview
@@ -604,7 +604,7 @@
         });
     });
 
-    // Add selected to queue
+    // Add selected to cue
     document.getElementById('btn-add-selected').addEventListener('click', () => {
         const selected = [];
         document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
@@ -614,11 +614,11 @@
         });
 
         if (selected.length === 0) {
-            alert('Select at least one item to add to queue');
+            alert('Select at least one item to add to cue');
             return;
         }
 
-        addToQueue(selected);
+        addToCue(selected);
 
         // Uncheck all
         document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
@@ -696,10 +696,10 @@
         }
     });
 
-    // Export queue
-    document.getElementById('btn-export-queue').addEventListener('click', async () => {
-        if (exportQueue.length === 0) {
-            alert('Queue is empty');
+    // Export cue
+    document.getElementById('btn-export-cue').addEventListener('click', async () => {
+        if (exportCue.length === 0) {
+            alert('Cue is empty');
             return;
         }
 
@@ -709,7 +709,7 @@
             return;
         }
 
-        const trackIds = exportQueue.map(q => q.track_id);
+        const trackIds = exportCue.map(q => q.track_id);
 
         try {
             const response = await fetch('/export/download', {
@@ -736,10 +736,10 @@
             window.URL.revokeObjectURL(url);
             a.remove();
 
-            // Clear queue after successful export
-            exportQueue = [];
-            saveQueue();
-            updateQueueUI();
+            // Clear cue after successful export
+            exportCue = [];
+            saveCue();
+            updateCueUI();
         } catch (err) {
             console.error('Download failed:', err);
             alert('Failed to download CSV');
@@ -821,7 +821,7 @@
     });
 
     // Initialize
-    updateQueueUI();
+    updateCueUI();
     {% if is_seller_mode %}
     applyModeSettings();
     {% endif %}
