@@ -5,6 +5,7 @@ import io
 from datetime import datetime
 
 from flask import Blueprint, render_template, request, jsonify, Response
+from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from asetate import db
@@ -13,10 +14,11 @@ from asetate.models import Release, Track, Crate, Tag, ExportPreset
 bp = Blueprint("export", __name__)
 
 
-def build_track_query(filters: dict):
+def build_track_query(user_id: int, filters: dict):
     """Build a track query based on filter criteria.
 
     Args:
+        user_id: The user to filter by
         filters: Dictionary with filter options:
             - crate_id: Filter by crate (includes all tracks from releases in crate)
             - bpm_min: Minimum BPM
@@ -32,12 +34,16 @@ def build_track_query(filters: dict):
     Returns:
         SQLAlchemy query for Track
     """
-    query = Track.query.join(Release).filter(Release.discogs_removed_at.is_(None))
+    query = Track.query.join(Release).filter(
+        Release.user_id == user_id,
+        Release.discogs_removed_at.is_(None)
+    )
 
     # Crate filter
     crate_id = filters.get("crate_id")
     if crate_id:
-        crate = Crate.query.get(crate_id)
+        # Ensure crate belongs to user
+        crate = Crate.query.filter_by(id=crate_id, user_id=user_id).first()
         if crate:
             # Get all track IDs from crate (direct tracks + tracks from releases)
             track_ids = set()
@@ -86,11 +92,12 @@ def build_track_query(filters: dict):
     tags = filters.get("tags", [])
     if tags:
         for tag_name in tags:
-            tag = Tag.query.filter_by(name=tag_name.lower().strip()).first()
+            # Filter by user's tags
+            tag = Tag.query.filter_by(user_id=user_id, name=tag_name.lower().strip()).first()
             if tag:
                 query = query.filter(Track.tags.contains(tag))
             else:
-                # Tag doesn't exist, no matches
+                # Tag doesn't exist for this user, no matches
                 query = query.filter(Track.id == -1)
                 break
 
@@ -152,16 +159,17 @@ def track_to_dict(track: Track, columns: list[str]) -> dict:
 
 
 @bp.route("/")
+@login_required
 def export_page():
     """Export configuration page."""
-    # Get all crates for dropdown
-    crates = Crate.query.order_by(Crate.name).all()
+    # Get user's crates for dropdown
+    crates = Crate.query.filter_by(user_id=current_user.id).order_by(Crate.name).all()
 
-    # Get all tags for filter
-    tags = Tag.query.order_by(Tag.name).all()
+    # Get user's tags for filter
+    tags = Tag.query.filter_by(user_id=current_user.id).order_by(Tag.name).all()
 
-    # Get presets
-    presets = ExportPreset.query.order_by(ExportPreset.name).all()
+    # Get user's presets
+    presets = ExportPreset.query.filter_by(user_id=current_user.id).order_by(ExportPreset.name).all()
 
     # Available columns
     columns = ExportPreset.AVAILABLE_COLUMNS
@@ -178,6 +186,7 @@ def export_page():
 
 
 @bp.route("/preview", methods=["POST"])
+@login_required
 def preview_export():
     """Preview export results based on current filters."""
     data = request.get_json() or {}
@@ -223,7 +232,7 @@ def preview_export():
     if filters.get("search"):
         parsed_filters["search"] = filters["search"]
 
-    query = build_track_query(parsed_filters)
+    query = build_track_query(current_user.id, parsed_filters)
     total_count = query.count()
     tracks = query.limit(limit).all()
 
@@ -238,6 +247,7 @@ def preview_export():
 
 
 @bp.route("/download", methods=["POST"])
+@login_required
 def download_csv():
     """Generate and download CSV based on filters."""
     data = request.get_json() or {}
@@ -281,7 +291,7 @@ def download_csv():
     if filters.get("search"):
         parsed_filters["search"] = filters["search"]
 
-    query = build_track_query(parsed_filters)
+    query = build_track_query(current_user.id, parsed_filters)
     tracks = query.all()
 
     # Column labels
@@ -313,9 +323,10 @@ def download_csv():
 
 
 @bp.route("/presets", methods=["GET"])
+@login_required
 def list_presets():
-    """List saved export presets."""
-    presets = ExportPreset.query.order_by(ExportPreset.name).all()
+    """List saved export presets for current user."""
+    presets = ExportPreset.query.filter_by(user_id=current_user.id).order_by(ExportPreset.name).all()
     return jsonify({
         "presets": [
             {
@@ -330,6 +341,7 @@ def list_presets():
 
 
 @bp.route("/presets", methods=["POST"])
+@login_required
 def save_preset():
     """Save current export configuration as a preset."""
     data = request.get_json()
@@ -340,8 +352,8 @@ def save_preset():
     if not name:
         return jsonify({"error": "Name cannot be empty"}), 400
 
-    # Check for duplicate name
-    existing = ExportPreset.query.filter_by(name=name).first()
+    # Check for duplicate name for this user
+    existing = ExportPreset.query.filter_by(user_id=current_user.id, name=name).first()
     if existing:
         # Update existing preset
         existing.filters = data.get("filters", {})
@@ -357,6 +369,7 @@ def save_preset():
 
     # Create new preset
     preset = ExportPreset(
+        user_id=current_user.id,
         name=name,
         filters=data.get("filters", {}),
         columns=data.get("columns", ExportPreset.get_default_columns()),
@@ -374,9 +387,11 @@ def save_preset():
 
 
 @bp.route("/presets/<int:preset_id>", methods=["GET"])
+@login_required
 def get_preset(preset_id: int):
     """Get a specific preset."""
-    preset = ExportPreset.query.get_or_404(preset_id)
+    # Ensure preset belongs to current user
+    preset = ExportPreset.query.filter_by(id=preset_id, user_id=current_user.id).first_or_404()
     return jsonify({
         "id": preset.id,
         "name": preset.name,
@@ -386,9 +401,11 @@ def get_preset(preset_id: int):
 
 
 @bp.route("/presets/<int:preset_id>", methods=["DELETE"])
+@login_required
 def delete_preset(preset_id: int):
     """Delete a preset."""
-    preset = ExportPreset.query.get_or_404(preset_id)
+    # Ensure preset belongs to current user
+    preset = ExportPreset.query.filter_by(id=preset_id, user_id=current_user.id).first_or_404()
     db.session.delete(preset)
     db.session.commit()
     return jsonify({"status": "deleted"})

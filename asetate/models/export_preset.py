@@ -10,12 +10,19 @@ class ExportPreset(db.Model):
 
     Stores filter criteria and column selection for repeatable exports,
     e.g., "All playable House tracks 120-130 BPM for label printing."
+    Each preset belongs to a specific user.
     """
 
     __tablename__ = "export_presets"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=True, nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name = db.Column(db.String(200), nullable=False)
+
+    # Relationships
+    user = db.relationship("User", backref=db.backref("export_presets", lazy="dynamic"))
 
     # Filter configuration (stored as JSON)
     # Example: {
@@ -35,6 +42,11 @@ class ExportPreset(db.Model):
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Unique constraint: preset names unique per user
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "name", name="unique_preset_name_per_user"),
+    )
 
     def __repr__(self):
         return f"<ExportPreset {self.name}>"

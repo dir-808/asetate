@@ -10,12 +10,16 @@ class Release(db.Model):
 
     Stores both Discogs metadata and user corrections. The discogs_id
     is used as the unique identifier for syncing to prevent duplicates.
+    Each release belongs to a specific user.
     """
 
     __tablename__ = "releases"
 
     id = db.Column(db.Integer, primary_key=True)
-    discogs_id = db.Column(db.Integer, unique=True, nullable=False, index=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    discogs_id = db.Column(db.Integer, nullable=False, index=True)
 
     # Discogs metadata
     title = db.Column(db.String(500), nullable=False)
@@ -39,8 +43,14 @@ class Release(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Relationships
+    user = db.relationship("User", back_populates="releases")
     tracks = db.relationship(
         "Track", back_populates="release", cascade="all, delete-orphan", lazy="dynamic"
+    )
+
+    # Unique constraint: one discogs_id per user
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "discogs_id", name="unique_release_per_user"),
     )
 
     def __repr__(self):

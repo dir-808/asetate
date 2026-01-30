@@ -21,11 +21,15 @@ class SyncProgress(db.Model):
 
     Allows for resumable syncs when dealing with large collections
     and Discogs API rate limits (60 requests/minute).
+    Each sync belongs to a specific user.
     """
 
     __tablename__ = "sync_progress"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
 
     # Progress tracking
     status = db.Column(db.String(20), default=SyncStatus.PENDING.value, nullable=False)
@@ -47,6 +51,9 @@ class SyncProgress(db.Model):
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    user = db.relationship("User", back_populates="sync_progress")
 
     def __repr__(self):
         return f"<SyncProgress {self.status} {self.processed_releases}/{self.total_releases}>"
@@ -94,19 +101,23 @@ class SyncProgress(db.Model):
         self.retry_count += 1
 
     @classmethod
-    def get_latest(cls) -> "SyncProgress | None":
-        """Get the most recent sync progress record."""
-        return cls.query.order_by(cls.created_at.desc()).first()
+    def get_latest(cls, user_id: int | None = None) -> "SyncProgress | None":
+        """Get the most recent sync progress record for a user."""
+        query = cls.query
+        if user_id is not None:
+            query = query.filter_by(user_id=user_id)
+        return query.order_by(cls.created_at.desc()).first()
 
     @classmethod
-    def get_or_create_active(cls) -> "SyncProgress":
-        """Get an active (resumable) sync or create a new one."""
+    def get_or_create_active(cls, user_id: int) -> "SyncProgress":
+        """Get an active (resumable) sync or create a new one for a user."""
         active = cls.query.filter(
+            cls.user_id == user_id,
             cls.status.in_([SyncStatus.RUNNING.value, SyncStatus.PAUSED.value])
         ).first()
         if active:
             return active
 
-        new_sync = cls()
+        new_sync = cls(user_id=user_id)
         db.session.add(new_sync)
         return new_sync

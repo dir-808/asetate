@@ -1,6 +1,7 @@
 """Release routes - viewing and managing vinyl releases."""
 
 from flask import Blueprint, render_template, request, jsonify, abort
+from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from asetate import db
@@ -10,16 +11,20 @@ bp = Blueprint("releases", __name__)
 
 
 @bp.route("/")
+@login_required
 def list_releases():
-    """List all releases in the collection."""
+    """List all releases in the user's collection."""
     # Get query parameters
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 24, type=int)
     search = request.args.get("q", "").strip()
     filter_type = request.args.get("filter", "")
 
-    # Build base query - exclude removed releases by default
-    query = Release.query.filter(Release.discogs_removed_at.is_(None))
+    # Build base query - filter by user and exclude removed releases
+    query = Release.query.filter(
+        Release.user_id == current_user.id,
+        Release.discogs_removed_at.is_(None)
+    )
 
     # Apply search
     if search:
@@ -38,7 +43,11 @@ def list_releases():
         query = query.filter(
             Release.id.in_(
                 db.session.query(Track.release_id)
-                .filter(Track.is_playable == True)
+                .join(Release)
+                .filter(
+                    Release.user_id == current_user.id,
+                    Track.is_playable == True
+                )
                 .distinct()
             )
         )
@@ -47,7 +56,9 @@ def list_releases():
         query = query.filter(
             Release.id.in_(
                 db.session.query(Track.release_id)
+                .join(Release)
                 .filter(
+                    Release.user_id == current_user.id,
                     or_(Track.bpm.is_(None), Track.musical_key.is_(None)),
                     Track.is_playable == True,
                 )
@@ -61,12 +72,26 @@ def list_releases():
     # Paginate
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
-    # Get stats for the header
-    total_releases = Release.query.filter(Release.discogs_removed_at.is_(None)).count()
-    total_tracks = Track.query.join(Release).filter(Release.discogs_removed_at.is_(None)).count()
+    # Get stats for the header (user-scoped)
+    total_releases = Release.query.filter(
+        Release.user_id == current_user.id,
+        Release.discogs_removed_at.is_(None)
+    ).count()
+    total_tracks = (
+        Track.query.join(Release)
+        .filter(
+            Release.user_id == current_user.id,
+            Release.discogs_removed_at.is_(None)
+        )
+        .count()
+    )
     playable_tracks = (
         Track.query.join(Release)
-        .filter(Release.discogs_removed_at.is_(None), Track.is_playable == True)
+        .filter(
+            Release.user_id == current_user.id,
+            Release.discogs_removed_at.is_(None),
+            Track.is_playable == True
+        )
         .count()
     )
 
@@ -85,9 +110,14 @@ def list_releases():
 
 
 @bp.route("/<int:release_id>")
+@login_required
 def view_release(release_id: int):
     """View a single release and its tracks."""
-    release = Release.query.get_or_404(release_id)
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
     tracks = release.tracks.order_by(Track.position).all()
 
     # Calculate release stats
@@ -107,9 +137,16 @@ def view_release(release_id: int):
 
 
 @bp.route("/<int:release_id>/tracks/<int:track_id>", methods=["PATCH"])
+@login_required
 def update_track(release_id: int, track_id: int):
     """Update DJ metadata for a track (BPM, key, energy, playable, notes)."""
-    track = Track.query.filter_by(id=track_id, release_id=release_id).first_or_404()
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
+
+    track = Track.query.filter_by(id=track_id, release_id=release.id).first_or_404()
 
     data = request.get_json()
     if not data:
@@ -167,9 +204,14 @@ def update_track(release_id: int, track_id: int):
 
 
 @bp.route("/<int:release_id>/corrections", methods=["PATCH"])
+@login_required
 def update_corrections(release_id: int):
     """Update user corrections for a release (local overrides for Discogs data)."""
-    release = Release.query.get_or_404(release_id)
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
 
     data = request.get_json()
     if not data:

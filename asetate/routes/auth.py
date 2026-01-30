@@ -6,7 +6,7 @@ from flask import Blueprint, redirect, url_for, request, current_app, session, f
 from flask_login import login_user, logout_user, login_required, current_user
 import requests
 
-from asetate import db
+from asetate import db, limiter
 from asetate.models import User
 
 bp = Blueprint("auth", __name__)
@@ -21,6 +21,7 @@ def get_google_provider_cfg():
 
 
 @bp.route("/login")
+@limiter.limit("10 per minute")
 def login():
     """Redirect to Google OAuth."""
     if current_user.is_authenticated:
@@ -46,6 +47,7 @@ def login():
 
 
 @bp.route("/callback")
+@limiter.limit("10 per minute")
 def callback():
     """Handle Google OAuth callback."""
     # Get authorization code from Google
@@ -149,6 +151,7 @@ def settings():
 
 @bp.route("/settings/discogs", methods=["POST"])
 @login_required
+@limiter.limit("5 per minute")
 def update_discogs():
     """Update Discogs credentials."""
     data = request.get_json()

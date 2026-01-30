@@ -23,6 +23,7 @@ class SyncService:
 
     def __init__(
         self,
+        user_id: int,
         discogs_token: str | None = None,
         discogs_username: str | None = None,
         progress_callback: Callable[[SyncProgress], None] | None = None,
@@ -30,11 +31,13 @@ class SyncService:
         """Initialize the sync service.
 
         Args:
+            user_id: The user ID to sync for (required for user isolation).
             discogs_token: Discogs personal access token. If None, reads from config.
             discogs_username: Discogs username. If None, fetches from API.
             progress_callback: Optional callback called after each release is processed.
                               Receives the current SyncProgress object.
         """
+        self.user_id = user_id
         self.discogs_token = discogs_token
         self.discogs_username = discogs_username
         self.progress_callback = progress_callback
@@ -52,15 +55,15 @@ class SyncService:
         self.client = DiscogsClient(user_token=self.discogs_token)
         username = self.discogs_username or self.client.get_username()
 
-        # Get or create sync progress
+        # Get or create sync progress for this user
         if resume:
-            progress = SyncProgress.get_or_create_active()
+            progress = SyncProgress.get_or_create_active(self.user_id)
             if progress.is_complete:
                 # Start fresh if last sync was complete
-                progress = SyncProgress()
+                progress = SyncProgress(user_id=self.user_id)
                 db.session.add(progress)
         else:
-            progress = SyncProgress()
+            progress = SyncProgress(user_id=self.user_id)
             db.session.add(progress)
 
         progress.start()
@@ -134,7 +137,7 @@ class SyncService:
             if self.progress_callback:
                 self.progress_callback(progress)
 
-        # Detect removed releases
+        # Detect removed releases for this user
         self._mark_removed_releases(seen_discogs_ids, progress)
 
         progress.complete()
@@ -149,12 +152,18 @@ class SyncService:
         Returns:
             True if this was a new release, False if updated
         """
-        # Check if release exists
-        release = Release.query.filter_by(discogs_id=release_data.discogs_id).first()
+        # Check if release exists for this user
+        release = Release.query.filter_by(
+            user_id=self.user_id,
+            discogs_id=release_data.discogs_id
+        ).first()
         is_new = release is None
 
         if is_new:
-            release = Release(discogs_id=release_data.discogs_id)
+            release = Release(
+                user_id=self.user_id,
+                discogs_id=release_data.discogs_id
+            )
             db.session.add(release)
 
         # Update Discogs fields (always overwrite with fresh data)
@@ -242,9 +251,10 @@ class SyncService:
             seen_ids: Set of discogs_ids seen during this sync
             progress: SyncProgress to update
         """
-        # Find releases in our DB that weren't seen in this sync
+        # Find releases for this user that weren't seen in this sync
         # (and aren't already marked as removed)
         removed_releases = Release.query.filter(
+            Release.user_id == self.user_id,
             Release.discogs_id.notin_(seen_ids),
             Release.discogs_removed_at.is_(None),
         ).all()
@@ -254,13 +264,16 @@ class SyncService:
             progress.removed_releases += 1
 
 
-def get_sync_status() -> dict:
+def get_sync_status(user_id: int) -> dict:
     """Get current sync status for the UI.
+
+    Args:
+        user_id: The user to get sync status for
 
     Returns:
         Dict with sync status info
     """
-    latest = SyncProgress.get_latest()
+    latest = SyncProgress.get_latest(user_id=user_id)
 
     if not latest:
         return {

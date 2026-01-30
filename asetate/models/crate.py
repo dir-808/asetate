@@ -37,11 +37,15 @@ class Crate(db.Model):
 
     Supports hierarchical organization through self-referential parent_id.
     Crates can contain whole releases and/or cherry-picked individual tracks.
+    Each crate belongs to a specific user.
     """
 
     __tablename__ = "crates"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     parent_id = db.Column(
         db.Integer, db.ForeignKey("crates.id", ondelete="CASCADE"), index=True
     )  # NULL = top-level crate
@@ -52,6 +56,9 @@ class Crate(db.Model):
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship("User", back_populates="crates")
 
     # Self-referential relationship for hierarchy
     children = db.relationship(
@@ -70,7 +77,7 @@ class Crate(db.Model):
     )
 
     __table_args__ = (
-        db.UniqueConstraint("parent_id", "name", name="unique_name_per_parent"),
+        db.UniqueConstraint("user_id", "parent_id", "name", name="unique_name_per_user_parent"),
     )
 
     def __repr__(self):
