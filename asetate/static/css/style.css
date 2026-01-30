@@ -305,3 +305,162 @@ input:focus, select:focus, textarea:focus {
     background-color: var(--primary);
     color: var(--bg-primary);
 }
+
+/* Page headers */
+.page-header {
+    margin-bottom: var(--space-xl);
+}
+
+.page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+}
+
+/* Sync page */
+.sync-page {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.sync-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 1rem;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--text-muted);
+}
+
+.status-indicator.status-running {
+    background-color: var(--secondary);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-indicator.status-completed {
+    background-color: var(--success);
+}
+
+.status-indicator.status-failed {
+    background-color: var(--error);
+}
+
+.status-indicator.status-paused {
+    background-color: var(--warning);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.sync-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.sync-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    text-align: center;
+}
+
+.sync-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.sync-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.sync-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.sync-error {
+    padding: var(--space-md);
+    background-color: rgba(224, 122, 95, 0.1);
+    border: 1px solid var(--error);
+    border-radius: var(--radius-sm);
+    color: var(--error);
+    font-size: 0.9rem;
+}
+
+.sync-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.sync-info h2 {
+    font-size: 1rem;
+    margin-bottom: var(--space-md);
+}
+
+.info-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.info-list li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    padding-left: var(--space-lg);
+    position: relative;
+}
+
+.info-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+}
+
+/* Disabled button state */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
