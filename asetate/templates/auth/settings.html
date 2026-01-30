@@ -160,6 +160,42 @@
         </p>
     </section>
 
+    <!-- Seller Settings -->
+    <section class="settings-section card">
+        <h2>Seller Settings</h2>
+        <p class="text-muted" style="margin-bottom: var(--space-md);">
+            Enable additional features for Discogs sellers.
+        </p>
+
+        <form action="{{ url_for('auth.save_seller_settings') }}" method="POST" class="seller-settings-form">
+            <div class="form-check">
+                <input type="checkbox"
+                       id="seller_mode"
+                       name="seller_mode"
+                       class="form-check-input"
+                       {% if current_user.is_seller_mode %}checked{% endif %}>
+                <label for="seller_mode" class="form-check-label">
+                    <strong>Enable Seller Mode</strong>
+                    <span class="text-muted">Show additional options for sellers</span>
+                </label>
+            </div>
+
+            <div class="form-check seller-option" id="inventory-url-option" {% if not current_user.is_seller_mode %}style="display: none;"{% endif %}>
+                <input type="checkbox"
+                       id="include_inventory_url"
+                       name="include_inventory_url"
+                       class="form-check-input"
+                       {% if current_user.include_inventory_url %}checked{% endif %}>
+                <label for="include_inventory_url" class="form-check-label">
+                    <strong>Include Inventory URL in Exports</strong>
+                    <span class="text-muted">Add your listing URL to CSV exports (useful for linking labels to your shop)</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-md);">Save Seller Settings</button>
+        </form>
+    </section>
+
     <!-- Account Actions -->
     <section class="settings-section card">
         <h2>Account Actions</h2>
@@ -205,5 +241,45 @@
 .import-form {
     display: inline-block;
 }
+.seller-settings-form .form-check {
+    margin-bottom: var(--space-md);
+}
+.form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+}
+.form-check-input {
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+.form-check-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.form-check-label .text-muted {
+    font-size: 0.85rem;
+}
+.seller-option {
+    margin-left: var(--space-lg);
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--color-border);
+}
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const sellerModeCheckbox = document.getElementById('seller_mode');
+    const inventoryUrlOption = document.getElementById('inventory-url-option');
+
+    if (sellerModeCheckbox && inventoryUrlOption) {
+        sellerModeCheckbox.addEventListener('change', function() {
+            inventoryUrlOption.style.display = this.checked ? 'flex' : 'none';
+        });
+    }
+})();
+</script>
 {% endblock %}

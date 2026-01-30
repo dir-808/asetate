@@ -150,6 +150,7 @@ def track_to_dict(track: Track, columns: list[str]) -> dict:
         "tags": lambda: ", ".join(t.name for t in track.tags),
         "crates": lambda: ", ".join(c.name for c in track.crates),
         "release_url": lambda: release.discogs_uri or f"https://www.discogs.com/release/{release.discogs_id}",
+        "discogs_id": lambda: str(release.discogs_id),
     }
 
     for col in columns:
@@ -172,8 +173,11 @@ def export_page():
     # Get user's presets
     presets = ExportPreset.query.filter_by(user_id=current_user.id).order_by(ExportPreset.name).all()
 
-    # Available columns
+    # Available columns (filter seller columns based on user setting)
     columns = ExportPreset.AVAILABLE_COLUMNS
+    seller_columns = [c[0] for c in ExportPreset.SELLER_COLUMNS]
+    if not current_user.is_seller_mode:
+        columns = [c for c in columns if c[0] not in seller_columns]
     default_columns = ExportPreset.get_default_columns()
 
     return render_template(
@@ -183,6 +187,7 @@ def export_page():
         presets=presets,
         columns=columns,
         default_columns=default_columns,
+        is_seller_mode=current_user.is_seller_mode,
     )
 
 

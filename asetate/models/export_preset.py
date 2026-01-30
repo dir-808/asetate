@@ -68,6 +68,13 @@ class ExportPreset(db.Model):
         ("tags", "Tags"),
         ("crates", "Crates"),
         ("release_url", "Discogs URL"),
+        ("discogs_id", "Discogs ID"),
+    ]
+
+    # Seller-only columns (shown when seller mode enabled)
+    SELLER_COLUMNS = [
+        ("release_url", "Discogs URL"),
+        ("discogs_id", "Discogs ID"),
     ]
 
     @classmethod

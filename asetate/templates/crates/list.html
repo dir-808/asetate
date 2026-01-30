@@ -75,11 +75,22 @@
             <!-- Icon Picker -->
             <div class="form-group">
                 <label>Icon</label>
-                <div class="icon-picker" id="icon-picker">
-                    <button type="button" class="icon-option selected" data-icon="">📁</button>
-                    {% for icon in crate_icons %}
-                    <button type="button" class="icon-option" data-icon="{{ icon }}">{{ icon }}</button>
-                    {% endfor %}
+                <div class="icon-picker-container">
+                    <div class="icon-input-row">
+                        <button type="button" class="icon-preview" id="icon-preview" title="Click to select an emoji">📁</button>
+                        <input type="text"
+                               id="crate-icon-input"
+                               class="icon-text-input"
+                               placeholder="Type or paste any emoji"
+                               maxlength="4">
+                        <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Clear</button>
+                    </div>
+                    <div class="icon-suggestions" id="icon-suggestions">
+                        <span class="suggestions-label">Suggestions:</span>
+                        {% for icon in crate_icons[:20] %}
+                        <button type="button" class="icon-suggestion" data-icon="{{ icon }}">{{ icon }}</button>
+                        {% endfor %}
+                    </div>
                 </div>
                 <input type="hidden" id="crate-icon" name="icon" value="">
             </div>
@@ -123,34 +134,82 @@
     font-size: 1rem;
 }
 
-.icon-picker, .color-picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+.icon-picker-container {
     margin-top: var(--space-xs);
 }
 
-.icon-option {
-    width: 32px;
-    height: 32px;
-    border: 2px solid transparent;
+.icon-input-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.icon-preview {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-bg-secondary);
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: border-color 0.15s;
 }
 
-.icon-option:hover {
-    border-color: var(--color-border);
+.icon-preview:hover {
+    border-color: var(--color-primary);
 }
 
-.icon-option.selected {
-    border-color: var(--color-primary);
-    background: var(--color-primary-light);
+.icon-text-input {
+    flex: 1;
+    max-width: 150px;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.icon-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.suggestions-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-right: var(--space-xs);
+}
+
+.icon-suggestion {
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.icon-suggestion:hover {
+    border-color: var(--color-border);
+    transform: scale(1.1);
+}
+
+.color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: var(--space-xs);
 }
 
 .color-option {
@@ -209,13 +268,56 @@
     const parentName = document.getElementById('parent-name');
     const iconInput = document.getElementById('crate-icon');
     const colorInput = document.getElementById('crate-color');
+    const iconPreview = document.getElementById('icon-preview');
+    const iconTextInput = document.getElementById('crate-icon-input');
+    const clearIconBtn = document.getElementById('clear-icon');
 
-    // Icon picker
-    document.querySelectorAll('.icon-option').forEach(btn => {
+    // Helper to check if a string contains emoji
+    function containsEmoji(str) {
+        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+        return emojiRegex.test(str);
+    }
+
+    // Extract first emoji from string
+    function extractFirstEmoji(str) {
+        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+        const match = str.match(emojiRegex);
+        return match ? match[0] : null;
+    }
+
+    // Update icon from text input
+    function updateIconFromInput() {
+        const value = iconTextInput.value.trim();
+        if (value) {
+            const emoji = extractFirstEmoji(value);
+            if (emoji) {
+                iconInput.value = emoji;
+                iconPreview.textContent = emoji;
+                iconTextInput.value = emoji;
+            }
+        }
+    }
+
+    // Icon text input handler
+    iconTextInput.addEventListener('input', updateIconFromInput);
+    iconTextInput.addEventListener('paste', () => {
+        setTimeout(updateIconFromInput, 0);
+    });
+
+    // Clear icon button
+    clearIconBtn.addEventListener('click', () => {
+        iconInput.value = '';
+        iconPreview.textContent = '📁';
+        iconTextInput.value = '';
+    });
+
+    // Icon suggestions
+    document.querySelectorAll('.icon-suggestion').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            iconInput.value = btn.dataset.icon;
+            const icon = btn.dataset.icon;
+            iconInput.value = icon;
+            iconPreview.textContent = icon;
+            iconTextInput.value = icon;
         });
     });
 
@@ -253,14 +355,14 @@
     function closeModal() {
         modal.classList.remove('open');
         form.reset();
-        // Reset icon and color selection
-        document.querySelectorAll('.icon-option').forEach((b, i) => {
-            b.classList.toggle('selected', i === 0);
-        });
+        // Reset icon picker
+        iconInput.value = '';
+        iconPreview.textContent = '📁';
+        iconTextInput.value = '';
+        // Reset color selection
         document.querySelectorAll('.color-option').forEach((b, i) => {
             b.classList.toggle('selected', i === 0);
         });
-        iconInput.value = '';
         colorInput.value = '';
     }
 

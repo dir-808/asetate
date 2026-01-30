@@ -330,3 +330,25 @@ def import_data():
         flash("Failed to import data. Please check the file format.", "error")
 
     return redirect(url_for("auth.settings"))
+
+
+# =============================================================================
+# Seller Settings
+# =============================================================================
+
+
+@bp.route("/settings/seller", methods=["POST"])
+@login_required
+def save_seller_settings():
+    """Save seller-related settings."""
+    seller_mode = request.form.get("seller_mode") == "on"
+    include_inventory_url = request.form.get("include_inventory_url") == "on"
+
+    current_user.update_seller_settings(
+        seller_mode=seller_mode,
+        include_inventory_url=include_inventory_url,
+    )
+    db.session.commit()
+
+    flash("Seller settings saved.", "success")
+    return redirect(url_for("auth.settings"))

@@ -30,6 +30,10 @@ class User(UserMixin, db.Model):
     # Personal Access Token (used in self-hosted/PAT mode)
     _personal_token_encrypted = db.Column("personal_token", db.String(500))
 
+    # User preferences (stored as JSON)
+    # Example: {"seller_mode": true, "include_inventory_url": true}
+    preferences = db.Column(db.JSON, nullable=False, default=dict)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     last_login = db.Column(db.DateTime, default=datetime.utcnow)
@@ -145,3 +149,28 @@ class User(UserMixin, db.Model):
     def discogs_token_secret(self) -> str:
         """Get the OAuth token secret (empty for PAT mode)."""
         return self.oauth_token_secret
+
+    # =========================================================================
+    # Seller settings helpers
+    # =========================================================================
+
+    @property
+    def is_seller_mode(self) -> bool:
+        """Check if seller mode is enabled."""
+        prefs = self.preferences or {}
+        return prefs.get("seller_mode", False)
+
+    @property
+    def include_inventory_url(self) -> bool:
+        """Check if inventory URL should be included in exports."""
+        prefs = self.preferences or {}
+        return prefs.get("include_inventory_url", False)
+
+    def update_seller_settings(self, seller_mode: bool = None, include_inventory_url: bool = None):
+        """Update seller-related preferences."""
+        prefs = dict(self.preferences or {})
+        if seller_mode is not None:
+            prefs["seller_mode"] = seller_mode
+        if include_inventory_url is not None:
+            prefs["include_inventory_url"] = include_inventory_url
+        self.preferences = prefs
