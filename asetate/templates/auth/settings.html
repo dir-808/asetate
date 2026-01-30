@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Asetate{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <header class="page-header">
+        <h1>Settings</h1>
+        <p class="text-secondary">Manage your account and Discogs connection</p>
+    </header>
+
+    <!-- Account Info -->
+    <section class="settings-section card">
+        <h2>Account</h2>
+        <div class="account-info">
+            {% if current_user.picture %}
+            <img src="{{ current_user.picture }}" alt="Profile" class="account-avatar">
+            {% endif %}
+            <div class="account-details">
+                <p class="account-name">{{ current_user.name or 'User' }}</p>
+                <p class="account-email text-secondary">{{ current_user.email }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Discogs Connection -->
+    <section class="settings-section card">
+        <h2>Discogs Connection</h2>
+
+        {% if current_user.has_discogs_credentials %}
+        <div class="discogs-connected">
+            <div class="connection-status">
+                <span class="status-indicator status-completed"></span>
+                <span>Connected as <strong>{{ current_user.discogs_username }}</strong></span>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-disconnect">Disconnect</button>
+        </div>
+        {% else %}
+        <p class="text-muted">Connect your Discogs account to sync your vinyl collection.</p>
+        {% endif %}
+
+        <form id="discogs-form" class="discogs-form {% if current_user.has_discogs_credentials %}hidden{% endif %}">
+            <div class="form-group">
+                <label for="discogs-username">Discogs Username</label>
+                <input type="text" id="discogs-username" placeholder="Your Discogs username"
+                    value="{{ current_user.discogs_username or '' }}">
+            </div>
+            <div class="form-group">
+                <label for="discogs-token">
+                    Personal Access Token
+                    <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener" class="text-secondary">
+                        (Get one here)
+                    </a>
+                </label>
+                <input type="password" id="discogs-token" placeholder="Your Discogs token"
+                    value="{{ current_user.discogs_token or '' }}">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Credentials</button>
+                <span class="save-status" id="save-status"></span>
+            </div>
+        </form>
+    </section>
+
+    <!-- Danger Zone -->
+    <section class="settings-section card">
+        <h2>Account Actions</h2>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Sign Out</a>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const form = document.getElementById('discogs-form');
+    const saveStatus = document.getElementById('save-status');
+    const disconnectBtn = document.getElementById('btn-disconnect');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('discogs-username').value.trim();
+        const token = document.getElementById('discogs-token').value.trim();
+
+        if (!username || !token) {
+            saveStatus.textContent = 'Please fill in both fields';
+            saveStatus.className = 'save-status error';
+            return;
+        }
+
+        saveStatus.textContent = 'Saving...';
+        saveStatus.className = 'save-status saving';
+
+        try {
+            const response = await fetch('/auth/settings/discogs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, token }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                saveStatus.textContent = 'Saved!';
+                saveStatus.className = 'save-status saved';
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                saveStatus.textContent = result.error || 'Failed to save';
+                saveStatus.className = 'save-status error';
+            }
+        } catch (err) {
+            saveStatus.textContent = 'Network error';
+            saveStatus.className = 'save-status error';
+        }
+    });
+
+    if (disconnectBtn) {
+        disconnectBtn.addEventListener('click', async () => {
+            if (!confirm('Disconnect your Discogs account? Your collection data will remain.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/settings/discogs', { method: 'DELETE' });
+                if (response.ok) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                alert('Failed to disconnect');
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

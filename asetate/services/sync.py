@@ -21,13 +21,22 @@ class SyncService:
     - Progress tracking and resume capability
     """
 
-    def __init__(self, progress_callback: Callable[[SyncProgress], None] | None = None):
+    def __init__(
+        self,
+        discogs_token: str | None = None,
+        discogs_username: str | None = None,
+        progress_callback: Callable[[SyncProgress], None] | None = None,
+    ):
         """Initialize the sync service.
 
         Args:
+            discogs_token: Discogs personal access token. If None, reads from config.
+            discogs_username: Discogs username. If None, fetches from API.
             progress_callback: Optional callback called after each release is processed.
                               Receives the current SyncProgress object.
         """
+        self.discogs_token = discogs_token
+        self.discogs_username = discogs_username
         self.progress_callback = progress_callback
         self.client: DiscogsClient | None = None
 
@@ -40,8 +49,8 @@ class SyncService:
         Returns:
             SyncProgress object tracking this sync
         """
-        self.client = DiscogsClient()
-        username = self.client.get_username()
+        self.client = DiscogsClient(user_token=self.discogs_token)
+        username = self.discogs_username or self.client.get_username()
 
         # Get or create sync progress
         if resume:

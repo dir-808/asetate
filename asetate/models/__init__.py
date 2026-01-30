@@ -6,6 +6,7 @@ from .crate import Crate, crate_releases, crate_tracks
 from .tag import Tag, track_tags
 from .export_preset import ExportPreset
 from .sync_progress import SyncProgress
+from .user import User
 
 __all__ = [
     "Release",
@@ -17,4 +18,5 @@ __all__ = [
     "track_tags",
     "ExportPreset",
     "SyncProgress",
+    "User",
 ]

@@ -1763,3 +1763,180 @@ input:focus, select:focus, textarea:focus {
 .text-error {
     color: var(--error);
 }
+
+/* ============================================
+   AUTH & USER
+   ============================================ */
+
+.nav-user {
+    display: flex;
+    align-items: center;
+}
+
+.user-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: color 0.15s ease;
+}
+
+.user-link:hover {
+    color: var(--text-primary);
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Flash Messages */
+.flash-messages {
+    padding: var(--space-md) var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.flash {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+}
+
+.flash-success {
+    background-color: rgba(129, 178, 154, 0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.flash-error {
+    background-color: rgba(224, 122, 95, 0.15);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.flash-info {
+    background-color: rgba(242, 204, 143, 0.15);
+    border: 1px solid var(--secondary);
+    color: var(--secondary);
+}
+
+.flash-warning {
+    background-color: rgba(242, 204, 143, 0.15);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+}
+
+/* Settings Page */
+.settings-page {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.settings-section h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border);
+}
+
+/* Account Info */
+.account-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.account-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.account-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.account-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.account-email {
+    font-size: 0.9rem;
+}
+
+/* Discogs Connection */
+.discogs-connected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background-color: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-md);
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.discogs-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.discogs-form.hidden {
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.save-status {
+    font-size: 0.85rem;
+    transition: color 0.15s ease;
+}
+
+.save-status.saving {
+    color: var(--secondary);
+}
+
+.save-status.saved {
+    color: var(--success);
+}
+
+.save-status.error {
+    color: var(--error);
+}
+
+/* Hidden utility */
+.hidden {
+    display: none !important;
+}

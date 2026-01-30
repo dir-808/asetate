@@ -3,6 +3,7 @@
 import threading
 
 from flask import Blueprint, render_template, jsonify, current_app
+from flask_login import login_required, current_user
 
 from asetate import db
 from asetate.services import SyncService, get_sync_status, DiscogsAuthError, DiscogsRateLimitError
@@ -17,6 +18,7 @@ _sync_thread: threading.Thread | None = None
 
 
 @bp.route("/")
+@login_required
 def sync_page():
     """View current sync status and history."""
     status = get_sync_status()
@@ -30,6 +32,7 @@ def sync_status_api():
 
 
 @bp.route("/start", methods=["POST"])
+@login_required
 def start_sync():
     """Start a new Discogs collection sync.
 
@@ -41,15 +44,22 @@ def start_sync():
     if _sync_thread and _sync_thread.is_alive():
         return jsonify({"error": "Sync already in progress"}), 409
 
-    # Check for valid token
-    if not current_app.config.get("DISCOGS_USER_TOKEN"):
-        return jsonify({"error": "Discogs token not configured"}), 400
+    # Check for valid credentials
+    if not current_user.has_discogs_credentials:
+        return jsonify({"error": "Discogs credentials not configured. Go to Settings to add them."}), 400
+
+    # Capture credentials for background thread
+    discogs_token = current_user.discogs_token
+    discogs_username = current_user.discogs_username
 
     # Start sync in background thread
     def run_sync():
         with current_app.app_context():
             try:
-                service = SyncService()
+                service = SyncService(
+                    discogs_token=discogs_token,
+                    discogs_username=discogs_username
+                )
                 service.start_sync(resume=False)
             except DiscogsAuthError as e:
                 # Update progress with error
@@ -73,6 +83,7 @@ def start_sync():
 
 
 @bp.route("/resume", methods=["POST"])
+@login_required
 def resume_sync():
     """Resume a paused or failed sync."""
     global _sync_thread
@@ -81,16 +92,27 @@ def resume_sync():
     if _sync_thread and _sync_thread.is_alive():
         return jsonify({"error": "Sync already in progress"}), 409
 
+    # Check for valid credentials
+    if not current_user.has_discogs_credentials:
+        return jsonify({"error": "Discogs credentials not configured. Go to Settings to add them."}), 400
+
     # Check if there's something to resume
     latest = SyncProgress.get_latest()
     if not latest or not latest.can_resume:
         return jsonify({"error": "No sync to resume"}), 400
 
+    # Capture credentials for background thread
+    discogs_token = current_user.discogs_token
+    discogs_username = current_user.discogs_username
+
     # Start sync in background thread
     def run_sync():
         with current_app.app_context():
             try:
-                service = SyncService()
+                service = SyncService(
+                    discogs_token=discogs_token,
+                    discogs_username=discogs_username
+                )
                 service.start_sync(resume=True)
             except DiscogsRateLimitError:
                 pass  # Already handled
@@ -107,6 +129,7 @@ def resume_sync():
 
 
 @bp.route("/cancel", methods=["POST"])
+@login_required
 def cancel_sync():
     """Cancel/pause the current sync."""
     latest = SyncProgress.get_latest()
@@ -119,6 +142,7 @@ def cancel_sync():
 
 
 @bp.route("/history")
+@login_required
 def sync_history():
     """Get sync history."""
     history = SyncProgress.query.order_by(SyncProgress.created_at.desc()).limit(10).all()
