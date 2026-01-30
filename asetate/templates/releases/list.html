@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Collection - Asetate{% endblock %}
+
+{% block content %}
+<div class="releases-page">
+    <header class="page-header">
+        <h1>Your Collection</h1>
+        <p class="text-secondary">Browse and manage your vinyl releases</p>
+    </header>
+
+    <div class="releases-toolbar">
+        <input type="search" placeholder="Search releases..." class="search-input">
+        <select class="filter-select">
+            <option value="">All releases</option>
+            <option value="playable">Has playable tracks</option>
+            <option value="untagged">Needs BPM/key</option>
+        </select>
+    </div>
+
+    <div class="releases-grid">
+        <p class="text-muted">No releases yet. Pull your collection from Discogs to get started.</p>
+    </div>
+</div>
+{% endblock %}

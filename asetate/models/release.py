@@ -1,0 +1,73 @@
+"""Release model - vinyl records synced from Discogs."""
+
+from datetime import datetime
+
+from asetate import db
+
+
+class Release(db.Model):
+    """A vinyl release from the user's Discogs collection.
+
+    Stores both Discogs metadata and user corrections. The discogs_id
+    is used as the unique identifier for syncing to prevent duplicates.
+    """
+
+    __tablename__ = "releases"
+
+    id = db.Column(db.Integer, primary_key=True)
+    discogs_id = db.Column(db.Integer, unique=True, nullable=False, index=True)
+
+    # Discogs metadata
+    title = db.Column(db.String(500), nullable=False)
+    artist = db.Column(db.String(500), nullable=False)
+    label = db.Column(db.String(500))
+    year = db.Column(db.Integer)
+    cover_art_url = db.Column(db.String(1000))
+    discogs_uri = db.Column(db.String(500))
+
+    # User corrections (JSON) - local overrides for incorrect Discogs data
+    # Format: {"title": "Corrected Title", "artist": "Corrected Artist", ...}
+    user_corrections = db.Column(db.JSON)
+
+    # Sync tracking
+    synced_at = db.Column(db.DateTime)
+    discogs_removed_at = db.Column(db.DateTime)  # Set when removed from Discogs collection
+    kept_after_removal = db.Column(db.Boolean)  # User chose to keep locally
+
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationships
+    tracks = db.relationship(
+        "Track", back_populates="release", cascade="all, delete-orphan", lazy="dynamic"
+    )
+
+    def __repr__(self):
+        return f"<Release {self.artist} - {self.title}>"
+
+    @property
+    def display_title(self) -> str:
+        """Return corrected title if available, otherwise Discogs title."""
+        if self.user_corrections and "title" in self.user_corrections:
+            return self.user_corrections["title"]
+        return self.title
+
+    @property
+    def display_artist(self) -> str:
+        """Return corrected artist if available, otherwise Discogs artist."""
+        if self.user_corrections and "artist" in self.user_corrections:
+            return self.user_corrections["artist"]
+        return self.artist
+
+    @property
+    def is_removed_from_discogs(self) -> bool:
+        """Check if this release was removed from the Discogs collection."""
+        return self.discogs_removed_at is not None
+
+    @property
+    def discogs_edit_url(self) -> str | None:
+        """URL to edit this release on Discogs."""
+        if self.discogs_id:
+            return f"https://www.discogs.com/release/{self.discogs_id}/edit"
+        return None
