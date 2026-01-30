@@ -151,6 +151,12 @@ def track_to_dict(track: Track, columns: list[str]) -> dict:
         "crates": lambda: ", ".join(c.name for c in track.crates),
         "release_url": lambda: release.discogs_uri or f"https://www.discogs.com/release/{release.discogs_id}",
         "discogs_id": lambda: str(release.discogs_id),
+        # Inventory fields (seller mode)
+        "condition": lambda: release.condition or "",
+        "sleeve_condition": lambda: release.sleeve_condition or "",
+        "price": lambda: release.price or "",
+        "location": lambda: release.location or "",
+        "listing_url": lambda: release.listing_url or "",
     }
 
     for col in columns:

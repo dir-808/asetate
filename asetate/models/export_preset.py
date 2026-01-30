@@ -69,12 +69,24 @@ class ExportPreset(db.Model):
         ("crates", "Crates"),
         ("release_url", "Discogs URL"),
         ("discogs_id", "Discogs ID"),
+        # Inventory columns (seller mode only)
+        ("condition", "Condition"),
+        ("sleeve_condition", "Sleeve Condition"),
+        ("price", "Price"),
+        ("location", "Location/Bin"),
+        ("listing_url", "Listing URL"),
     ]
 
     # Seller-only columns (shown when seller mode enabled)
     # Note: release_url is available to everyone, only inventory-specific columns here
+    # These columns require inventory sync to be populated
     SELLER_COLUMNS = [
         ("discogs_id", "Discogs ID"),
+        ("condition", "Condition"),
+        ("sleeve_condition", "Sleeve Condition"),
+        ("price", "Price"),
+        ("location", "Location/Bin"),
+        ("listing_url", "Listing URL"),
     ]
 
     @classmethod

@@ -73,6 +73,55 @@
             <li>Discogs limits requests to 60/minute - large collections may take a while</li>
         </ul>
     </section>
+
+    {% if current_user.is_seller_mode %}
+    <!-- Inventory Sync Section (Seller Mode) -->
+    <div class="inventory-sync-section">
+        <header class="section-header">
+            <h2>Inventory Sync</h2>
+            <span class="badge badge-seller">Seller Mode</span>
+        </header>
+
+        <div class="sync-card card" id="inventory-sync-card">
+            <div class="sync-status">
+                <span class="status-indicator" id="inv-status-indicator"></span>
+                <span class="status-text" id="inv-status-text">Ready to sync inventory</span>
+            </div>
+
+            <div class="inventory-stats" id="inventory-stats">
+                <div class="sync-stat">
+                    <span class="sync-stat-value" id="inv-stat-synced">0</span>
+                    <span class="sync-stat-label">Items Listed</span>
+                </div>
+                <div class="sync-stat">
+                    <span class="sync-stat-value" id="inv-stat-last-sync">Never</span>
+                    <span class="sync-stat-label">Last Sync</span>
+                </div>
+            </div>
+
+            <div class="sync-actions">
+                <button class="btn btn-primary" id="btn-inventory-sync">
+                    Sync Inventory
+                </button>
+            </div>
+
+            <p class="text-secondary inventory-note">
+                Pulls condition, sleeve condition, price, and location for items listed on your Discogs inventory.
+                Update these values in Discogs, then sync here to keep your local data current.
+            </p>
+        </div>
+
+        <div class="sync-info card">
+            <h3>Inventory vs Collection</h3>
+            <ul class="info-list">
+                <li><strong>Collection sync</strong> pulls all records you own from Discogs</li>
+                <li><strong>Inventory sync</strong> only pulls data for items listed for sale</li>
+                <li>To update condition/price, edit the listing on Discogs then sync</li>
+                <li>You can also sync individual releases from the release detail page</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -225,5 +274,108 @@
     startPolling();
     {% endif %}
 })();
+
+{% if current_user.is_seller_mode %}
+// Inventory Sync functionality
+(function() {
+    const invStatusText = document.getElementById('inv-status-text');
+    const invStatusIndicator = document.getElementById('inv-status-indicator');
+    const invStatSynced = document.getElementById('inv-stat-synced');
+    const invStatLastSync = document.getElementById('inv-stat-last-sync');
+    const btnInventorySync = document.getElementById('btn-inventory-sync');
+
+    let invPollInterval = null;
+
+    function formatDate(isoString) {
+        if (!isoString) return 'Never';
+        const date = new Date(isoString);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    function updateInventoryUI(status) {
+        invStatSynced.textContent = status.items_synced || 0;
+        invStatLastSync.textContent = formatDate(status.last_sync);
+
+        if (status.is_running) {
+            invStatusIndicator.className = 'status-indicator status-running';
+            invStatusText.textContent = status.message || 'Syncing...';
+            btnInventorySync.disabled = true;
+            btnInventorySync.textContent = 'Syncing...';
+        } else if (status.status === 'completed') {
+            invStatusIndicator.className = 'status-indicator status-completed';
+            invStatusText.textContent = status.message || 'Sync complete';
+            btnInventorySync.disabled = false;
+            btnInventorySync.textContent = 'Sync Inventory';
+        } else if (status.status === 'failed') {
+            invStatusIndicator.className = 'status-indicator status-failed';
+            invStatusText.textContent = status.message || 'Sync failed';
+            btnInventorySync.disabled = false;
+            btnInventorySync.textContent = 'Sync Inventory';
+        } else {
+            invStatusIndicator.className = 'status-indicator';
+            invStatusText.textContent = 'Ready to sync inventory';
+            btnInventorySync.disabled = false;
+            btnInventorySync.textContent = 'Sync Inventory';
+        }
+
+        // Start/stop polling
+        if (status.is_running && !invPollInterval) {
+            startInventoryPolling();
+        } else if (!status.is_running && invPollInterval) {
+            stopInventoryPolling();
+        }
+    }
+
+    function startInventoryPolling() {
+        if (invPollInterval) return;
+        invPollInterval = setInterval(fetchInventoryStatus, 2000);
+    }
+
+    function stopInventoryPolling() {
+        if (invPollInterval) {
+            clearInterval(invPollInterval);
+            invPollInterval = null;
+        }
+    }
+
+    async function fetchInventoryStatus() {
+        try {
+            const response = await fetch('/sync/inventory/status');
+            const status = await response.json();
+            updateInventoryUI(status);
+        } catch (err) {
+            console.error('Failed to fetch inventory status:', err);
+        }
+    }
+
+    async function startInventorySync() {
+        btnInventorySync.disabled = true;
+        btnInventorySync.textContent = 'Starting...';
+
+        try {
+            const response = await fetch('/sync/inventory/start', { method: 'POST' });
+            const result = await response.json();
+
+            if (response.ok) {
+                startInventoryPolling();
+                fetchInventoryStatus();
+            } else {
+                alert(result.error || 'Failed to start inventory sync');
+                btnInventorySync.disabled = false;
+                btnInventorySync.textContent = 'Sync Inventory';
+            }
+        } catch (err) {
+            alert('Failed to start inventory sync: ' + err.message);
+            btnInventorySync.disabled = false;
+            btnInventorySync.textContent = 'Sync Inventory';
+        }
+    }
+
+    btnInventorySync.addEventListener('click', startInventorySync);
+
+    // Fetch initial status
+    fetchInventoryStatus();
+})();
+{% endif %}
 </script>
 {% endblock %}

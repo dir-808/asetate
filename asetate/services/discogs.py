@@ -43,6 +43,20 @@ class DiscogsRelease:
     tracks: list[dict]
 
 
+@dataclass
+class InventoryItem:
+    """An inventory item from the Discogs Inventory API (items for sale)."""
+
+    listing_id: int
+    release_id: int
+    condition: str  # e.g., "Mint (M)", "Near Mint (NM or M-)", etc.
+    sleeve_condition: str | None
+    price: str  # e.g., "£25.00" or "$30.00"
+    location: str | None  # Seller's bin/shelf location
+    comments: str | None  # Listing comments/notes
+    status: str  # e.g., "For Sale", "Draft"
+
+
 class DiscogsClient:
     """Client for interacting with the Discogs API.
 
@@ -359,3 +373,147 @@ class DiscogsClient:
         import re
 
         return re.sub(r"\s*\(\d+\)$", "", name)
+
+    # =========================================================================
+    # Inventory API Methods
+    # =========================================================================
+
+    def get_inventory_page(
+        self, username: str, page: int = 1, per_page: int = 100, status: str = "for sale"
+    ) -> dict:
+        """Get a single page of inventory listings.
+
+        Args:
+            username: Discogs username
+            page: Page number (1-indexed)
+            per_page: Results per page (max 100)
+            status: Filter by status ("for sale", "draft", "all")
+
+        Returns:
+            Response with listings and pagination info
+        """
+        params = {
+            "page": page,
+            "per_page": per_page,
+            "sort": "listed",
+            "sort_order": "desc",
+        }
+        if status != "all":
+            params["status"] = status
+
+        return self._request(
+            "GET",
+            f"/users/{username}/inventory",
+            params=params,
+        )
+
+    def iter_inventory(
+        self, username: str, per_page: int = 100, start_page: int = 1, status: str = "for sale"
+    ) -> Iterator[tuple[dict, int, int]]:
+        """Iterate through all inventory listings.
+
+        Yields listings one at a time with pagination info for progress tracking.
+
+        Args:
+            username: Discogs username
+            per_page: Results per page
+            start_page: Page to start from (for resuming)
+            status: Filter by status ("for sale", "draft", "all")
+
+        Yields:
+            Tuple of (listing_data, current_count, total_count)
+        """
+        page = start_page
+        total_count = None
+        processed = (start_page - 1) * per_page
+
+        while True:
+            response = self.get_inventory_page(username, page, per_page, status)
+            pagination = response.get("pagination", {})
+
+            if total_count is None:
+                total_count = pagination.get("items", 0)
+
+            listings = response.get("listings", [])
+            if not listings:
+                break
+
+            for listing in listings:
+                processed += 1
+                yield listing, processed, total_count
+
+            # Check if there are more pages
+            if page >= pagination.get("pages", 1):
+                break
+
+            page += 1
+
+    def get_listing(self, listing_id: int) -> dict:
+        """Get detailed info for a specific listing.
+
+        Args:
+            listing_id: Discogs listing ID
+
+        Returns:
+            Full listing data
+        """
+        return self._request("GET", f"/marketplace/listings/{listing_id}")
+
+    def get_inventory_for_release(self, username: str, release_id: int) -> InventoryItem | None:
+        """Find inventory listing for a specific release.
+
+        Searches the user's inventory for a listing matching the given release ID.
+        Note: This may require paginating through all inventory if the user has many listings.
+
+        Args:
+            username: Discogs username
+            release_id: Discogs release ID to find
+
+        Returns:
+            InventoryItem if found, None otherwise
+        """
+        # Discogs doesn't have a direct endpoint to get inventory by release_id,
+        # so we need to iterate through inventory pages
+        for listing, _, _ in self.iter_inventory(username, per_page=100):
+            if listing.get("release", {}).get("id") == release_id:
+                return self.parse_inventory_item(listing)
+        return None
+
+    def parse_inventory_item(self, listing: dict) -> InventoryItem:
+        """Parse an inventory listing into an InventoryItem.
+
+        Args:
+            listing: Listing data from inventory endpoint
+
+        Returns:
+            Parsed InventoryItem object
+        """
+        release = listing.get("release", {})
+        price_info = listing.get("price", {})
+
+        # Format price with currency symbol
+        price_value = price_info.get("value", 0)
+        currency = price_info.get("currency", "USD")
+
+        # Common currency symbols
+        currency_symbols = {
+            "USD": "$",
+            "GBP": "£",
+            "EUR": "€",
+            "CAD": "C$",
+            "AUD": "A$",
+            "JPY": "¥",
+        }
+        symbol = currency_symbols.get(currency, currency + " ")
+        formatted_price = f"{symbol}{price_value:.2f}"
+
+        return InventoryItem(
+            listing_id=listing.get("id"),
+            release_id=release.get("id"),
+            condition=listing.get("condition", "Unknown"),
+            sleeve_condition=listing.get("sleeve_condition"),
+            price=formatted_price,
+            location=listing.get("location"),
+            comments=listing.get("comments"),
+            status=listing.get("status", "For Sale"),
+        )

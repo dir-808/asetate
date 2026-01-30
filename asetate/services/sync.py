@@ -6,7 +6,12 @@ from typing import Callable
 from asetate import db
 from asetate.models import Release, Track, SyncProgress
 from asetate.models.sync_progress import SyncStatus
-from asetate.services.discogs import DiscogsClient, DiscogsRelease, DiscogsRateLimitError
+from asetate.services.discogs import (
+    DiscogsClient,
+    DiscogsRelease,
+    DiscogsRateLimitError,
+    InventoryItem,
+)
 
 import time
 
@@ -356,3 +361,224 @@ def _get_status_message(progress: SyncProgress) -> str:
         return f"Sync failed: {progress.last_error}"
     else:
         return "Ready to sync"
+
+
+# =============================================================================
+# Inventory Sync Service
+# =============================================================================
+
+
+class InventorySyncService:
+    """Service for syncing Discogs inventory data to local releases.
+
+    Updates existing releases with inventory information:
+    - listing_id, condition, sleeve_condition, price, location
+
+    This is separate from collection sync - inventory only covers items for sale.
+    """
+
+    def __init__(
+        self,
+        user_id: int,
+        discogs_username: str,
+        oauth_token: str | None = None,
+        oauth_token_secret: str | None = None,
+        personal_token: str | None = None,
+    ):
+        """Initialize the inventory sync service.
+
+        Args:
+            user_id: The user ID to sync for.
+            discogs_username: Discogs username.
+            oauth_token: Discogs OAuth access token (for OAuth mode).
+            oauth_token_secret: Discogs OAuth access token secret (for OAuth mode).
+            personal_token: Discogs Personal Access Token (for PAT mode).
+        """
+        self.user_id = user_id
+        self.discogs_username = discogs_username
+        self.oauth_token = oauth_token
+        self.oauth_token_secret = oauth_token_secret
+        self.personal_token = personal_token
+        self.client: DiscogsClient | None = None
+
+    @classmethod
+    def from_user(cls, user) -> "InventorySyncService":
+        """Create an InventorySyncService from a User object.
+
+        Args:
+            user: User model instance
+
+        Returns:
+            Configured InventorySyncService
+        """
+        if user._personal_token_encrypted:
+            return cls(
+                user_id=user.id,
+                discogs_username=user.discogs_username,
+                personal_token=user.personal_token,
+            )
+        else:
+            return cls(
+                user_id=user.id,
+                discogs_username=user.discogs_username,
+                oauth_token=user.oauth_token,
+                oauth_token_secret=user.oauth_token_secret,
+            )
+
+    def _get_client(self) -> DiscogsClient:
+        """Get or create the Discogs client."""
+        if self.client is None:
+            if self.personal_token:
+                self.client = DiscogsClient(personal_token=self.personal_token)
+            else:
+                self.client = DiscogsClient(
+                    oauth_token=self.oauth_token,
+                    oauth_token_secret=self.oauth_token_secret,
+                )
+        return self.client
+
+    def sync_full_inventory(self) -> dict:
+        """Sync all inventory data to matching releases.
+
+        Returns:
+            Stats dict with counts: matched, not_found, cleared
+        """
+        client = self._get_client()
+
+        stats = {
+            "matched": 0,      # Releases updated with inventory data
+            "not_found": 0,    # Inventory items without matching release in collection
+            "cleared": 0,      # Releases no longer in inventory (data cleared)
+            "total_listings": 0,
+        }
+
+        # Track which release IDs we see in inventory
+        seen_release_ids = set()
+
+        # Iterate through all inventory listings
+        for listing, processed, total in client.iter_inventory(self.discogs_username):
+            stats["total_listings"] = total
+
+            release_id = listing.get("release", {}).get("id")
+            if not release_id:
+                continue
+
+            seen_release_ids.add(release_id)
+            inventory_item = client.parse_inventory_item(listing)
+
+            # Find matching release in user's collection
+            release = Release.query.filter_by(
+                user_id=self.user_id,
+                discogs_id=release_id,
+            ).first()
+
+            if release:
+                release.update_inventory_data(
+                    listing_id=inventory_item.listing_id,
+                    condition=inventory_item.condition,
+                    sleeve_condition=inventory_item.sleeve_condition,
+                    price=inventory_item.price,
+                    location=inventory_item.location,
+                )
+                stats["matched"] += 1
+            else:
+                stats["not_found"] += 1
+
+        # Clear inventory data for releases no longer in inventory
+        releases_with_inventory = Release.query.filter(
+            Release.user_id == self.user_id,
+            Release.listing_id.isnot(None),
+            Release.discogs_id.notin_(seen_release_ids) if seen_release_ids else True,
+        ).all()
+
+        for release in releases_with_inventory:
+            release.clear_inventory_data()
+            stats["cleared"] += 1
+
+        db.session.commit()
+        return stats
+
+    def sync_single_release(self, release_id: int) -> dict:
+        """Sync inventory data for a single release.
+
+        Args:
+            release_id: The local Release.id (not discogs_id)
+
+        Returns:
+            Status dict with result info
+        """
+        client = self._get_client()
+
+        # Find the release
+        release = Release.query.filter_by(
+            id=release_id,
+            user_id=self.user_id,
+        ).first()
+
+        if not release:
+            return {"success": False, "error": "Release not found"}
+
+        # Search inventory for this release
+        inventory_item = client.get_inventory_for_release(
+            self.discogs_username,
+            release.discogs_id,
+        )
+
+        if inventory_item:
+            release.update_inventory_data(
+                listing_id=inventory_item.listing_id,
+                condition=inventory_item.condition,
+                sleeve_condition=inventory_item.sleeve_condition,
+                price=inventory_item.price,
+                location=inventory_item.location,
+            )
+            db.session.commit()
+            return {
+                "success": True,
+                "found": True,
+                "condition": inventory_item.condition,
+                "price": inventory_item.price,
+            }
+        else:
+            # Clear inventory data if no longer listed
+            if release.listing_id:
+                release.clear_inventory_data()
+                db.session.commit()
+                return {
+                    "success": True,
+                    "found": False,
+                    "message": "Item no longer listed for sale - inventory data cleared",
+                }
+            return {
+                "success": True,
+                "found": False,
+                "message": "Item not found in inventory",
+            }
+
+
+def get_inventory_sync_status(user_id: int) -> dict:
+    """Get inventory sync status for the UI.
+
+    Args:
+        user_id: The user to get status for
+
+    Returns:
+        Dict with inventory sync info
+    """
+    # Count releases with inventory data
+    releases_with_inventory = Release.query.filter(
+        Release.user_id == user_id,
+        Release.listing_id.isnot(None),
+    ).count()
+
+    # Get most recent inventory sync time
+    latest_sync = db.session.query(
+        db.func.max(Release.inventory_synced_at)
+    ).filter(
+        Release.user_id == user_id,
+    ).scalar()
+
+    return {
+        "items_synced": releases_with_inventory,
+        "last_sync": latest_sync.isoformat() if latest_sync else None,
+    }

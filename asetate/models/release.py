@@ -38,6 +38,14 @@ class Release(db.Model):
     discogs_removed_at = db.Column(db.DateTime)  # Set when removed from Discogs collection
     kept_after_removal = db.Column(db.Boolean)  # User chose to keep locally
 
+    # Inventory data (from Discogs Inventory API - only for items listed for sale)
+    listing_id = db.Column(db.Integer, index=True)  # Discogs listing ID
+    condition = db.Column(db.String(50))  # e.g., "Mint (M)", "Near Mint (NM or M-)"
+    sleeve_condition = db.Column(db.String(50))  # Same scale as condition
+    price = db.Column(db.String(50))  # e.g., "£25.00" - stored with currency
+    location = db.Column(db.String(200))  # Seller's bin/shelf location
+    inventory_synced_at = db.Column(db.DateTime)  # Last inventory sync timestamp
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
@@ -81,3 +89,47 @@ class Release(db.Model):
         if self.discogs_id:
             return f"https://www.discogs.com/release/{self.discogs_id}/edit"
         return None
+
+    @property
+    def discogs_release_url(self) -> str | None:
+        """URL to view this release on Discogs."""
+        if self.discogs_id:
+            return f"https://www.discogs.com/release/{self.discogs_id}"
+        return None
+
+    @property
+    def listing_url(self) -> str | None:
+        """URL to the Discogs listing (only if listed for sale)."""
+        if self.listing_id:
+            return f"https://www.discogs.com/sell/item/{self.listing_id}"
+        return None
+
+    @property
+    def is_for_sale(self) -> bool:
+        """Check if this release is currently listed for sale."""
+        return self.listing_id is not None
+
+    def clear_inventory_data(self):
+        """Clear inventory data (e.g., when item is no longer for sale)."""
+        self.listing_id = None
+        self.condition = None
+        self.sleeve_condition = None
+        self.price = None
+        self.location = None
+        self.inventory_synced_at = None
+
+    def update_inventory_data(
+        self,
+        listing_id: int,
+        condition: str | None = None,
+        sleeve_condition: str | None = None,
+        price: str | None = None,
+        location: str | None = None,
+    ):
+        """Update inventory data from a Discogs inventory sync."""
+        self.listing_id = listing_id
+        self.condition = condition
+        self.sleeve_condition = sleeve_condition
+        self.price = price
+        self.location = location
+        self.inventory_synced_at = datetime.utcnow()

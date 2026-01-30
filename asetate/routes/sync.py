@@ -6,8 +6,16 @@ from flask import Blueprint, render_template, jsonify, current_app
 from flask_login import login_required, current_user
 
 from asetate import db, limiter
-from asetate.services import SyncService, get_sync_status, DiscogsAuthError, DiscogsRateLimitError, create_auto_backup
-from asetate.models import SyncProgress
+from asetate.services import (
+    SyncService,
+    get_sync_status,
+    DiscogsAuthError,
+    DiscogsRateLimitError,
+    create_auto_backup,
+    InventorySyncService,
+    get_inventory_sync_status,
+)
+from asetate.models import SyncProgress, Release
 from asetate.models.sync_progress import SyncStatus
 
 bp = Blueprint("sync", __name__)
@@ -189,3 +197,167 @@ def sync_history():
             ]
         }
     )
+
+
+# =============================================================================
+# Inventory Sync Routes
+# =============================================================================
+
+# Track running inventory syncs
+_inventory_sync_threads: dict[int, threading.Thread] = {}
+_inventory_sync_status: dict[int, dict] = {}
+
+
+@bp.route("/inventory/status")
+@login_required
+def inventory_status_api():
+    """Get current inventory sync status as JSON."""
+    user_id = current_user.id
+
+    # Check if sync is running
+    is_running = user_id in _inventory_sync_threads and _inventory_sync_threads[user_id].is_alive()
+
+    # Get stored status from last sync
+    stored_status = get_inventory_sync_status(user_id)
+
+    # Get in-progress status if running
+    progress_status = _inventory_sync_status.get(user_id, {})
+
+    return jsonify({
+        "is_running": is_running,
+        "items_synced": stored_status["items_synced"],
+        "last_sync": stored_status["last_sync"],
+        **progress_status,
+    })
+
+
+@bp.route("/inventory/start", methods=["POST"])
+@login_required
+@limiter.limit("5 per hour")
+def start_inventory_sync():
+    """Start a full inventory sync.
+
+    Fetches all inventory listings from Discogs and updates matching releases.
+    """
+    user_id = current_user.id
+
+    # Check if already syncing
+    if user_id in _inventory_sync_threads and _inventory_sync_threads[user_id].is_alive():
+        return jsonify({"error": "Inventory sync already in progress"}), 409
+
+    # Check for valid credentials
+    if not current_user.has_discogs_credentials:
+        return jsonify({"error": "Discogs credentials not configured"}), 400
+
+    # Check if user has seller mode enabled
+    if not current_user.is_seller_mode:
+        return jsonify({"error": "Seller mode must be enabled to sync inventory"}), 400
+
+    # Capture credentials for background thread
+    discogs_username = current_user.discogs_username
+    oauth_token = current_user.oauth_token
+    oauth_token_secret = current_user.oauth_token_secret
+    personal_token = current_user.personal_token
+
+    # Clear previous status
+    _inventory_sync_status[user_id] = {"status": "running", "message": "Starting inventory sync..."}
+
+    def run_inventory_sync():
+        with current_app.app_context():
+            try:
+                _inventory_sync_status[user_id] = {
+                    "status": "running",
+                    "message": "Fetching inventory from Discogs...",
+                }
+
+                service = InventorySyncService(
+                    user_id=user_id,
+                    discogs_username=discogs_username,
+                    oauth_token=oauth_token,
+                    oauth_token_secret=oauth_token_secret,
+                    personal_token=personal_token,
+                )
+
+                stats = service.sync_full_inventory()
+
+                _inventory_sync_status[user_id] = {
+                    "status": "completed",
+                    "message": f"Synced {stats['matched']} listings. {stats['cleared']} items no longer listed.",
+                    "stats": stats,
+                }
+
+            except DiscogsAuthError as e:
+                _inventory_sync_status[user_id] = {
+                    "status": "failed",
+                    "message": f"Authentication failed: {e}",
+                }
+            except DiscogsRateLimitError as e:
+                _inventory_sync_status[user_id] = {
+                    "status": "failed",
+                    "message": f"Rate limited. Please wait {e.retry_after}s and try again.",
+                }
+            except Exception as e:
+                current_app.logger.error(f"Inventory sync error: {e}")
+                _inventory_sync_status[user_id] = {
+                    "status": "failed",
+                    "message": f"Error: {str(e)}",
+                }
+
+    thread = threading.Thread(target=run_inventory_sync, daemon=True)
+    _inventory_sync_threads[user_id] = thread
+    thread.start()
+
+    return jsonify({"status": "started", "message": "Inventory sync started"})
+
+
+@bp.route("/inventory/release/<int:release_id>", methods=["POST"])
+@login_required
+@limiter.limit("30 per minute")
+def sync_release_inventory(release_id: int):
+    """Sync inventory data for a single release.
+
+    This allows ad-hoc syncing of individual releases rather than full sync.
+    Useful when a user has just listed or updated an item on Discogs.
+    """
+    user_id = current_user.id
+
+    # Check for valid credentials
+    if not current_user.has_discogs_credentials:
+        return jsonify({"error": "Discogs credentials not configured"}), 400
+
+    # Check if user has seller mode enabled
+    if not current_user.is_seller_mode:
+        return jsonify({"error": "Seller mode must be enabled to sync inventory"}), 400
+
+    # Verify release belongs to user
+    release = Release.query.filter_by(id=release_id, user_id=user_id).first()
+    if not release:
+        return jsonify({"error": "Release not found"}), 404
+
+    try:
+        service = InventorySyncService.from_user(current_user)
+        result = service.sync_single_release(release_id)
+
+        if result["success"]:
+            if result.get("found"):
+                return jsonify({
+                    "status": "synced",
+                    "message": f"Found listing: {result['condition']} - {result['price']}",
+                    "condition": result.get("condition"),
+                    "price": result.get("price"),
+                })
+            else:
+                return jsonify({
+                    "status": "not_listed",
+                    "message": result.get("message", "Item not found in inventory"),
+                })
+        else:
+            return jsonify({"error": result.get("error", "Sync failed")}), 400
+
+    except DiscogsAuthError as e:
+        return jsonify({"error": f"Authentication failed: {e}"}), 401
+    except DiscogsRateLimitError as e:
+        return jsonify({"error": f"Rate limited. Retry after {e.retry_after}s"}), 429
+    except Exception as e:
+        current_app.logger.error(f"Release inventory sync error: {e}")
+        return jsonify({"error": str(e)}), 500
