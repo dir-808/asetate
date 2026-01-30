@@ -192,6 +192,18 @@
                 </label>
             </div>
 
+            <div class="form-check seller-option" id="include-drafts-option" {% if not current_user.is_seller_mode %}style="display: none;"{% endif %}>
+                <input type="checkbox"
+                       id="include_drafts"
+                       name="include_drafts"
+                       class="form-check-input"
+                       {% if current_user.include_drafts %}checked{% endif %}>
+                <label for="include_drafts" class="form-check-label">
+                    <strong>Include Draft Listings</strong>
+                    <span class="text-muted">Sync draft listings from Discogs inventory (not just items marked "For Sale")</span>
+                </label>
+            </div>
+
             <button type="submit" class="btn btn-primary" style="margin-top: var(--space-md);">Save Seller Settings</button>
         </form>
     </section>
@@ -273,11 +285,13 @@
 <script>
 (function() {
     const sellerModeCheckbox = document.getElementById('seller_mode');
-    const inventoryUrlOption = document.getElementById('inventory-url-option');
+    const sellerOptions = document.querySelectorAll('.seller-option');
 
-    if (sellerModeCheckbox && inventoryUrlOption) {
+    if (sellerModeCheckbox && sellerOptions.length) {
         sellerModeCheckbox.addEventListener('change', function() {
-            inventoryUrlOption.style.display = this.checked ? 'flex' : 'none';
+            sellerOptions.forEach(option => {
+                option.style.display = this.checked ? 'flex' : 'none';
+            });
         });
     }
 })();

@@ -14,8 +14,9 @@ from asetate.services import (
     create_auto_backup,
     InventorySyncService,
     get_inventory_sync_status,
+    get_inventory_notifications,
 )
-from asetate.models import SyncProgress, Release
+from asetate.models import SyncProgress, Release, InventoryListing
 from asetate.models.sync_progress import SyncStatus
 
 bp = Blueprint("sync", __name__)
@@ -280,9 +281,22 @@ def start_inventory_sync():
 
                 stats = service.sync_full_inventory()
 
+                # Build completion message
+                msg_parts = []
+                if stats["created"]:
+                    msg_parts.append(f"{stats['created']} new")
+                if stats["updated"]:
+                    msg_parts.append(f"{stats['updated']} updated")
+                if stats["sold"]:
+                    msg_parts.append(f"{stats['sold']} sold")
+
+                message = f"Synced {stats['total_listings']} listings"
+                if msg_parts:
+                    message += f" ({', '.join(msg_parts)})"
+
                 _inventory_sync_status[user_id] = {
                     "status": "completed",
-                    "message": f"Synced {stats['matched']} listings. {stats['cleared']} items no longer listed.",
+                    "message": message,
                     "stats": stats,
                 }
 
@@ -361,3 +375,54 @@ def sync_release_inventory(release_id: int):
     except Exception as e:
         current_app.logger.error(f"Release inventory sync error: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+# =============================================================================
+# Inventory Notification Routes
+# =============================================================================
+
+
+@bp.route("/inventory/notifications")
+@login_required
+def inventory_notifications():
+    """Get inventory notifications (sold/removed items)."""
+    if not current_user.is_seller_mode:
+        return jsonify({"notifications": []})
+
+    notifications = get_inventory_notifications(current_user.id)
+    return jsonify({"notifications": notifications})
+
+
+@bp.route("/inventory/notifications/<int:listing_id>/dismiss", methods=["POST"])
+@login_required
+def dismiss_inventory_notification(listing_id: int):
+    """Dismiss a sold/removed notification."""
+    listing = InventoryListing.query.filter_by(
+        id=listing_id,
+        user_id=current_user.id,
+    ).first()
+
+    if not listing:
+        return jsonify({"error": "Listing not found"}), 404
+
+    listing.dismiss_notification()
+    db.session.commit()
+
+    return jsonify({"status": "dismissed"})
+
+
+@bp.route("/inventory/notifications/dismiss-all", methods=["POST"])
+@login_required
+def dismiss_all_inventory_notifications():
+    """Dismiss all sold/removed notifications."""
+    from asetate.models.inventory_listing import ListingStatus
+
+    InventoryListing.query.filter(
+        InventoryListing.user_id == current_user.id,
+        InventoryListing.status.in_([ListingStatus.SOLD, ListingStatus.REMOVED]),
+        InventoryListing.notification_dismissed == False,
+    ).update({"notification_dismissed": True}, synchronize_session=False)
+
+    db.session.commit()
+
+    return jsonify({"status": "all_dismissed"})

@@ -43,6 +43,7 @@ class User(UserMixin, db.Model):
     crates = db.relationship("Crate", back_populates="user", lazy="dynamic")
     tags = db.relationship("Tag", back_populates="user", lazy="dynamic")
     sync_progress = db.relationship("SyncProgress", back_populates="user", lazy="dynamic")
+    inventory_listings = db.relationship("InventoryListing", back_populates="user", lazy="dynamic")
 
     def __repr__(self):
         return f"<User {self.discogs_username}>"
@@ -166,11 +167,24 @@ class User(UserMixin, db.Model):
         prefs = self.preferences or {}
         return prefs.get("include_inventory_url", False)
 
-    def update_seller_settings(self, seller_mode: bool = None, include_inventory_url: bool = None):
+    @property
+    def include_drafts(self) -> bool:
+        """Check if draft listings should be included in inventory sync."""
+        prefs = self.preferences or {}
+        return prefs.get("include_drafts", False)
+
+    def update_seller_settings(
+        self,
+        seller_mode: bool = None,
+        include_inventory_url: bool = None,
+        include_drafts: bool = None,
+    ):
         """Update seller-related preferences."""
         prefs = dict(self.preferences or {})
         if seller_mode is not None:
             prefs["seller_mode"] = seller_mode
         if include_inventory_url is not None:
             prefs["include_inventory_url"] = include_inventory_url
+        if include_drafts is not None:
+            prefs["include_drafts"] = include_drafts
         self.preferences = prefs

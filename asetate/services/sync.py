@@ -12,6 +12,7 @@ from asetate.services.discogs import (
     DiscogsRateLimitError,
     InventoryItem,
 )
+from asetate.models.inventory_listing import InventoryListing, ListingStatus
 
 import time
 
@@ -369,12 +370,13 @@ def _get_status_message(progress: SyncProgress) -> str:
 
 
 class InventorySyncService:
-    """Service for syncing Discogs inventory data to local releases.
+    """Service for syncing Discogs inventory data to InventoryListing model.
 
-    Updates existing releases with inventory information:
-    - listing_id, condition, sleeve_condition, price, location
-
-    This is separate from collection sync - inventory only covers items for sale.
+    Supports:
+    - Multiple listings per release (different copies at different conditions)
+    - Listings not in collection (consignment/flip items)
+    - Draft listings (optional)
+    - Sold/removed tracking with notifications
     """
 
     def __init__(
@@ -384,6 +386,7 @@ class InventorySyncService:
         oauth_token: str | None = None,
         oauth_token_secret: str | None = None,
         personal_token: str | None = None,
+        include_drafts: bool = False,
     ):
         """Initialize the inventory sync service.
 
@@ -393,12 +396,14 @@ class InventorySyncService:
             oauth_token: Discogs OAuth access token (for OAuth mode).
             oauth_token_secret: Discogs OAuth access token secret (for OAuth mode).
             personal_token: Discogs Personal Access Token (for PAT mode).
+            include_drafts: Whether to include draft listings.
         """
         self.user_id = user_id
         self.discogs_username = discogs_username
         self.oauth_token = oauth_token
         self.oauth_token_secret = oauth_token_secret
         self.personal_token = personal_token
+        self.include_drafts = include_drafts
         self.client: DiscogsClient | None = None
 
     @classmethod
@@ -416,6 +421,7 @@ class InventorySyncService:
                 user_id=user.id,
                 discogs_username=user.discogs_username,
                 personal_token=user.personal_token,
+                include_drafts=user.include_drafts,
             )
         else:
             return cls(
@@ -423,6 +429,7 @@ class InventorySyncService:
                 discogs_username=user.discogs_username,
                 oauth_token=user.oauth_token,
                 oauth_token_secret=user.oauth_token_secret,
+                include_drafts=user.include_drafts,
             )
 
     def _get_client(self) -> DiscogsClient:
@@ -438,68 +445,127 @@ class InventorySyncService:
         return self.client
 
     def sync_full_inventory(self) -> dict:
-        """Sync all inventory data to matching releases.
+        """Sync all inventory data to InventoryListing model.
 
         Returns:
-            Stats dict with counts: matched, not_found, cleared
+            Stats dict with counts
         """
         client = self._get_client()
 
         stats = {
-            "matched": 0,      # Releases updated with inventory data
-            "not_found": 0,    # Inventory items without matching release in collection
-            "cleared": 0,      # Releases no longer in inventory (data cleared)
+            "created": 0,       # New listings added
+            "updated": 0,       # Existing listings updated
+            "sold": 0,          # Listings marked as sold
+            "removed": 0,       # Listings marked as removed
+            "in_collection": 0, # Listings with matching release in collection
+            "not_in_collection": 0,  # Listings without matching release
             "total_listings": 0,
         }
 
-        # Track which release IDs we see in inventory
-        seen_release_ids = set()
+        # Track which listing_ids we see
+        seen_listing_ids = set()
+
+        # Determine status filter
+        status_filter = "all" if self.include_drafts else "for sale"
 
         # Iterate through all inventory listings
-        for listing, processed, total in client.iter_inventory(self.discogs_username):
+        for listing_data, processed, total in client.iter_inventory(
+            self.discogs_username, status=status_filter
+        ):
             stats["total_listings"] = total
 
-            release_id = listing.get("release", {}).get("id")
-            if not release_id:
+            listing_id = listing_data.get("id")
+            if not listing_id:
                 continue
 
-            seen_release_ids.add(release_id)
-            inventory_item = client.parse_inventory_item(listing)
+            seen_listing_ids.add(listing_id)
 
-            # Find matching release in user's collection
+            # Parse listing data
+            release_info = listing_data.get("release", {})
+            discogs_release_id = release_info.get("id")
+            parsed_item = client.parse_inventory_item(listing_data)
+
+            # Determine status
+            discogs_status = listing_data.get("status", "For Sale")
+            if discogs_status.lower() == "draft":
+                status = ListingStatus.DRAFT
+            else:
+                status = ListingStatus.FOR_SALE
+
+            # Find or create InventoryListing
+            inv_listing = InventoryListing.query.filter_by(
+                user_id=self.user_id,
+                listing_id=listing_id,
+            ).first()
+
+            is_new = inv_listing is None
+            if is_new:
+                inv_listing = InventoryListing(
+                    user_id=self.user_id,
+                    listing_id=listing_id,
+                    discogs_release_id=discogs_release_id,
+                )
+                db.session.add(inv_listing)
+                stats["created"] += 1
+            else:
+                stats["updated"] += 1
+
+            # Try to link to release in collection
             release = Release.query.filter_by(
                 user_id=self.user_id,
-                discogs_id=release_id,
+                discogs_id=discogs_release_id,
             ).first()
 
             if release:
-                release.update_inventory_data(
-                    listing_id=inventory_item.listing_id,
-                    condition=inventory_item.condition,
-                    sleeve_condition=inventory_item.sleeve_condition,
-                    price=inventory_item.price,
-                    location=inventory_item.location,
-                )
-                stats["matched"] += 1
+                inv_listing.release_id = release.id
+                stats["in_collection"] += 1
             else:
-                stats["not_found"] += 1
+                inv_listing.release_id = None
+                stats["not_in_collection"] += 1
 
-        # Clear inventory data for releases no longer in inventory
-        releases_with_inventory = Release.query.filter(
-            Release.user_id == self.user_id,
-            Release.listing_id.isnot(None),
-            Release.discogs_id.notin_(seen_release_ids) if seen_release_ids else True,
+            # Update listing data
+            inv_listing.update_from_discogs(
+                condition=parsed_item.condition,
+                sleeve_condition=parsed_item.sleeve_condition,
+                price=parsed_item.price,
+                location=parsed_item.location,
+                comments=parsed_item.comments,
+                status=status,
+                release_title=release_info.get("title"),
+                release_artist=release_info.get("artist"),
+            )
+
+            # Also update the Release model for backwards compatibility
+            if release:
+                release.update_inventory_data(
+                    listing_id=listing_id,
+                    condition=parsed_item.condition,
+                    sleeve_condition=parsed_item.sleeve_condition,
+                    price=parsed_item.price,
+                    location=parsed_item.location,
+                )
+
+        # Mark listings no longer in inventory as sold/removed
+        active_listings = InventoryListing.query.filter(
+            InventoryListing.user_id == self.user_id,
+            InventoryListing.status.in_([ListingStatus.FOR_SALE, ListingStatus.DRAFT]),
+            InventoryListing.listing_id.notin_(seen_listing_ids) if seen_listing_ids else True,
         ).all()
 
-        for release in releases_with_inventory:
-            release.clear_inventory_data()
-            stats["cleared"] += 1
+        for inv_listing in active_listings:
+            # Mark as sold (most common reason for disappearing)
+            inv_listing.mark_sold()
+            stats["sold"] += 1
+
+            # Clear release inventory data for backwards compatibility
+            if inv_listing.release:
+                inv_listing.release.clear_inventory_data()
 
         db.session.commit()
         return stats
 
     def sync_single_release(self, release_id: int) -> dict:
-        """Sync inventory data for a single release.
+        """Sync all inventory listings for a single release.
 
         Args:
             release_id: The local Release.id (not discogs_id)
@@ -518,42 +584,123 @@ class InventorySyncService:
         if not release:
             return {"success": False, "error": "Release not found"}
 
-        # Search inventory for this release
-        inventory_item = client.get_inventory_for_release(
-            self.discogs_username,
-            release.discogs_id,
-        )
+        # Search inventory for all listings of this release
+        found_listings = []
+        status_filter = "all" if self.include_drafts else "for sale"
 
-        if inventory_item:
+        for listing_data, _, _ in client.iter_inventory(
+            self.discogs_username, status=status_filter
+        ):
+            release_info = listing_data.get("release", {})
+            if release_info.get("id") == release.discogs_id:
+                found_listings.append(listing_data)
+
+        if found_listings:
+            # Update/create InventoryListing for each found listing
+            for listing_data in found_listings:
+                listing_id = listing_data.get("id")
+                parsed_item = client.parse_inventory_item(listing_data)
+
+                discogs_status = listing_data.get("status", "For Sale")
+                status = ListingStatus.DRAFT if discogs_status.lower() == "draft" else ListingStatus.FOR_SALE
+
+                inv_listing = InventoryListing.query.filter_by(
+                    user_id=self.user_id,
+                    listing_id=listing_id,
+                ).first()
+
+                if not inv_listing:
+                    inv_listing = InventoryListing(
+                        user_id=self.user_id,
+                        listing_id=listing_id,
+                        discogs_release_id=release.discogs_id,
+                        release_id=release.id,
+                    )
+                    db.session.add(inv_listing)
+
+                inv_listing.update_from_discogs(
+                    condition=parsed_item.condition,
+                    sleeve_condition=parsed_item.sleeve_condition,
+                    price=parsed_item.price,
+                    location=parsed_item.location,
+                    comments=parsed_item.comments,
+                    status=status,
+                    release_title=release.title,
+                    release_artist=release.artist,
+                )
+
+            # Update release with first listing for backwards compatibility
+            first = found_listings[0]
+            first_parsed = client.parse_inventory_item(first)
             release.update_inventory_data(
-                listing_id=inventory_item.listing_id,
-                condition=inventory_item.condition,
-                sleeve_condition=inventory_item.sleeve_condition,
-                price=inventory_item.price,
-                location=inventory_item.location,
+                listing_id=first.get("id"),
+                condition=first_parsed.condition,
+                sleeve_condition=first_parsed.sleeve_condition,
+                price=first_parsed.price,
+                location=first_parsed.location,
             )
+
             db.session.commit()
+
             return {
                 "success": True,
                 "found": True,
-                "condition": inventory_item.condition,
-                "price": inventory_item.price,
+                "listings_count": len(found_listings),
+                "condition": first_parsed.condition,
+                "price": first_parsed.price,
             }
         else:
-            # Clear inventory data if no longer listed
+            # Mark all active listings for this release as sold
+            active_listings = InventoryListing.query.filter(
+                InventoryListing.user_id == self.user_id,
+                InventoryListing.release_id == release.id,
+                InventoryListing.status.in_([ListingStatus.FOR_SALE, ListingStatus.DRAFT]),
+            ).all()
+
+            sold_count = 0
+            for inv_listing in active_listings:
+                inv_listing.mark_sold()
+                sold_count += 1
+
+            # Clear release inventory data
             if release.listing_id:
                 release.clear_inventory_data()
-                db.session.commit()
+
+            db.session.commit()
+
+            if sold_count > 0:
                 return {
                     "success": True,
                     "found": False,
-                    "message": "Item no longer listed for sale - inventory data cleared",
+                    "sold_count": sold_count,
+                    "message": f"{sold_count} listing(s) marked as sold",
                 }
+
             return {
                 "success": True,
                 "found": False,
-                "message": "Item not found in inventory",
+                "message": "No listings found for this release",
             }
+
+    def dismiss_notification(self, listing_id: int) -> bool:
+        """Dismiss the sold/removed notification for a listing.
+
+        Args:
+            listing_id: The InventoryListing.id
+
+        Returns:
+            True if successful
+        """
+        inv_listing = InventoryListing.query.filter_by(
+            id=listing_id,
+            user_id=self.user_id,
+        ).first()
+
+        if inv_listing:
+            inv_listing.dismiss_notification()
+            db.session.commit()
+            return True
+        return False
 
 
 def get_inventory_sync_status(user_id: int) -> dict:
@@ -565,20 +712,61 @@ def get_inventory_sync_status(user_id: int) -> dict:
     Returns:
         Dict with inventory sync info
     """
-    # Count releases with inventory data
-    releases_with_inventory = Release.query.filter(
-        Release.user_id == user_id,
-        Release.listing_id.isnot(None),
+    # Count active listings
+    active_listings = InventoryListing.query.filter(
+        InventoryListing.user_id == user_id,
+        InventoryListing.status.in_([ListingStatus.FOR_SALE, ListingStatus.DRAFT]),
     ).count()
 
-    # Get most recent inventory sync time
+    # Count listings needing attention (sold/removed, not dismissed)
+    needs_attention = InventoryListing.query.filter(
+        InventoryListing.user_id == user_id,
+        InventoryListing.status.in_([ListingStatus.SOLD, ListingStatus.REMOVED]),
+        InventoryListing.notification_dismissed == False,
+    ).count()
+
+    # Get most recent sync time
     latest_sync = db.session.query(
-        db.func.max(Release.inventory_synced_at)
+        db.func.max(InventoryListing.synced_at)
     ).filter(
-        Release.user_id == user_id,
+        InventoryListing.user_id == user_id,
     ).scalar()
 
     return {
-        "items_synced": releases_with_inventory,
+        "items_synced": active_listings,
+        "needs_attention": needs_attention,
         "last_sync": latest_sync.isoformat() if latest_sync else None,
     }
+
+
+def get_inventory_notifications(user_id: int) -> list[dict]:
+    """Get inventory listings that need attention (sold/removed).
+
+    Args:
+        user_id: The user to get notifications for
+
+    Returns:
+        List of notification dicts
+    """
+    listings = InventoryListing.query.filter(
+        InventoryListing.user_id == user_id,
+        InventoryListing.status.in_([ListingStatus.SOLD, ListingStatus.REMOVED]),
+        InventoryListing.notification_dismissed == False,
+    ).order_by(InventoryListing.sold_at.desc()).all()
+
+    return [
+        {
+            "id": listing.id,
+            "listing_id": listing.listing_id,
+            "status": listing.status,
+            "title": listing.display_title,
+            "artist": listing.display_artist,
+            "condition": listing.condition,
+            "price": listing.price,
+            "sold_at": listing.sold_at.isoformat() if listing.sold_at else None,
+            "removed_at": listing.removed_at.isoformat() if listing.removed_at else None,
+            "release_id": listing.release_id,
+            "in_collection": listing.is_in_collection,
+        }
+        for listing in listings
+    ]

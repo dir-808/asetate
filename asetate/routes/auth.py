@@ -343,10 +343,12 @@ def save_seller_settings():
     """Save seller-related settings."""
     seller_mode = request.form.get("seller_mode") == "on"
     include_inventory_url = request.form.get("include_inventory_url") == "on"
+    include_drafts = request.form.get("include_drafts") == "on"
 
     current_user.update_seller_settings(
         seller_mode=seller_mode,
         include_inventory_url=include_inventory_url,
+        include_drafts=include_drafts,
     )
     db.session.commit()
 

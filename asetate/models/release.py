@@ -46,6 +46,9 @@ class Release(db.Model):
     location = db.Column(db.String(200))  # Seller's bin/shelf location
     inventory_synced_at = db.Column(db.DateTime)  # Last inventory sync timestamp
 
+    # Export tracking
+    last_exported_at = db.Column(db.DateTime)  # For "export since last export" feature
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
@@ -54,6 +57,9 @@ class Release(db.Model):
     user = db.relationship("User", back_populates="releases")
     tracks = db.relationship(
         "Track", back_populates="release", cascade="all, delete-orphan", lazy="dynamic"
+    )
+    inventory_listings = db.relationship(
+        "InventoryListing", back_populates="release", lazy="dynamic"
     )
 
     # Unique constraint: one discogs_id per user
@@ -133,3 +139,15 @@ class Release(db.Model):
         self.price = price
         self.location = location
         self.inventory_synced_at = datetime.utcnow()
+
+    def mark_exported(self):
+        """Mark release as exported (for tracking export history)."""
+        self.last_exported_at = datetime.utcnow()
+
+    @property
+    def active_listings_count(self) -> int:
+        """Count of active inventory listings for this release."""
+        from .inventory_listing import InventoryListing, ListingStatus
+        return self.inventory_listings.filter(
+            InventoryListing.status.in_([ListingStatus.FOR_SALE, ListingStatus.DRAFT])
+        ).count()

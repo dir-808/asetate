@@ -7,6 +7,7 @@ from .tag import Tag, track_tags
 from .export_preset import ExportPreset
 from .sync_progress import SyncProgress
 from .user import User
+from .inventory_listing import InventoryListing, ListingStatus
 
 __all__ = [
     "Release",
@@ -19,4 +20,6 @@ __all__ = [
     "ExportPreset",
     "SyncProgress",
     "User",
+    "InventoryListing",
+    "ListingStatus",
 ]

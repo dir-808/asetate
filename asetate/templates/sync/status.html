@@ -111,6 +111,18 @@
             </p>
         </div>
 
+        <!-- Inventory Notifications (sold/removed items) -->
+        <div class="inventory-notifications card" id="inventory-notifications" style="display: none;">
+            <div class="notifications-header">
+                <h3>Items Sold / Removed</h3>
+                <button class="btn btn-secondary btn-sm" id="btn-dismiss-all">Dismiss All</button>
+            </div>
+            <p class="text-secondary">These items are no longer in your Discogs inventory.</p>
+            <div class="notification-list" id="notification-list">
+                <!-- Notifications will be loaded here -->
+            </div>
+        </div>
+
         <div class="sync-info card">
             <h3>Inventory vs Collection</h3>
             <ul class="info-list">
@@ -123,6 +135,77 @@
     </div>
     {% endif %}
 </div>
+
+<style>
+/* Inventory Notifications */
+.inventory-notifications {
+    border-left: 3px solid var(--primary);
+}
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+.notifications-header h3 {
+    margin: 0;
+}
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+}
+.notification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    gap: var(--space-md);
+}
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+    min-width: 0;
+}
+.notification-badge {
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+.badge-sold {
+    background: var(--lcd-bg);
+    color: var(--lcd-text);
+}
+.badge-removed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+.notification-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.notification-details strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.notification-actions {
+    display: flex;
+    gap: var(--space-xs);
+    flex-shrink: 0;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -283,6 +366,9 @@
     const invStatSynced = document.getElementById('inv-stat-synced');
     const invStatLastSync = document.getElementById('inv-stat-last-sync');
     const btnInventorySync = document.getElementById('btn-inventory-sync');
+    const notificationsSection = document.getElementById('inventory-notifications');
+    const notificationList = document.getElementById('notification-list');
+    const btnDismissAll = document.getElementById('btn-dismiss-all');
 
     let invPollInterval = null;
 
@@ -306,6 +392,8 @@
             invStatusText.textContent = status.message || 'Sync complete';
             btnInventorySync.disabled = false;
             btnInventorySync.textContent = 'Sync Inventory';
+            // Refresh notifications after sync completes
+            fetchNotifications();
         } else if (status.status === 'failed') {
             invStatusIndicator.className = 'status-indicator status-failed';
             invStatusText.textContent = status.message || 'Sync failed';
@@ -371,10 +459,82 @@
         }
     }
 
-    btnInventorySync.addEventListener('click', startInventorySync);
+    // Notifications handling
+    async function fetchNotifications() {
+        try {
+            const response = await fetch('/sync/inventory/notifications');
+            const data = await response.json();
+            renderNotifications(data.notifications || []);
+        } catch (err) {
+            console.error('Failed to fetch notifications:', err);
+        }
+    }
 
-    // Fetch initial status
+    function renderNotifications(notifications) {
+        if (notifications.length === 0) {
+            notificationsSection.style.display = 'none';
+            return;
+        }
+
+        notificationsSection.style.display = 'block';
+        notificationList.innerHTML = notifications.map(n => `
+            <div class="notification-item" data-id="${n.id}">
+                <div class="notification-content">
+                    <span class="notification-badge ${n.status === 'sold' ? 'badge-sold' : 'badge-removed'}">
+                        ${n.status === 'sold' ? 'SOLD' : 'REMOVED'}
+                    </span>
+                    <div class="notification-details">
+                        <strong>${n.artist} - ${n.title}</strong>
+                        <span class="text-secondary">${n.condition || ''} ${n.price ? '· ' + n.price : ''}</span>
+                    </div>
+                </div>
+                <div class="notification-actions">
+                    ${n.release_id ? `<a href="/releases/${n.release_id}" class="btn btn-secondary btn-sm">View</a>` : ''}
+                    <button class="btn btn-secondary btn-sm btn-dismiss" data-id="${n.id}">Dismiss</button>
+                </div>
+            </div>
+        `).join('');
+
+        // Add dismiss handlers
+        notificationList.querySelectorAll('.btn-dismiss').forEach(btn => {
+            btn.addEventListener('click', () => dismissNotification(btn.dataset.id));
+        });
+    }
+
+    async function dismissNotification(id) {
+        try {
+            const response = await fetch(`/sync/inventory/notifications/${id}/dismiss`, { method: 'POST' });
+            if (response.ok) {
+                const item = notificationList.querySelector(`[data-id="${id}"]`);
+                if (item) item.remove();
+                // Hide section if no more notifications
+                if (notificationList.children.length === 0) {
+                    notificationsSection.style.display = 'none';
+                }
+            }
+        } catch (err) {
+            console.error('Failed to dismiss notification:', err);
+        }
+    }
+
+    async function dismissAllNotifications() {
+        try {
+            const response = await fetch('/sync/inventory/notifications/dismiss-all', { method: 'POST' });
+            if (response.ok) {
+                notificationList.innerHTML = '';
+                notificationsSection.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Failed to dismiss all notifications:', err);
+        }
+    }
+
+    btnInventorySync.addEventListener('click', startInventorySync);
+    btnDismissAll.addEventListener('click', dismissAllNotifications);
+
+    // Fetch initial status and notifications
     fetchInventoryStatus();
+    fetchNotifications();
 })();
 {% endif %}
 </script>
