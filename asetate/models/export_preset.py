@@ -72,8 +72,8 @@ class ExportPreset(db.Model):
     ]
 
     # Seller-only columns (shown when seller mode enabled)
+    # Note: release_url is available to everyone, only inventory-specific columns here
     SELLER_COLUMNS = [
-        ("release_url", "Discogs URL"),
         ("discogs_id", "Discogs ID"),
     ]
 
