@@ -17,7 +17,9 @@
         {% macro render_crate(node, depth=0) %}
         <div class="crate-item" style="--depth: {{ depth }}">
             <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="crate-link">
-                <span class="crate-icon">{% if node.children %}📁{% else %}📂{% endif %}</span>
+                <span class="crate-icon" {% if node.crate.color_hex %}style="background-color: {{ node.crate.color_hex }}20; color: {{ node.crate.color_hex }}"{% endif %}>
+                    {{ node.crate.display_icon }}
+                </span>
                 <span class="crate-name">{{ node.crate.name }}</span>
                 <span class="crate-counts">
                     {% if node.release_count > 0 %}
@@ -69,6 +71,45 @@
                 <label for="crate-description">Description (optional)</label>
                 <input type="text" id="crate-description" name="description" placeholder="e.g., Late night vibes">
             </div>
+
+            <!-- Icon Picker -->
+            <div class="form-group">
+                <label>Icon</label>
+                <div class="icon-picker-container">
+                    <div class="icon-input-row">
+                        <button type="button" class="icon-preview" id="icon-preview" title="Click to select an emoji">📁</button>
+                        <input type="text"
+                               id="crate-icon-input"
+                               class="icon-text-input"
+                               placeholder="Type or paste any emoji"
+                               maxlength="4">
+                        <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Clear</button>
+                    </div>
+                    <div class="icon-suggestions" id="icon-suggestions">
+                        <span class="suggestions-label">Suggestions:</span>
+                        {% for icon in crate_icons[:20] %}
+                        <button type="button" class="icon-suggestion" data-icon="{{ icon }}">{{ icon }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input type="hidden" id="crate-icon" name="icon" value="">
+            </div>
+
+            <!-- Color Picker -->
+            <div class="form-group">
+                <label>Color</label>
+                <div class="color-picker" id="color-picker">
+                    <button type="button" class="color-option selected" data-color="" style="background: #e0e0e0" title="None"></button>
+                    {% for color in crate_colors %}
+                    <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}" title="{{ color.name }}"></button>
+                    {% endfor %}
+                    <div class="color-custom">
+                        <input type="color" id="custom-color" value="#337EA9" title="Custom color">
+                    </div>
+                </div>
+                <input type="hidden" id="crate-color" name="color" value="">
+            </div>
+
             <input type="hidden" id="crate-parent-id" name="parent_id" value="">
             <div class="form-group" id="parent-display" style="display: none;">
                 <label>Inside</label>
@@ -81,6 +122,138 @@
         </form>
     </div>
 </div>
+
+<style>
+.crate-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+
+.icon-picker-container {
+    margin-top: var(--space-xs);
+}
+
+.icon-input-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.icon-preview {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-secondary);
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+}
+
+.icon-preview:hover {
+    border-color: var(--color-primary);
+}
+
+.icon-text-input {
+    flex: 1;
+    max-width: 150px;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.icon-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.suggestions-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-right: var(--space-xs);
+}
+
+.icon-suggestion {
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.icon-suggestion:hover {
+    border-color: var(--color-border);
+    transform: scale(1.1);
+}
+
+.color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: var(--space-xs);
+}
+
+.color-option {
+    width: 24px;
+    height: 24px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: var(--color-text);
+    box-shadow: 0 0 0 2px var(--color-bg);
+}
+
+.color-custom {
+    display: flex;
+    align-items: center;
+}
+
+.color-custom input[type="color"] {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+}
+
+.color-custom input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-custom input[type="color"]::-webkit-color-swatch {
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -93,6 +266,76 @@
     const parentIdInput = document.getElementById('crate-parent-id');
     const parentDisplay = document.getElementById('parent-display');
     const parentName = document.getElementById('parent-name');
+    const iconInput = document.getElementById('crate-icon');
+    const colorInput = document.getElementById('crate-color');
+    const iconPreview = document.getElementById('icon-preview');
+    const iconTextInput = document.getElementById('crate-icon-input');
+    const clearIconBtn = document.getElementById('clear-icon');
+
+    // Helper to check if a string contains emoji
+    function containsEmoji(str) {
+        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+        return emojiRegex.test(str);
+    }
+
+    // Extract first emoji from string
+    function extractFirstEmoji(str) {
+        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+        const match = str.match(emojiRegex);
+        return match ? match[0] : null;
+    }
+
+    // Update icon from text input
+    function updateIconFromInput() {
+        const value = iconTextInput.value.trim();
+        if (value) {
+            const emoji = extractFirstEmoji(value);
+            if (emoji) {
+                iconInput.value = emoji;
+                iconPreview.textContent = emoji;
+                iconTextInput.value = emoji;
+            }
+        }
+    }
+
+    // Icon text input handler
+    iconTextInput.addEventListener('input', updateIconFromInput);
+    iconTextInput.addEventListener('paste', () => {
+        setTimeout(updateIconFromInput, 0);
+    });
+
+    // Clear icon button
+    clearIconBtn.addEventListener('click', () => {
+        iconInput.value = '';
+        iconPreview.textContent = '📁';
+        iconTextInput.value = '';
+    });
+
+    // Icon suggestions
+    document.querySelectorAll('.icon-suggestion').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const icon = btn.dataset.icon;
+            iconInput.value = icon;
+            iconPreview.textContent = icon;
+            iconTextInput.value = icon;
+        });
+    });
+
+    // Color picker
+    document.querySelectorAll('.color-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            colorInput.value = btn.dataset.color;
+        });
+    });
+
+    // Custom color picker
+    const customColorInput = document.getElementById('custom-color');
+    customColorInput.addEventListener('input', () => {
+        document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+        colorInput.value = customColorInput.value;
+    });
 
     function openModal(parentId = null, parentCrateName = null) {
         if (parentId) {
@@ -112,6 +355,15 @@
     function closeModal() {
         modal.classList.remove('open');
         form.reset();
+        // Reset icon picker
+        iconInput.value = '';
+        iconPreview.textContent = '📁';
+        iconTextInput.value = '';
+        // Reset color selection
+        document.querySelectorAll('.color-option').forEach((b, i) => {
+            b.classList.toggle('selected', i === 0);
+        });
+        colorInput.value = '';
     }
 
     // Open modal buttons
@@ -147,6 +399,8 @@
             name: nameInput.value.trim(),
             description: document.getElementById('crate-description').value.trim(),
             parent_id: parentIdInput.value ? parseInt(parentIdInput.value) : null,
+            icon: iconInput.value || null,
+            color: colorInput.value || null,
         };
 
         try {

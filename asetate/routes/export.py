@@ -5,6 +5,7 @@ import io
 from datetime import datetime
 
 from flask import Blueprint, render_template, request, jsonify, Response
+from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from asetate import db
@@ -13,10 +14,11 @@ from asetate.models import Release, Track, Crate, Tag, ExportPreset
 bp = Blueprint("export", __name__)
 
 
-def build_track_query(filters: dict):
+def build_track_query(user_id: int, filters: dict):
     """Build a track query based on filter criteria.
 
     Args:
+        user_id: The user to filter by
         filters: Dictionary with filter options:
             - crate_id: Filter by crate (includes all tracks from releases in crate)
             - bpm_min: Minimum BPM
@@ -28,16 +30,33 @@ def build_track_query(filters: dict):
             - has_key: Only tracks with key set
             - tags: List of tag names to filter by
             - search: Text search on track/release/artist
+            - not_exported: Only tracks that haven't been exported yet
+            - track_ids: Specific track IDs to export (for queue)
 
     Returns:
         SQLAlchemy query for Track
     """
-    query = Track.query.join(Release).filter(Release.discogs_removed_at.is_(None))
+    query = Track.query.join(Release).filter(
+        Release.user_id == user_id,
+        Release.discogs_removed_at.is_(None)
+    )
+
+    # Specific track IDs (for queue export)
+    track_ids = filters.get("track_ids")
+    if track_ids:
+        query = query.filter(Track.id.in_(track_ids))
+        # When exporting specific tracks, skip other filters
+        return query.order_by(Release.artist, Release.title, Track.position)
+
+    # Not exported filter
+    if filters.get("not_exported"):
+        query = query.filter(Release.last_exported_at.is_(None))
 
     # Crate filter
     crate_id = filters.get("crate_id")
     if crate_id:
-        crate = Crate.query.get(crate_id)
+        # Ensure crate belongs to user
+        crate = Crate.query.filter_by(id=crate_id, user_id=user_id).first()
         if crate:
             # Get all track IDs from crate (direct tracks + tracks from releases)
             track_ids = set()
@@ -86,11 +105,12 @@ def build_track_query(filters: dict):
     tags = filters.get("tags", [])
     if tags:
         for tag_name in tags:
-            tag = Tag.query.filter_by(name=tag_name.lower().strip()).first()
+            # Filter by user's tags
+            tag = Tag.query.filter_by(user_id=user_id, name=tag_name.lower().strip()).first()
             if tag:
                 query = query.filter(Track.tags.contains(tag))
             else:
-                # Tag doesn't exist, no matches
+                # Tag doesn't exist for this user, no matches
                 query = query.filter(Track.id == -1)
                 break
 
@@ -122,10 +142,21 @@ def build_track_query(filters: dict):
     return query
 
 
-def track_to_dict(track: Track, columns: list[str]) -> dict:
-    """Convert a track to a dictionary with only specified columns."""
+def track_to_dict(track: Track, columns: list[str], include_ids: bool = False) -> dict:
+    """Convert a track to a dictionary with only specified columns.
+
+    Args:
+        track: The Track object to convert
+        columns: List of column names to include
+        include_ids: If True, always include track_id and release_id (for queue selection)
+    """
     release = track.release
     data = {}
+
+    # Always include IDs for queue selection if requested
+    if include_ids:
+        data["track_id"] = track.id
+        data["release_id"] = release.id
 
     column_map = {
         "artist": lambda: release.display_artist,
@@ -142,6 +173,14 @@ def track_to_dict(track: Track, columns: list[str]) -> dict:
         "notes": lambda: track.notes or "",
         "tags": lambda: ", ".join(t.name for t in track.tags),
         "crates": lambda: ", ".join(c.name for c in track.crates),
+        "release_url": lambda: release.discogs_uri or f"https://www.discogs.com/release/{release.discogs_id}",
+        "discogs_id": lambda: str(release.discogs_id),
+        # Inventory fields (seller mode)
+        "condition": lambda: release.condition or "",
+        "sleeve_condition": lambda: release.sleeve_condition or "",
+        "price": lambda: release.price or "",
+        "location": lambda: release.location or "",
+        "listing_url": lambda: release.listing_url or "",
     }
 
     for col in columns:
@@ -152,19 +191,23 @@ def track_to_dict(track: Track, columns: list[str]) -> dict:
 
 
 @bp.route("/")
+@login_required
 def export_page():
     """Export configuration page."""
-    # Get all crates for dropdown
-    crates = Crate.query.order_by(Crate.name).all()
+    # Get user's crates for dropdown
+    crates = Crate.query.filter_by(user_id=current_user.id).order_by(Crate.name).all()
 
-    # Get all tags for filter
-    tags = Tag.query.order_by(Tag.name).all()
+    # Get user's tags for filter
+    tags = Tag.query.filter_by(user_id=current_user.id).order_by(Tag.name).all()
 
-    # Get presets
-    presets = ExportPreset.query.order_by(ExportPreset.name).all()
+    # Get user's presets
+    presets = ExportPreset.query.filter_by(user_id=current_user.id).order_by(ExportPreset.name).all()
 
-    # Available columns
+    # Available columns (filter seller columns based on user setting)
     columns = ExportPreset.AVAILABLE_COLUMNS
+    seller_columns = [c[0] for c in ExportPreset.SELLER_COLUMNS]
+    if not current_user.is_seller_mode:
+        columns = [c for c in columns if c[0] not in seller_columns]
     default_columns = ExportPreset.get_default_columns()
 
     return render_template(
@@ -174,10 +217,12 @@ def export_page():
         presets=presets,
         columns=columns,
         default_columns=default_columns,
+        is_seller_mode=current_user.is_seller_mode,
     )
 
 
 @bp.route("/preview", methods=["POST"])
+@login_required
 def preview_export():
     """Preview export results based on current filters."""
     data = request.get_json() or {}
@@ -223,11 +268,15 @@ def preview_export():
     if filters.get("search"):
         parsed_filters["search"] = filters["search"]
 
-    query = build_track_query(parsed_filters)
+    if filters.get("not_exported"):
+        parsed_filters["not_exported"] = True
+
+    query = build_track_query(current_user.id, parsed_filters)
     total_count = query.count()
     tracks = query.limit(limit).all()
 
-    track_data = [track_to_dict(t, columns) for t in tracks]
+    # Include IDs for queue selection
+    track_data = [track_to_dict(t, columns, include_ids=True) for t in tracks]
 
     return jsonify({
         "tracks": track_data,
@@ -238,50 +287,60 @@ def preview_export():
 
 
 @bp.route("/download", methods=["POST"])
+@login_required
 def download_csv():
     """Generate and download CSV based on filters."""
     data = request.get_json() or {}
     filters = data.get("filters", {})
     columns = data.get("columns", ExportPreset.get_default_columns())
+    track_ids = data.get("track_ids")  # For queue export
+    mark_exported = data.get("mark_exported", False)  # Mark releases as exported
 
     # Parse filters same as preview
     parsed_filters = {}
 
-    if filters.get("crate_id"):
-        parsed_filters["crate_id"] = int(filters["crate_id"])
+    # If specific track IDs provided, use those directly
+    if track_ids:
+        parsed_filters["track_ids"] = [int(tid) for tid in track_ids]
+    else:
+        if filters.get("crate_id"):
+            parsed_filters["crate_id"] = int(filters["crate_id"])
 
-    if filters.get("bpm_min"):
-        parsed_filters["bpm_min"] = int(filters["bpm_min"])
-    if filters.get("bpm_max"):
-        parsed_filters["bpm_max"] = int(filters["bpm_max"])
+        if filters.get("bpm_min"):
+            parsed_filters["bpm_min"] = int(filters["bpm_min"])
+        if filters.get("bpm_max"):
+            parsed_filters["bpm_max"] = int(filters["bpm_max"])
 
-    if filters.get("energy_min"):
-        parsed_filters["energy_min"] = int(filters["energy_min"])
-    if filters.get("energy_max"):
-        parsed_filters["energy_max"] = int(filters["energy_max"])
+        if filters.get("energy_min"):
+            parsed_filters["energy_min"] = int(filters["energy_min"])
+        if filters.get("energy_max"):
+            parsed_filters["energy_max"] = int(filters["energy_max"])
 
-    if filters.get("playable_only"):
-        parsed_filters["playable_only"] = True
+        if filters.get("playable_only"):
+            parsed_filters["playable_only"] = True
 
-    if filters.get("has_bpm"):
-        parsed_filters["has_bpm"] = True
+        if filters.get("has_bpm"):
+            parsed_filters["has_bpm"] = True
 
-    if filters.get("has_key"):
-        parsed_filters["has_key"] = True
+        if filters.get("has_key"):
+            parsed_filters["has_key"] = True
 
-    if filters.get("key"):
-        parsed_filters["key"] = filters["key"]
+        if filters.get("key"):
+            parsed_filters["key"] = filters["key"]
 
-    if filters.get("tags"):
-        tags = filters["tags"]
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(",") if t.strip()]
-        parsed_filters["tags"] = tags
+        if filters.get("tags"):
+            tags = filters["tags"]
+            if isinstance(tags, str):
+                tags = [t.strip() for t in tags.split(",") if t.strip()]
+            parsed_filters["tags"] = tags
 
-    if filters.get("search"):
-        parsed_filters["search"] = filters["search"]
+        if filters.get("search"):
+            parsed_filters["search"] = filters["search"]
 
-    query = build_track_query(parsed_filters)
+        if filters.get("not_exported"):
+            parsed_filters["not_exported"] = True
+
+    query = build_track_query(current_user.id, parsed_filters)
     tracks = query.all()
 
     # Column labels
@@ -294,10 +353,22 @@ def download_csv():
     # Header row
     writer.writerow([column_labels.get(col, col) for col in columns])
 
+    # Track exported releases to update
+    exported_release_ids = set()
+
     # Data rows
     for track in tracks:
         row_data = track_to_dict(track, columns)
         writer.writerow([row_data.get(col, "") for col in columns])
+        exported_release_ids.add(track.release_id)
+
+    # Mark releases as exported if requested
+    if mark_exported and exported_release_ids:
+        Release.query.filter(Release.id.in_(exported_release_ids)).update(
+            {"last_exported_at": datetime.utcnow()},
+            synchronize_session=False
+        )
+        db.session.commit()
 
     csv_content = output.getvalue()
 
@@ -313,9 +384,10 @@ def download_csv():
 
 
 @bp.route("/presets", methods=["GET"])
+@login_required
 def list_presets():
-    """List saved export presets."""
-    presets = ExportPreset.query.order_by(ExportPreset.name).all()
+    """List saved export presets for current user."""
+    presets = ExportPreset.query.filter_by(user_id=current_user.id).order_by(ExportPreset.name).all()
     return jsonify({
         "presets": [
             {
@@ -330,6 +402,7 @@ def list_presets():
 
 
 @bp.route("/presets", methods=["POST"])
+@login_required
 def save_preset():
     """Save current export configuration as a preset."""
     data = request.get_json()
@@ -340,8 +413,8 @@ def save_preset():
     if not name:
         return jsonify({"error": "Name cannot be empty"}), 400
 
-    # Check for duplicate name
-    existing = ExportPreset.query.filter_by(name=name).first()
+    # Check for duplicate name for this user
+    existing = ExportPreset.query.filter_by(user_id=current_user.id, name=name).first()
     if existing:
         # Update existing preset
         existing.filters = data.get("filters", {})
@@ -357,6 +430,7 @@ def save_preset():
 
     # Create new preset
     preset = ExportPreset(
+        user_id=current_user.id,
         name=name,
         filters=data.get("filters", {}),
         columns=data.get("columns", ExportPreset.get_default_columns()),
@@ -374,9 +448,11 @@ def save_preset():
 
 
 @bp.route("/presets/<int:preset_id>", methods=["GET"])
+@login_required
 def get_preset(preset_id: int):
     """Get a specific preset."""
-    preset = ExportPreset.query.get_or_404(preset_id)
+    # Ensure preset belongs to current user
+    preset = ExportPreset.query.filter_by(id=preset_id, user_id=current_user.id).first_or_404()
     return jsonify({
         "id": preset.id,
         "name": preset.name,
@@ -386,9 +462,11 @@ def get_preset(preset_id: int):
 
 
 @bp.route("/presets/<int:preset_id>", methods=["DELETE"])
+@login_required
 def delete_preset(preset_id: int):
     """Delete a preset."""
-    preset = ExportPreset.query.get_or_404(preset_id)
+    # Ensure preset belongs to current user
+    preset = ExportPreset.query.filter_by(id=preset_id, user_id=current_user.id).first_or_404()
     db.session.delete(preset)
     db.session.commit()
     return jsonify({"status": "deleted"})

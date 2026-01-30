@@ -4,6 +4,37 @@ from datetime import datetime
 
 from asetate import db
 
+# Preset colors for crates (Notion-inspired palette)
+CRATE_COLORS = [
+    {"id": "gray", "hex": "#787774", "name": "Gray"},
+    {"id": "brown", "hex": "#9F6B53", "name": "Brown"},
+    {"id": "orange", "hex": "#D9730D", "name": "Orange"},
+    {"id": "yellow", "hex": "#CB912F", "name": "Yellow"},
+    {"id": "green", "hex": "#448361", "name": "Green"},
+    {"id": "blue", "hex": "#337EA9", "name": "Blue"},
+    {"id": "purple", "hex": "#9065B0", "name": "Purple"},
+    {"id": "pink", "hex": "#C14C8A", "name": "Pink"},
+    {"id": "red", "hex": "#D44C47", "name": "Red"},
+]
+
+# Preset icons for crates (emoji-based, music/DJ themed)
+CRATE_ICONS = [
+    # Music & Audio
+    "🎵", "🎶", "🎧", "🎤", "🎹", "🎸", "🎺", "🎷", "🥁", "🪘",
+    # Vinyl & DJ
+    "💿", "📀", "🎚️", "🎛️",
+    # Genres/Moods
+    "🔥", "❄️", "🌙", "☀️", "⭐", "💫", "✨", "🌈", "🌊", "🌴",
+    # Categories
+    "📁", "📂", "🗂️", "📦", "🏷️", "🔖",
+    # Energy/Vibe
+    "💃", "🕺", "🪩", "🎉", "🎊", "💎", "👑", "🏆",
+    # Colors/Abstract
+    "🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "⚫", "⚪", "🟤",
+    # Other
+    "❤️", "💜", "💙", "💚", "💛", "🧡", "🖤", "🤍",
+]
+
 # Junction table for crates containing releases
 crate_releases = db.Table(
     "crate_releases",
@@ -37,21 +68,30 @@ class Crate(db.Model):
 
     Supports hierarchical organization through self-referential parent_id.
     Crates can contain whole releases and/or cherry-picked individual tracks.
+    Each crate belongs to a specific user.
     """
 
     __tablename__ = "crates"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     parent_id = db.Column(
         db.Integer, db.ForeignKey("crates.id", ondelete="CASCADE"), index=True
     )  # NULL = top-level crate
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
+    color = db.Column(db.String(20))  # Preset color ID or hex color
+    icon = db.Column(db.String(10))   # Emoji icon
     sort_order = db.Column(db.Integer, default=0)  # For manual ordering
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship("User", back_populates="crates")
 
     # Self-referential relationship for hierarchy
     children = db.relationship(
@@ -70,11 +110,30 @@ class Crate(db.Model):
     )
 
     __table_args__ = (
-        db.UniqueConstraint("parent_id", "name", name="unique_name_per_parent"),
+        db.UniqueConstraint("user_id", "parent_id", "name", name="unique_name_per_user_parent"),
     )
 
     def __repr__(self):
         return f"<Crate {self.name}>"
+
+    @property
+    def color_hex(self) -> str | None:
+        """Get the hex color value for this crate."""
+        if not self.color:
+            return None
+        # Check if it's a preset color ID
+        for preset in CRATE_COLORS:
+            if preset["id"] == self.color:
+                return preset["hex"]
+        # Otherwise assume it's already a hex color
+        if self.color.startswith("#"):
+            return self.color
+        return None
+
+    @property
+    def display_icon(self) -> str:
+        """Get the icon to display, with fallback to folder emoji."""
+        return self.icon or "📁"
 
     @property
     def is_top_level(self) -> bool:

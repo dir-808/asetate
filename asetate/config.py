@@ -19,10 +19,9 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Discogs API
+    # Discogs OAuth (for authentication and API access)
     DISCOGS_CONSUMER_KEY = os.environ.get("DISCOGS_CONSUMER_KEY", "")
     DISCOGS_CONSUMER_SECRET = os.environ.get("DISCOGS_CONSUMER_SECRET", "")
-    DISCOGS_USER_TOKEN = os.environ.get("DISCOGS_USER_TOKEN", "")
 
     # Rate limiting for Discogs API (requests per minute)
     DISCOGS_RATE_LIMIT = 60

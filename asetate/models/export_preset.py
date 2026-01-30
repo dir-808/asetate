@@ -10,12 +10,19 @@ class ExportPreset(db.Model):
 
     Stores filter criteria and column selection for repeatable exports,
     e.g., "All playable House tracks 120-130 BPM for label printing."
+    Each preset belongs to a specific user.
     """
 
     __tablename__ = "export_presets"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=True, nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name = db.Column(db.String(200), nullable=False)
+
+    # Relationships
+    user = db.relationship("User", backref=db.backref("export_presets", lazy="dynamic"))
 
     # Filter configuration (stored as JSON)
     # Example: {
@@ -36,6 +43,11 @@ class ExportPreset(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
+    # Unique constraint: preset names unique per user
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "name", name="unique_preset_name_per_user"),
+    )
+
     def __repr__(self):
         return f"<ExportPreset {self.name}>"
 
@@ -55,6 +67,26 @@ class ExportPreset(db.Model):
         ("notes", "Notes"),
         ("tags", "Tags"),
         ("crates", "Crates"),
+        ("release_url", "Discogs URL"),
+        ("discogs_id", "Discogs ID"),
+        # Inventory columns (seller mode only)
+        ("condition", "Condition"),
+        ("sleeve_condition", "Sleeve Condition"),
+        ("price", "Price"),
+        ("location", "Location/Bin"),
+        ("listing_url", "Listing URL"),
+    ]
+
+    # Seller-only columns (shown when seller mode enabled)
+    # Note: release_url is available to everyone, only inventory-specific columns here
+    # These columns require inventory sync to be populated
+    SELLER_COLUMNS = [
+        ("discogs_id", "Discogs ID"),
+        ("condition", "Condition"),
+        ("sleeve_condition", "Sleeve Condition"),
+        ("price", "Price"),
+        ("location", "Location/Bin"),
+        ("listing_url", "Listing URL"),
     ]
 
     @classmethod

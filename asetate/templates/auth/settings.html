@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Asetate{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <header class="page-header">
+        <h1>Settings</h1>
+        <p class="text-secondary">Manage your Discogs connection</p>
+    </header>
+
+    <!-- Discogs Connection -->
+    <section class="settings-section card">
+        <h2>Discogs Account</h2>
+
+        {% if oauth_mode %}
+        {# OAuth mode - show connected status #}
+        <div class="discogs-connected">
+            <div class="connection-status">
+                <span class="status-indicator status-completed"></span>
+                <span>Connected as <strong>{{ current_user.discogs_username }}</strong></span>
+            </div>
+            <a href="https://www.discogs.com/user/{{ current_user.discogs_username }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="btn btn-secondary btn-sm">
+                View Profile
+            </a>
+        </div>
+        <p class="text-muted" style="margin-top: var(--space-md);">
+            Your collection can be synced from the <a href="{{ url_for('sync.sync_page') }}">Sync page</a>.
+        </p>
+
+        {% else %}
+        {# PAT mode - show token configuration form #}
+        {% if current_user.has_discogs_credentials %}
+        <div class="discogs-connected">
+            <div class="connection-status">
+                <span class="status-indicator status-completed"></span>
+                <span>Connected as <strong>{{ current_user.discogs_username }}</strong></span>
+            </div>
+            <a href="https://www.discogs.com/user/{{ current_user.discogs_username }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="btn btn-secondary btn-sm">
+                View Profile
+            </a>
+        </div>
+        <p class="text-muted" style="margin-top: var(--space-md);">
+            Your collection can be synced from the <a href="{{ url_for('sync.sync_page') }}">Sync page</a>.
+        </p>
+
+        <details style="margin-top: var(--space-lg);">
+            <summary class="text-muted" style="cursor: pointer;">Update credentials</summary>
+            <form action="{{ url_for('auth.save_token') }}" method="POST" class="token-form" style="margin-top: var(--space-md);">
+                <div class="form-group">
+                    <label for="username">Discogs Username</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           value="{{ current_user.discogs_username }}"
+                           required
+                           class="form-control"
+                           placeholder="your_discogs_username">
+                </div>
+                <div class="form-group">
+                    <label for="token">Personal Access Token</label>
+                    <input type="password"
+                           id="token"
+                           name="token"
+                           required
+                           class="form-control"
+                           placeholder="Enter new token to update">
+                    <small class="text-muted">
+                        Get your token at <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">Discogs Developer Settings</a>
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Credentials</button>
+            </form>
+        </details>
+
+        {% else %}
+        <div class="discogs-not-connected">
+            <p class="text-muted" style="margin-bottom: var(--space-md);">
+                Connect your Discogs account to sync your vinyl collection.
+            </p>
+
+            <form action="{{ url_for('auth.save_token') }}" method="POST" class="token-form">
+                <div class="form-group">
+                    <label for="username">Discogs Username</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           required
+                           class="form-control"
+                           placeholder="your_discogs_username">
+                    <small class="text-muted">Your Discogs username (visible in your profile URL)</small>
+                </div>
+                <div class="form-group">
+                    <label for="token">Personal Access Token</label>
+                    <input type="password"
+                           id="token"
+                           name="token"
+                           required
+                           class="form-control"
+                           placeholder="Paste your token here">
+                    <small class="text-muted">
+                        Generate a token at <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">Discogs Developer Settings</a>
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">Connect to Discogs</button>
+            </form>
+        </div>
+        {% endif %}
+        {% endif %}
+    </section>
+
+    <!-- Backup & Export -->
+    <section class="settings-section card">
+        <h2>Backup & Export</h2>
+        <p class="text-muted" style="margin-bottom: var(--space-md);">
+            Export your DJ metadata (BPM, keys, crates, tags) to a JSON file.
+            This backup can be imported later or on another instance.
+        </p>
+
+        <div class="backup-actions">
+            <a href="{{ url_for('auth.export_data') }}" class="btn btn-primary">
+                Export Data
+            </a>
+
+            <form action="{{ url_for('auth.import_data') }}" method="POST" enctype="multipart/form-data" class="import-form">
+                <label for="import-file" class="btn btn-secondary">
+                    Import Backup
+                </label>
+                <input type="file"
+                       id="import-file"
+                       name="file"
+                       accept=".json"
+                       style="display: none;"
+                       onchange="this.form.submit()">
+            </form>
+        </div>
+
+        <details style="margin-top: var(--space-lg);">
+            <summary class="text-muted" style="cursor: pointer;">What's included in the backup?</summary>
+            <ul class="text-muted" style="margin-top: var(--space-sm); padding-left: var(--space-lg);">
+                <li>Track DJ metadata (BPM, key, energy, playable status, notes)</li>
+                <li>Crates and their contents</li>
+                <li>Tags and tag assignments</li>
+                <li>Release corrections</li>
+            </ul>
+            <p class="text-muted" style="margin-top: var(--space-sm);">
+                <strong>Not included:</strong> Collection data (releases, tracks) - these are re-synced from Discogs.
+            </p>
+        </details>
+
+        <p class="text-muted" style="margin-top: var(--space-md); font-size: 0.85rem;">
+            <strong>Tip:</strong> Save your backup to a cloud-synced folder (Dropbox, Google Drive, etc.)
+            for automatic offsite backup.
+        </p>
+    </section>
+
+    <!-- Seller Settings -->
+    <section class="settings-section card">
+        <h2>Seller Settings</h2>
+        <p class="text-muted" style="margin-bottom: var(--space-md);">
+            Enable additional features for Discogs sellers.
+        </p>
+
+        <form action="{{ url_for('auth.save_seller_settings') }}" method="POST" class="seller-settings-form">
+            <div class="form-check">
+                <input type="checkbox"
+                       id="seller_mode"
+                       name="seller_mode"
+                       class="form-check-input"
+                       {% if current_user.is_seller_mode %}checked{% endif %}>
+                <label for="seller_mode" class="form-check-label">
+                    <strong>Enable Seller Mode</strong>
+                    <span class="text-muted">Show additional options for sellers</span>
+                </label>
+            </div>
+
+            <div class="form-check seller-option" id="inventory-url-option" {% if not current_user.is_seller_mode %}style="display: none;"{% endif %}>
+                <input type="checkbox"
+                       id="include_inventory_url"
+                       name="include_inventory_url"
+                       class="form-check-input"
+                       {% if current_user.include_inventory_url %}checked{% endif %}>
+                <label for="include_inventory_url" class="form-check-label">
+                    <strong>Include Inventory URL in Exports</strong>
+                    <span class="text-muted">Add your listing URL to CSV exports (useful for linking labels to your shop)</span>
+                </label>
+            </div>
+
+            <div class="form-check seller-option" id="include-drafts-option" {% if not current_user.is_seller_mode %}style="display: none;"{% endif %}>
+                <input type="checkbox"
+                       id="include_drafts"
+                       name="include_drafts"
+                       class="form-check-input"
+                       {% if current_user.include_drafts %}checked{% endif %}>
+                <label for="include_drafts" class="form-check-label">
+                    <strong>Include Draft Listings</strong>
+                    <span class="text-muted">Sync draft listings from Discogs inventory (not just items marked "For Sale")</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-md);">Save Seller Settings</button>
+        </form>
+    </section>
+
+    <!-- Account Actions -->
+    <section class="settings-section card">
+        <h2>Account Actions</h2>
+        {% if oauth_mode %}
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Sign Out</a>
+        {% else %}
+        <p class="text-muted">
+            This is a self-hosted instance. Your data is stored locally in SQLite.
+        </p>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+.token-form {
+    max-width: 400px;
+}
+.token-form .form-group {
+    margin-bottom: var(--space-md);
+}
+.token-form label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+}
+.token-form .form-control {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+}
+.token-form small {
+    display: block;
+    margin-top: var(--space-xs);
+}
+.backup-actions {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    flex-wrap: wrap;
+}
+.import-form {
+    display: inline-block;
+}
+.seller-settings-form .form-check {
+    margin-bottom: var(--space-md);
+}
+.form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+}
+.form-check-input {
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+.form-check-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.form-check-label .text-muted {
+    font-size: 0.85rem;
+}
+.seller-option {
+    margin-left: var(--space-lg);
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--color-border);
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const sellerModeCheckbox = document.getElementById('seller_mode');
+    const sellerOptions = document.querySelectorAll('.seller-option');
+
+    if (sellerModeCheckbox && sellerOptions.length) {
+        sellerModeCheckbox.addEventListener('change', function() {
+            sellerOptions.forEach(option => {
+                option.style.display = this.checked ? 'flex' : 'none';
+            });
+        });
+    }
+})();
+</script>
+{% endblock %}

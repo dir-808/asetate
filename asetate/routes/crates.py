@@ -1,19 +1,25 @@
 """Crate routes - managing crates and their contents."""
 
 from flask import Blueprint, render_template, request, jsonify
+from flask_login import login_required, current_user
 
 from asetate import db
 from asetate.models import Crate, Release, Track, crate_releases, crate_tracks
+from asetate.models.crate import CRATE_COLORS, CRATE_ICONS
 
 bp = Blueprint("crates", __name__)
 
 
 @bp.route("/")
+@login_required
 def list_crates():
     """List all crates (hierarchical view)."""
-    # Get top-level crates (no parent)
+    # Get top-level crates (no parent) for current user
     top_level = (
-        Crate.query.filter(Crate.parent_id.is_(None))
+        Crate.query.filter(
+            Crate.user_id == current_user.id,
+            Crate.parent_id.is_(None)
+        )
         .order_by(Crate.sort_order, Crate.name)
         .all()
     )
@@ -29,12 +35,19 @@ def list_crates():
         }
 
     crate_tree = [build_tree(c) for c in top_level]
-    total_crates = Crate.query.count()
+    total_crates = Crate.query.filter_by(user_id=current_user.id).count()
 
-    return render_template("crates/list.html", crate_tree=crate_tree, total_crates=total_crates)
+    return render_template(
+        "crates/list.html",
+        crate_tree=crate_tree,
+        total_crates=total_crates,
+        crate_colors=CRATE_COLORS,
+        crate_icons=CRATE_ICONS,
+    )
 
 
 @bp.route("/", methods=["POST"])
+@login_required
 def create_crate():
     """Create a new crate."""
     data = request.get_json()
@@ -47,19 +60,27 @@ def create_crate():
 
     parent_id = data.get("parent_id")
     if parent_id:
-        parent = Crate.query.get(parent_id)
+        # Ensure parent belongs to current user
+        parent = Crate.query.filter_by(id=parent_id, user_id=current_user.id).first()
         if not parent:
             return jsonify({"error": "Parent crate not found"}), 404
 
-    # Check for duplicate name within same parent
-    existing = Crate.query.filter_by(name=name, parent_id=parent_id).first()
+    # Check for duplicate name within same parent for this user
+    existing = Crate.query.filter_by(
+        user_id=current_user.id,
+        name=name,
+        parent_id=parent_id
+    ).first()
     if existing:
         return jsonify({"error": "A crate with this name already exists"}), 409
 
     crate = Crate(
+        user_id=current_user.id,
         name=name,
         parent_id=parent_id,
         description=data.get("description", "").strip() or None,
+        icon=data.get("icon") or None,
+        color=data.get("color") or None,
     )
     db.session.add(crate)
     db.session.commit()
@@ -72,15 +93,19 @@ def create_crate():
                 "name": crate.name,
                 "parent_id": crate.parent_id,
                 "description": crate.description,
+                "icon": crate.icon,
+                "color": crate.color,
             },
         }
     )
 
 
 @bp.route("/<int:crate_id>")
+@login_required
 def view_crate(crate_id: int):
     """View a crate and its contents (releases and tracks)."""
-    crate = Crate.query.get_or_404(crate_id)
+    # Ensure crate belongs to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
 
     # Get releases in this crate
     releases = crate.releases
@@ -109,9 +134,11 @@ def view_crate(crate_id: int):
 
 
 @bp.route("/<int:crate_id>", methods=["PATCH"])
+@login_required
 def update_crate(crate_id: int):
     """Update a crate's name or description."""
-    crate = Crate.query.get_or_404(crate_id)
+    # Ensure crate belongs to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
 
     data = request.get_json()
     if not data:
@@ -121,9 +148,12 @@ def update_crate(crate_id: int):
         name = data["name"].strip()
         if not name:
             return jsonify({"error": "Name cannot be empty"}), 400
-        # Check for duplicate
+        # Check for duplicate within same user and parent
         existing = Crate.query.filter(
-            Crate.name == name, Crate.parent_id == crate.parent_id, Crate.id != crate.id
+            Crate.user_id == current_user.id,
+            Crate.name == name,
+            Crate.parent_id == crate.parent_id,
+            Crate.id != crate.id
         ).first()
         if existing:
             return jsonify({"error": "A crate with this name already exists"}), 409
@@ -132,30 +162,52 @@ def update_crate(crate_id: int):
     if "description" in data:
         crate.description = data["description"].strip() or None
 
+    if "icon" in data:
+        crate.icon = data["icon"] or None
+
+    if "color" in data:
+        crate.color = data["color"] or None
+
     db.session.commit()
 
-    return jsonify({"status": "ok", "crate": {"id": crate.id, "name": crate.name}})
+    return jsonify({
+        "status": "ok",
+        "crate": {
+            "id": crate.id,
+            "name": crate.name,
+            "icon": crate.icon,
+            "color": crate.color,
+        }
+    })
 
 
 @bp.route("/<int:crate_id>", methods=["DELETE"])
+@login_required
 def delete_crate(crate_id: int):
     """Delete a crate (and its children)."""
-    crate = Crate.query.get_or_404(crate_id)
+    # Ensure crate belongs to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
     db.session.delete(crate)
     db.session.commit()
     return jsonify({"status": "deleted"})
 
 
 @bp.route("/<int:crate_id>/releases", methods=["POST"])
+@login_required
 def add_release_to_crate(crate_id: int):
     """Add a release to a crate."""
-    crate = Crate.query.get_or_404(crate_id)
+    # Ensure crate belongs to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
 
     data = request.get_json()
     if not data or not data.get("release_id"):
         return jsonify({"error": "release_id is required"}), 400
 
-    release = Release.query.get(data["release_id"])
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=data["release_id"],
+        user_id=current_user.id
+    ).first()
     if not release:
         return jsonify({"error": "Release not found"}), 404
 
@@ -169,10 +221,12 @@ def add_release_to_crate(crate_id: int):
 
 
 @bp.route("/<int:crate_id>/releases/<int:release_id>", methods=["DELETE"])
+@login_required
 def remove_release_from_crate(crate_id: int, release_id: int):
     """Remove a release from a crate."""
-    crate = Crate.query.get_or_404(crate_id)
-    release = Release.query.get_or_404(release_id)
+    # Ensure crate and release belong to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
+    release = Release.query.filter_by(id=release_id, user_id=current_user.id).first_or_404()
 
     if release not in crate.releases:
         return jsonify({"error": "Release not in crate"}), 404
@@ -184,15 +238,21 @@ def remove_release_from_crate(crate_id: int, release_id: int):
 
 
 @bp.route("/<int:crate_id>/tracks", methods=["POST"])
+@login_required
 def add_track_to_crate(crate_id: int):
     """Add an individual track to a crate."""
-    crate = Crate.query.get_or_404(crate_id)
+    # Ensure crate belongs to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
 
     data = request.get_json()
     if not data or not data.get("track_id"):
         return jsonify({"error": "track_id is required"}), 400
 
-    track = Track.query.get(data["track_id"])
+    # Ensure track belongs to a release owned by current user
+    track = Track.query.join(Release).filter(
+        Track.id == data["track_id"],
+        Release.user_id == current_user.id
+    ).first()
     if not track:
         return jsonify({"error": "Track not found"}), 404
 
@@ -206,10 +266,17 @@ def add_track_to_crate(crate_id: int):
 
 
 @bp.route("/<int:crate_id>/tracks/<int:track_id>", methods=["DELETE"])
+@login_required
 def remove_track_from_crate(crate_id: int, track_id: int):
     """Remove a track from a crate."""
-    crate = Crate.query.get_or_404(crate_id)
-    track = Track.query.get_or_404(track_id)
+    # Ensure crate belongs to current user
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
+
+    # Ensure track belongs to a release owned by current user
+    track = Track.query.join(Release).filter(
+        Track.id == track_id,
+        Release.user_id == current_user.id
+    ).first_or_404()
 
     if track not in crate.tracks:
         return jsonify({"error": "Track not in crate"}), 404
@@ -221,9 +288,10 @@ def remove_track_from_crate(crate_id: int, track_id: int):
 
 
 @bp.route("/api/list")
+@login_required
 def api_list_crates():
     """Get all crates as flat JSON list (for dropdowns/selectors)."""
-    crates = Crate.query.order_by(Crate.name).all()
+    crates = Crate.query.filter_by(user_id=current_user.id).order_by(Crate.name).all()
 
     return jsonify(
         {
@@ -242,16 +310,26 @@ def api_list_crates():
 
 
 @bp.route("/api/for-release/<int:release_id>")
+@login_required
 def api_crates_for_release(release_id: int):
     """Get crates that contain a specific release."""
-    release = Release.query.get_or_404(release_id)
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
     crate_ids = [c.id for c in release.crates]
     return jsonify({"crate_ids": crate_ids})
 
 
 @bp.route("/api/for-track/<int:track_id>")
+@login_required
 def api_crates_for_track(track_id: int):
     """Get crates that contain a specific track."""
-    track = Track.query.get_or_404(track_id)
+    # Ensure track belongs to a release owned by current user
+    track = Track.query.join(Release).filter(
+        Track.id == track_id,
+        Release.user_id == current_user.id
+    ).first_or_404()
     crate_ids = [c.id for c in track.crates]
     return jsonify({"crate_ids": crate_ids})

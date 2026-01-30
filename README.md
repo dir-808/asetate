@@ -15,7 +15,7 @@ A local-first DJ library manager for vinyl collectors. Sync your Discogs collect
 ### Prerequisites
 
 - Python 3.10+
-- A Discogs account with a personal access token
+- A Discogs account
 
 ### Installation
 
@@ -41,8 +41,7 @@ pip install -e ".[dev]"
 # Copy the example environment file
 cp .env.example .env
 
-# Edit .env with your Discogs credentials
-# Get your token at: https://www.discogs.com/settings/developers
+# Edit .env and set a SECRET_KEY
 ```
 
 ### Database Setup
@@ -66,6 +65,30 @@ FLASK_DEBUG=1 flask run
 
 Visit `http://localhost:5000` in your browser.
 
+## Authentication Modes
+
+Asetate supports two authentication modes:
+
+### Self-Hosted Mode (Default)
+
+Best for single-user deployments. No OAuth app registration required.
+
+1. Run the app with default `.env` (no Discogs OAuth credentials)
+2. Click "Get Started" when you visit the app
+3. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
+4. Click "Generate new token" to create a Personal Access Token
+5. Enter your Discogs username and token in the Settings page
+
+### Hosted Mode (Multi-user)
+
+Best for hosting Asetate as a service for multiple users.
+
+1. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
+2. Click "Add New Application"
+3. Set the callback URL to `http://yourdomain.com/auth/callback`
+4. Add `DISCOGS_CONSUMER_KEY` and `DISCOGS_CONSUMER_SECRET` to your `.env`
+5. Users sign in with "Sign in with Discogs" button
+
 ## Project Structure
 
 ```
@@ -88,15 +111,9 @@ asetate/
 - **Crates** - Hierarchical folders for organizing releases and tracks
 - **Tags** - Custom labels for categorizing tracks
 
-## Discogs API
+## Rate Limiting
 
-Asetate uses the Discogs API to sync your collection. You'll need a personal access token:
-
-1. Go to [Discogs Developer Settings](https://www.discogs.com/settings/developers)
-2. Click "Generate new token"
-3. Copy the token to your `.env` file
-
-Note: Discogs limits API requests to 60/minute. Large collections sync automatically with rate limiting and can be paused/resumed.
+Discogs limits API requests to 60/minute. Large collections sync automatically with rate limiting and can be paused/resumed.
 
 ## Contributing
 

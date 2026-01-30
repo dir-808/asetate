@@ -5,12 +5,36 @@
 {% block content %}
 <div class="export-page">
     <header class="page-header">
-        <h1>Export for Labels</h1>
-        <p class="text-secondary">Filter and export your tracks to CSV for label printing</p>
+        <h1>Export</h1>
+        <p class="text-secondary">Export your library to CSV for label printing</p>
     </header>
+
+    {% if is_seller_mode %}
+    <!-- Export Mode Tabs -->
+    <div class="export-tabs">
+        <button class="tab-btn active" data-tab="dj">DJ Export</button>
+        <button class="tab-btn" data-tab="seller">Seller Export</button>
+    </div>
+    {% endif %}
 
     <div class="export-layout">
         <aside class="export-sidebar">
+            <!-- Export Cue -->
+            <div class="export-section card export-cue-section" id="export-cue-section" style="display: none;">
+                <div class="cue-header">
+                    <h3>Export Cue</h3>
+                    <span class="cue-count badge" id="cue-count">0</span>
+                </div>
+                <p class="text-muted cue-hint">Selected items for export</p>
+                <div class="cue-list" id="cue-list">
+                    <!-- Cue items will be loaded here -->
+                </div>
+                <div class="cue-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-clear-cue">Clear Cue</button>
+                    <button class="btn btn-primary btn-sm" id="btn-export-cue">Export Cue</button>
+                </div>
+            </div>
+
             <!-- Presets -->
             <div class="export-section card">
                 <h3>Presets</h3>
@@ -46,7 +70,7 @@
                     <input type="text" id="filter-search" name="search" placeholder="Artist, title...">
                 </div>
 
-                <div class="filter-group">
+                <div class="filter-group dj-filter">
                     <label>BPM Range</label>
                     <div class="range-inputs">
                         <input type="number" id="filter-bpm-min" placeholder="Min" min="20" max="300">
@@ -55,7 +79,7 @@
                     </div>
                 </div>
 
-                <div class="filter-group">
+                <div class="filter-group dj-filter">
                     <label>Energy</label>
                     <div class="range-inputs">
                         <input type="number" id="filter-energy-min" min="1" max="10" placeholder="Min">
@@ -64,7 +88,7 @@
                     </div>
                 </div>
 
-                <div class="filter-group">
+                <div class="filter-group dj-filter">
                     <label for="filter-key">Key / Camelot</label>
                     <input type="text" id="filter-key" name="key" placeholder="e.g., 8A, Am">
                 </div>
@@ -74,24 +98,31 @@
                     <input type="text" id="filter-tags" placeholder="house, deep, vocal...">
                 </div>
 
-                <div class="filter-group">
+                <div class="filter-group dj-filter">
                     <label class="checkbox-label">
                         <input type="checkbox" id="filter-playable" checked>
                         <span>Playable tracks only</span>
                     </label>
                 </div>
 
-                <div class="filter-group">
+                <div class="filter-group dj-filter">
                     <label class="checkbox-label">
                         <input type="checkbox" id="filter-has-bpm">
                         <span>Has BPM</span>
                     </label>
                 </div>
 
-                <div class="filter-group">
+                <div class="filter-group dj-filter">
                     <label class="checkbox-label">
                         <input type="checkbox" id="filter-has-key">
                         <span>Has Key</span>
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filter-not-exported">
+                        <span>Only items not yet exported</span>
                     </label>
                 </div>
 
@@ -101,9 +132,9 @@
             <!-- Columns -->
             <div class="export-section card">
                 <h3>Columns</h3>
-                <div class="column-checkboxes">
+                <div class="column-checkboxes" id="column-checkboxes">
                     {% for col_id, col_label in columns %}
-                    <label class="checkbox-label">
+                    <label class="checkbox-label" data-column="{{ col_id }}">
                         <input type="checkbox" name="columns" value="{{ col_id }}"
                             {% if col_id in default_columns %}checked{% endif %}>
                         <span>{{ col_label }}</span>
@@ -120,6 +151,11 @@
                     <span class="preview-count" id="preview-count">Loading...</span>
                 </div>
                 <div class="export-actions">
+                    <label class="checkbox-label select-all-label">
+                        <input type="checkbox" id="select-all-checkbox">
+                        <span>Select All</span>
+                    </label>
+                    <button class="btn btn-secondary" id="btn-add-selected">Add to Cue</button>
                     <button class="btn btn-secondary" id="btn-save-preset">Save Preset</button>
                     <button class="btn btn-primary" id="btn-download">Download CSV</button>
                 </div>
@@ -152,28 +188,205 @@
         </form>
     </div>
 </div>
+
+<style>
+/* Export tabs */
+.export-tabs {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+    border-bottom: 2px solid var(--bg-surface);
+    padding-bottom: var(--space-xs);
+}
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: var(--space-sm) var(--space-md);
+    font-size: 1rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+}
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* Export cue */
+.export-cue-section {
+    border-left: 3px solid var(--primary);
+}
+.cue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.cue-header h3 {
+    margin: 0;
+}
+.cue-count {
+    background: var(--primary);
+    color: var(--bg-body);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.cue-hint {
+    font-size: 0.85rem;
+    margin: var(--space-xs) 0;
+}
+.cue-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin: var(--space-sm) 0;
+}
+.cue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-xs) 0;
+    border-bottom: 1px solid var(--bg-surface);
+    font-size: 0.85rem;
+}
+.cue-item:last-child {
+    border-bottom: none;
+}
+.cue-item-info {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+.cue-item-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 1rem;
+}
+.cue-item-remove:hover {
+    color: var(--text-primary);
+}
+.cue-actions {
+    display: flex;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+
+/* Selection controls */
+.select-all-label {
+    margin-right: var(--space-md);
+}
+.preview-table .row-checkbox {
+    width: 20px;
+    cursor: pointer;
+}
+.row-checkbox-col {
+    width: 30px;
+    text-align: center;
+}
+
+/* Seller mode column highlighting */
+.seller-column {
+    background: rgba(249, 115, 22, 0.1);
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function() {
     let debounceTimer = null;
+    let currentMode = 'dj'; // 'dj' or 'seller'
+    let exportCue = JSON.parse(localStorage.getItem('asetate_export_cue') || '[]');
+
+    // Column categories
+    const djColumns = ['artist', 'release_title', 'track_title', 'position', 'label', 'year', 'bpm', 'musical_key', 'camelot', 'energy', 'duration', 'notes', 'tags', 'crates', 'release_url'];
+    const sellerColumns = ['artist', 'release_title', 'condition', 'sleeve_condition', 'price', 'location', 'listing_url', 'discogs_id'];
+    const djDefaultColumns = ['artist', 'release_title', 'track_title', 'position', 'bpm', 'musical_key'];
+    const sellerDefaultColumns = ['artist', 'release_title', 'condition', 'price', 'location', 'listing_url'];
+
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = btn.dataset.tab;
+            applyModeSettings();
+            updatePreview();
+        });
+    });
+
+    function applyModeSettings() {
+        // Show/hide DJ-specific filters
+        document.querySelectorAll('.dj-filter').forEach(el => {
+            el.style.display = currentMode === 'dj' ? 'block' : 'none';
+        });
+
+        // Update column checkboxes based on mode
+        const columnContainer = document.getElementById('column-checkboxes');
+        const checkboxes = columnContainer.querySelectorAll('input[name="columns"]');
+        const targetColumns = currentMode === 'dj' ? djColumns : sellerColumns;
+        const defaultCols = currentMode === 'dj' ? djDefaultColumns : sellerDefaultColumns;
+
+        checkboxes.forEach(cb => {
+            const label = cb.closest('label');
+            const colId = cb.value;
+
+            // Show only relevant columns for the mode
+            if (currentMode === 'seller') {
+                // In seller mode, show seller columns prominently
+                if (sellerColumns.includes(colId)) {
+                    label.style.display = 'flex';
+                    label.classList.add('seller-column');
+                } else {
+                    label.style.display = 'none';
+                }
+            } else {
+                // In DJ mode, show DJ columns
+                if (djColumns.includes(colId)) {
+                    label.style.display = 'flex';
+                    label.classList.remove('seller-column');
+                } else {
+                    label.style.display = 'none';
+                }
+            }
+
+            // Set defaults for mode
+            cb.checked = defaultCols.includes(colId);
+        });
+    }
 
     // Collect current filter values
     function getFilters() {
-        return {
+        const filters = {
             crate_id: document.getElementById('filter-crate').value,
             search: document.getElementById('filter-search').value,
-            bpm_min: document.getElementById('filter-bpm-min').value,
-            bpm_max: document.getElementById('filter-bpm-max').value,
-            energy_min: document.getElementById('filter-energy-min').value,
-            energy_max: document.getElementById('filter-energy-max').value,
-            key: document.getElementById('filter-key').value,
             tags: document.getElementById('filter-tags').value,
-            playable_only: document.getElementById('filter-playable').checked,
-            has_bpm: document.getElementById('filter-has-bpm').checked,
-            has_key: document.getElementById('filter-has-key').checked,
+            not_exported: document.getElementById('filter-not-exported').checked,
         };
+
+        // DJ-specific filters
+        if (currentMode === 'dj') {
+            filters.bpm_min = document.getElementById('filter-bpm-min').value;
+            filters.bpm_max = document.getElementById('filter-bpm-max').value;
+            filters.energy_min = document.getElementById('filter-energy-min').value;
+            filters.energy_max = document.getElementById('filter-energy-max').value;
+            filters.key = document.getElementById('filter-key').value;
+            filters.playable_only = document.getElementById('filter-playable').checked;
+            filters.has_bpm = document.getElementById('filter-has-bpm').checked;
+            filters.has_key = document.getElementById('filter-has-key').checked;
+        }
+
+        return filters;
     }
 
     // Collect selected columns
@@ -195,6 +408,7 @@
         document.getElementById('filter-playable').checked = filters.playable_only !== false;
         document.getElementById('filter-has-bpm').checked = !!filters.has_bpm;
         document.getElementById('filter-has-key').checked = !!filters.has_key;
+        document.getElementById('filter-not-exported').checked = !!filters.not_exported;
     }
 
     // Set columns from array
@@ -203,6 +417,62 @@
             cb.checked = columns.includes(cb.value);
         });
     }
+
+    // Export Cue Management
+    function updateCueUI() {
+        const section = document.getElementById('export-cue-section');
+        const countEl = document.getElementById('cue-count');
+        const listEl = document.getElementById('cue-list');
+
+        countEl.textContent = exportCue.length;
+
+        if (exportCue.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+
+        listEl.innerHTML = exportCue.map((item, idx) => `
+            <div class="cue-item">
+                <span class="cue-item-info" title="${item.artist} - ${item.title}">
+                    ${item.artist} - ${item.title}
+                </span>
+                <button class="cue-item-remove" data-idx="${idx}">&times;</button>
+            </div>
+        `).join('');
+
+        // Add remove handlers
+        listEl.querySelectorAll('.cue-item-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                exportCue.splice(idx, 1);
+                saveCue();
+                updateCueUI();
+            });
+        });
+    }
+
+    function saveCue() {
+        localStorage.setItem('asetate_export_cue', JSON.stringify(exportCue));
+    }
+
+    function addToCue(items) {
+        items.forEach(item => {
+            // Avoid duplicates by track_id
+            if (!exportCue.some(q => q.track_id === item.track_id)) {
+                exportCue.push(item);
+            }
+        });
+        saveCue();
+        updateCueUI();
+    }
+
+    document.getElementById('btn-clear-cue').addEventListener('click', () => {
+        exportCue = [];
+        saveCue();
+        updateCueUI();
+    });
 
     // Update preview
     async function updatePreview() {
@@ -224,7 +494,7 @@
             const response = await fetch('/export/preview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filters, columns, limit: 50 }),
+                body: JSON.stringify({ filters, columns, limit: 50, mode: currentMode }),
             });
 
             const data = await response.json();
@@ -235,7 +505,7 @@
                 return;
             }
 
-            // Build table
+            // Build table with checkboxes
             const columnLabels = {
                 artist: 'Artist',
                 release_title: 'Release',
@@ -251,16 +521,32 @@
                 notes: 'Notes',
                 tags: 'Tags',
                 crates: 'Crates',
+                release_url: 'URL',
+                discogs_id: 'Discogs ID',
+                condition: 'Condition',
+                sleeve_condition: 'Sleeve',
+                price: 'Price',
+                location: 'Location',
+                listing_url: 'Listing URL',
             };
 
             let html = '<table class="preview-table"><thead><tr>';
+            html += '<th class="row-checkbox-col"><input type="checkbox" id="header-select-all"></th>';
             for (const col of columns) {
                 html += `<th>${columnLabels[col] || col}</th>`;
             }
             html += '</tr></thead><tbody>';
 
             for (const track of data.tracks) {
-                html += '<tr>';
+                const trackData = JSON.stringify({
+                    track_id: track.track_id,
+                    release_id: track.release_id,
+                    artist: track.artist || '',
+                    title: track.track_title || track.release_title || '',
+                }).replace(/"/g, '&quot;');
+
+                html += `<tr data-track='${trackData}'>`;
+                html += `<td class="row-checkbox-col"><input type="checkbox" class="row-checkbox"></td>`;
                 for (const col of columns) {
                     html += `<td>${track[col] || '—'}</td>`;
                 }
@@ -274,11 +560,70 @@
             }
 
             wrapper.innerHTML = html;
+
+            // Header select-all checkbox
+            const headerCheckbox = document.getElementById('header-select-all');
+            headerCheckbox.addEventListener('change', () => {
+                document.querySelectorAll('.row-checkbox').forEach(cb => {
+                    cb.checked = headerCheckbox.checked;
+                });
+                updateSelectAllState();
+            });
+
+            // Individual row checkboxes
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.addEventListener('change', updateSelectAllState);
+            });
+
         } catch (err) {
             console.error('Preview failed:', err);
             wrapper.innerHTML = '<p class="text-error">Failed to load preview</p>';
         }
     }
+
+    function updateSelectAllState() {
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        const checked = document.querySelectorAll('.row-checkbox:checked');
+        const selectAllCb = document.getElementById('select-all-checkbox');
+        const headerCb = document.getElementById('header-select-all');
+
+        if (selectAllCb) {
+            selectAllCb.checked = checkboxes.length > 0 && checked.length === checkboxes.length;
+            selectAllCb.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+        }
+        if (headerCb) {
+            headerCb.checked = checkboxes.length > 0 && checked.length === checkboxes.length;
+            headerCb.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+        }
+    }
+
+    // Select all (in header)
+    document.getElementById('select-all-checkbox').addEventListener('change', (e) => {
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.checked = e.target.checked;
+        });
+    });
+
+    // Add selected to cue
+    document.getElementById('btn-add-selected').addEventListener('click', () => {
+        const selected = [];
+        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+            const row = cb.closest('tr');
+            const data = JSON.parse(row.dataset.track);
+            selected.push(data);
+        });
+
+        if (selected.length === 0) {
+            alert('Select at least one item to add to cue');
+            return;
+        }
+
+        addToCue(selected);
+
+        // Uncheck all
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        updateSelectAllState();
+    });
 
     // Debounced preview update
     function debouncedUpdate() {
@@ -305,6 +650,7 @@
         document.getElementById('filter-playable').checked = true;
         document.getElementById('filter-has-bpm').checked = false;
         document.getElementById('filter-has-key').checked = false;
+        document.getElementById('filter-not-exported').checked = false;
         updatePreview();
     });
 
@@ -322,7 +668,7 @@
             const response = await fetch('/export/download', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filters, columns }),
+                body: JSON.stringify({ filters, columns, mark_exported: true }),
             });
 
             if (!response.ok) {
@@ -344,6 +690,56 @@
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
+        } catch (err) {
+            console.error('Download failed:', err);
+            alert('Failed to download CSV');
+        }
+    });
+
+    // Export cue
+    document.getElementById('btn-export-cue').addEventListener('click', async () => {
+        if (exportCue.length === 0) {
+            alert('Cue is empty');
+            return;
+        }
+
+        const columns = getColumns();
+        if (columns.length === 0) {
+            alert('Select at least one column to export');
+            return;
+        }
+
+        const trackIds = exportCue.map(q => q.track_id);
+
+        try {
+            const response = await fetch('/export/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ track_ids: trackIds, columns, mark_exported: true }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Download failed');
+            }
+
+            const disposition = response.headers.get('Content-Disposition');
+            const filenameMatch = disposition && disposition.match(/filename=(.+)/);
+            const filename = filenameMatch ? filenameMatch[1] : 'asetate_export.csv';
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+
+            // Clear cue after successful export
+            exportCue = [];
+            saveCue();
+            updateCueUI();
         } catch (err) {
             console.error('Download failed:', err);
             alert('Failed to download CSV');
@@ -390,7 +786,7 @@
             if (response.ok) {
                 presetModal.classList.remove('open');
                 presetForm.reset();
-                window.location.reload(); // Refresh to show new preset
+                window.location.reload();
             } else {
                 const result = await response.json();
                 alert(result.error || 'Failed to save preset');
@@ -424,7 +820,11 @@
         }
     });
 
-    // Initial preview
+    // Initialize
+    updateCueUI();
+    {% if is_seller_mode %}
+    applyModeSettings();
+    {% endif %}
     updatePreview();
 })();
 </script>

@@ -40,6 +40,7 @@
                 </a>
                 {% endif %}
                 <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Add to Crate</button>
+                <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to export cue">Add to Cue</button>
             </div>
             <div class="release-crates" id="release-crates">
                 <!-- Crates will be loaded via JS -->
@@ -535,6 +536,63 @@
 
     // Load tags on page load
     loadAllTags();
+
+    // Export Cue - Add all tracks from this release
+    const addToCueBtn = document.getElementById('btn-add-to-cue');
+    if (addToCueBtn) {
+        addToCueBtn.addEventListener('click', () => {
+            // Get all tracks from the table
+            const trackRows = document.querySelectorAll('.track-row');
+            const tracks = [];
+
+            trackRows.forEach(row => {
+                const trackId = parseInt(row.dataset.trackId);
+                const titleEl = row.querySelector('.track-title');
+                const title = titleEl ? titleEl.textContent : '';
+                const position = row.querySelector('.col-pos')?.textContent || '';
+
+                tracks.push({
+                    track_id: trackId,
+                    release_id: parseInt(releaseId),
+                    artist: '{{ release.display_artist | e }}',
+                    title: `${position} ${title}`.trim(),
+                });
+            });
+
+            if (tracks.length === 0) {
+                alert('No tracks to add');
+                return;
+            }
+
+            // Add to localStorage cue
+            let exportCue = JSON.parse(localStorage.getItem('asetate_export_cue') || '[]');
+
+            let addedCount = 0;
+            tracks.forEach(track => {
+                if (!exportCue.some(q => q.track_id === track.track_id)) {
+                    exportCue.push(track);
+                    addedCount++;
+                }
+            });
+
+            localStorage.setItem('asetate_export_cue', JSON.stringify(exportCue));
+
+            // Show feedback
+            if (addedCount > 0) {
+                addToCueBtn.textContent = `Added ${addedCount} track${addedCount !== 1 ? 's' : ''}`;
+                addToCueBtn.disabled = true;
+                setTimeout(() => {
+                    addToCueBtn.textContent = 'Add to Cue';
+                    addToCueBtn.disabled = false;
+                }, 2000);
+            } else {
+                addToCueBtn.textContent = 'Already in cue';
+                setTimeout(() => {
+                    addToCueBtn.textContent = 'Add to Cue';
+                }, 1500);
+            }
+        });
+    }
 })();
 </script>
 
