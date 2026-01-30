@@ -6,6 +6,7 @@ from typing import Iterator
 
 import requests
 from flask import current_app
+from requests_oauthlib import OAuth1
 
 
 class DiscogsError(Exception):
@@ -45,29 +46,42 @@ class DiscogsRelease:
 class DiscogsClient:
     """Client for interacting with the Discogs API.
 
-    Handles authentication, rate limiting (60 req/min), and pagination.
+    Handles OAuth 1.0a authentication, rate limiting (60 req/min), and pagination.
     """
 
     BASE_URL = "https://api.discogs.com"
-    USER_AGENT = "Asetate/0.1.0"
+    USER_AGENT = "Asetate/0.1.0 +https://github.com/asetate/asetate"
 
-    def __init__(self, user_token: str | None = None):
-        """Initialize the client.
+    def __init__(
+        self,
+        oauth_token: str | None = None,
+        oauth_token_secret: str | None = None,
+    ):
+        """Initialize the client with OAuth 1.0a credentials.
 
         Args:
-            user_token: Discogs personal access token. If None, reads from config.
+            oauth_token: Discogs OAuth access token
+            oauth_token_secret: Discogs OAuth access token secret
         """
-        self.user_token = user_token or current_app.config.get("DISCOGS_USER_TOKEN")
-        if not self.user_token:
-            raise DiscogsAuthError("No Discogs token configured")
+        consumer_key = current_app.config.get("DISCOGS_CONSUMER_KEY")
+        consumer_secret = current_app.config.get("DISCOGS_CONSUMER_SECRET")
+
+        if not oauth_token or not oauth_token_secret:
+            raise DiscogsAuthError("No Discogs OAuth credentials provided")
+
+        if not consumer_key or not consumer_secret:
+            raise DiscogsAuthError("Discogs OAuth not configured on server")
+
+        # Create OAuth1 authentication
+        self.auth = OAuth1(
+            consumer_key,
+            client_secret=consumer_secret,
+            resource_owner_key=oauth_token,
+            resource_owner_secret=oauth_token_secret,
+        )
 
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": self.USER_AGENT,
-                "Authorization": f"Discogs token={self.user_token}",
-            }
-        )
+        self.session.headers.update({"User-Agent": self.USER_AGENT})
 
         # Rate limiting state
         self._last_request_time = 0.0
@@ -99,7 +113,7 @@ class DiscogsClient:
         self._rate_limit()
 
         url = f"{self.BASE_URL}{endpoint}"
-        response = self.session.request(method, url, **kwargs)
+        response = self.session.request(method, url, auth=self.auth, **kwargs)
 
         # Handle rate limiting
         if response.status_code == 429:

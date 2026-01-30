@@ -33,33 +33,36 @@
                 <span class="status-indicator status-completed"></span>
                 <span>Connected as <strong>{{ current_user.discogs_username }}</strong></span>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btn-disconnect">Disconnect</button>
+            <form action="{{ url_for('auth.disconnect_discogs') }}" method="POST" class="disconnect-form">
+                <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Disconnect your Discogs account? Your collection data will remain.')">
+                    Disconnect
+                </button>
+            </form>
         </div>
+        <p class="text-muted" style="margin-top: var(--space-md);">
+            Your Discogs account is connected. You can sync your collection from the
+            <a href="{{ url_for('sync.sync_page') }}">Sync page</a>.
+        </p>
         {% else %}
-        <p class="text-muted">Connect your Discogs account to sync your vinyl collection.</p>
-        {% endif %}
+        <div class="discogs-not-connected">
+            <p class="text-muted" style="margin-bottom: var(--space-md);">
+                Connect your Discogs account to sync your vinyl collection. This will allow
+                Asetate to read your collection data from Discogs.
+            </p>
 
-        <form id="discogs-form" class="discogs-form {% if current_user.has_discogs_credentials %}hidden{% endif %}">
-            <div class="form-group">
-                <label for="discogs-username">Discogs Username</label>
-                <input type="text" id="discogs-username" placeholder="Your Discogs username"
-                    value="{{ current_user.discogs_username or '' }}">
-            </div>
-            <div class="form-group">
-                <label for="discogs-token">
-                    Personal Access Token
-                    <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener" class="text-secondary">
-                        (Get one here)
-                    </a>
-                </label>
-                <input type="password" id="discogs-token" placeholder="Your Discogs token"
-                    value="{{ current_user.discogs_token or '' }}">
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Save Credentials</button>
-                <span class="save-status" id="save-status"></span>
-            </div>
-        </form>
+            <a href="{{ url_for('auth.connect_discogs') }}" class="btn btn-primary btn-discogs">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.824a9.176 9.176 0 110 18.352 9.176 9.176 0 010-18.352zm0 1.412a7.765 7.765 0 100 15.528 7.765 7.765 0 000-15.528zm0 2.118a5.647 5.647 0 110 11.292 5.647 5.647 0 010-11.292zm0 1.411a4.235 4.235 0 100 8.47 4.235 4.235 0 000-8.47zm0 2.118a2.117 2.117 0 110 4.234 2.117 2.117 0 010-4.234z"/>
+                </svg>
+                Connect to Discogs
+            </a>
+
+            <p class="text-muted" style="margin-top: var(--space-lg); font-size: 0.85rem;">
+                You will be redirected to Discogs to authorize access to your collection.
+                Asetate only requests read access to your collection data.
+            </p>
+        </div>
+        {% endif %}
     </section>
 
     <!-- Danger Zone -->
@@ -68,69 +71,4 @@
         <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Sign Out</a>
     </section>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-(function() {
-    const form = document.getElementById('discogs-form');
-    const saveStatus = document.getElementById('save-status');
-    const disconnectBtn = document.getElementById('btn-disconnect');
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const username = document.getElementById('discogs-username').value.trim();
-        const token = document.getElementById('discogs-token').value.trim();
-
-        if (!username || !token) {
-            saveStatus.textContent = 'Please fill in both fields';
-            saveStatus.className = 'save-status error';
-            return;
-        }
-
-        saveStatus.textContent = 'Saving...';
-        saveStatus.className = 'save-status saving';
-
-        try {
-            const response = await fetch('/auth/settings/discogs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, token }),
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                saveStatus.textContent = 'Saved!';
-                saveStatus.className = 'save-status saved';
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                saveStatus.textContent = result.error || 'Failed to save';
-                saveStatus.className = 'save-status error';
-            }
-        } catch (err) {
-            saveStatus.textContent = 'Network error';
-            saveStatus.className = 'save-status error';
-        }
-    });
-
-    if (disconnectBtn) {
-        disconnectBtn.addEventListener('click', async () => {
-            if (!confirm('Disconnect your Discogs account? Your collection data will remain.')) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/auth/settings/discogs', { method: 'DELETE' });
-                if (response.ok) {
-                    window.location.reload();
-                }
-            } catch (err) {
-                alert('Failed to disconnect');
-            }
-        });
-    }
-})();
-</script>
 {% endblock %}

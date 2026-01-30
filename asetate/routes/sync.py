@@ -51,6 +51,7 @@ def start_sync():
 
     # Capture credentials for background thread
     discogs_token = current_user.discogs_token
+    discogs_token_secret = current_user.discogs_token_secret
     discogs_username = current_user.discogs_username
 
     # Start sync in background thread
@@ -60,6 +61,7 @@ def start_sync():
                 service = SyncService(
                     user_id=user_id,
                     discogs_token=discogs_token,
+                    discogs_token_secret=discogs_token_secret,
                     discogs_username=discogs_username
                 )
                 service.start_sync(resume=False)
@@ -106,6 +108,7 @@ def resume_sync():
 
     # Capture credentials for background thread
     discogs_token = current_user.discogs_token
+    discogs_token_secret = current_user.discogs_token_secret
     discogs_username = current_user.discogs_username
 
     # Start sync in background thread
@@ -115,6 +118,7 @@ def resume_sync():
                 service = SyncService(
                     user_id=user_id,
                     discogs_token=discogs_token,
+                    discogs_token_secret=discogs_token_secret,
                     discogs_username=discogs_username
                 )
                 service.start_sync(resume=True)

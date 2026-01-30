@@ -25,6 +25,7 @@ class SyncService:
         self,
         user_id: int,
         discogs_token: str | None = None,
+        discogs_token_secret: str | None = None,
         discogs_username: str | None = None,
         progress_callback: Callable[[SyncProgress], None] | None = None,
     ):
@@ -32,13 +33,15 @@ class SyncService:
 
         Args:
             user_id: The user ID to sync for (required for user isolation).
-            discogs_token: Discogs personal access token. If None, reads from config.
+            discogs_token: Discogs OAuth access token.
+            discogs_token_secret: Discogs OAuth access token secret.
             discogs_username: Discogs username. If None, fetches from API.
             progress_callback: Optional callback called after each release is processed.
                               Receives the current SyncProgress object.
         """
         self.user_id = user_id
         self.discogs_token = discogs_token
+        self.discogs_token_secret = discogs_token_secret
         self.discogs_username = discogs_username
         self.progress_callback = progress_callback
         self.client: DiscogsClient | None = None
@@ -52,7 +55,10 @@ class SyncService:
         Returns:
             SyncProgress object tracking this sync
         """
-        self.client = DiscogsClient(user_token=self.discogs_token)
+        self.client = DiscogsClient(
+            oauth_token=self.discogs_token,
+            oauth_token_secret=self.discogs_token_secret,
+        )
         username = self.discogs_username or self.client.get_username()
 
         # Get or create sync progress for this user

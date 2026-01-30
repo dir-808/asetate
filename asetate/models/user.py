@@ -10,7 +10,7 @@ from asetate import db
 class User(UserMixin, db.Model):
     """A user account for storing Discogs credentials.
 
-    Uses Google OAuth for authentication. Discogs token and username
+    Uses Google OAuth for authentication. Discogs OAuth 1.0a tokens
     are stored per-user for syncing their collection.
     """
 
@@ -24,9 +24,10 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(255))
     picture = db.Column(db.String(500))  # Profile picture URL
 
-    # Discogs credentials (token is encrypted)
+    # Discogs OAuth 1.0a credentials (tokens are encrypted)
     discogs_username = db.Column(db.String(100))
     _discogs_token_encrypted = db.Column("discogs_token", db.String(500))
+    _discogs_token_secret_encrypted = db.Column("discogs_token_secret", db.String(500))
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -43,7 +44,7 @@ class User(UserMixin, db.Model):
 
     @property
     def discogs_token(self) -> str:
-        """Decrypt and return the Discogs token."""
+        """Decrypt and return the Discogs OAuth token."""
         if not self._discogs_token_encrypted:
             return ""
         from asetate.utils import decrypt_token
@@ -51,7 +52,7 @@ class User(UserMixin, db.Model):
 
     @discogs_token.setter
     def discogs_token(self, value: str):
-        """Encrypt and store the Discogs token."""
+        """Encrypt and store the Discogs OAuth token."""
         if not value:
             self._discogs_token_encrypted = None
         else:
@@ -59,16 +60,39 @@ class User(UserMixin, db.Model):
             self._discogs_token_encrypted = encrypt_token(value)
 
     @property
+    def discogs_token_secret(self) -> str:
+        """Decrypt and return the Discogs OAuth token secret."""
+        if not self._discogs_token_secret_encrypted:
+            return ""
+        from asetate.utils import decrypt_token
+        return decrypt_token(self._discogs_token_secret_encrypted)
+
+    @discogs_token_secret.setter
+    def discogs_token_secret(self, value: str):
+        """Encrypt and store the Discogs OAuth token secret."""
+        if not value:
+            self._discogs_token_secret_encrypted = None
+        else:
+            from asetate.utils import encrypt_token
+            self._discogs_token_secret_encrypted = encrypt_token(value)
+
+    @property
     def has_discogs_credentials(self) -> bool:
         """Check if user has configured Discogs credentials."""
-        return bool(self.discogs_username and self._discogs_token_encrypted)
+        return bool(
+            self.discogs_username
+            and self._discogs_token_encrypted
+            and self._discogs_token_secret_encrypted
+        )
 
-    def update_discogs_credentials(self, username: str, token: str):
-        """Update the user's Discogs credentials."""
+    def update_discogs_credentials(self, username: str, token: str, token_secret: str):
+        """Update the user's Discogs OAuth credentials."""
         self.discogs_username = username
-        self.discogs_token = token  # Uses the encrypted setter
+        self.discogs_token = token
+        self.discogs_token_secret = token_secret
 
     def clear_discogs_credentials(self):
         """Remove the user's Discogs credentials."""
         self.discogs_username = None
         self._discogs_token_encrypted = None
+        self._discogs_token_secret_encrypted = None

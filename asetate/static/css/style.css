@@ -1940,3 +1940,39 @@ input:focus, select:focus, textarea:focus {
 .hidden {
     display: none !important;
 }
+
+/* Discogs Connect Button */
+.btn-discogs {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: var(--space-sm) var(--space-lg);
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+}
+
+.btn-discogs:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+.btn-discogs svg {
+    flex-shrink: 0;
+}
+
+/* Disconnect form styling */
+.disconnect-form {
+    display: inline;
+}
+
+.discogs-not-connected {
+    text-align: center;
+    padding: var(--space-lg) 0;
+}
