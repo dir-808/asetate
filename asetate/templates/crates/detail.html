@@ -1,17 +1,277 @@
 {% extends "base.html" %}
 
-{% block title %}Crate - Asetate{% endblock %}
+{% block title %}{{ crate.name }} - Crates - Asetate{% endblock %}
 
 {% block content %}
-<div class="crate-detail">
-    <header class="page-header">
-        <h1>Crate Name</h1>
-        <p class="text-secondary">0 releases, 0 tracks</p>
+<div class="crate-detail" data-crate-id="{{ crate.id }}">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+        <a href="{{ url_for('crates.list_crates') }}">Crates</a>
+        {% for bc in breadcrumbs %}
+        <span class="breadcrumb-sep">/</span>
+        {% if loop.last %}
+        <span class="breadcrumb-current">{{ bc.name }}</span>
+        {% else %}
+        <a href="{{ url_for('crates.view_crate', crate_id=bc.id) }}">{{ bc.name }}</a>
+        {% endif %}
+        {% endfor %}
+    </nav>
+
+    <header class="crate-header">
+        <div class="crate-info">
+            <h1>{{ crate.name }}</h1>
+            {% if crate.description %}
+            <p class="crate-description">{{ crate.description }}</p>
+            {% endif %}
+            <p class="crate-stats text-secondary">
+                {{ releases|length }} release{% if releases|length != 1 %}s{% endif %}
+                •
+                {{ direct_tracks|length }} individual track{% if direct_tracks|length != 1 %}s{% endif %}
+                {% if children %}
+                •
+                {{ children|length }} sub-crate{% if children|length != 1 %}s{% endif %}
+                {% endif %}
+            </p>
+        </div>
+        <div class="crate-actions-header">
+            <button class="btn btn-secondary btn-sm" id="btn-edit-crate">Edit</button>
+            <button class="btn btn-secondary btn-sm" id="btn-delete-crate">Delete</button>
+        </div>
     </header>
 
-    <section class="crate-contents">
-        <h2>Contents</h2>
-        <p class="text-muted">This crate is empty. Add releases or tracks from your collection.</p>
+    <!-- Sub-crates -->
+    {% if children %}
+    <section class="crate-section">
+        <h2>Sub-crates</h2>
+        <div class="sub-crates-list">
+            {% for child in children %}
+            <a href="{{ url_for('crates.view_crate', crate_id=child.id) }}" class="sub-crate-card">
+                <span class="sub-crate-name">{{ child.name }}</span>
+                <span class="sub-crate-count text-muted">
+                    {{ child.releases|length }} releases
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Releases in crate -->
+    <section class="crate-section">
+        <div class="section-header">
+            <h2>Releases</h2>
+        </div>
+        {% if releases %}
+        <div class="crate-releases-grid">
+            {% for release in releases %}
+            <div class="crate-release-card">
+                <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="release-link">
+                    <div class="release-cover-small">
+                        {% if release.cover_art_url %}
+                        <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}" loading="lazy">
+                        {% else %}
+                        <div class="cover-placeholder-small">No Cover</div>
+                        {% endif %}
+                    </div>
+                    <div class="release-info-small">
+                        <span class="release-title-small">{{ release.display_title }}</span>
+                        <span class="release-artist-small">{{ release.display_artist }}</span>
+                    </div>
+                </a>
+                <button class="btn-remove" data-release-id="{{ release.id }}" title="Remove from crate">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">No releases in this crate. Add releases from your collection.</p>
+        {% endif %}
+    </section>
+
+    <!-- Individual tracks in crate -->
+    <section class="crate-section">
+        <div class="section-header">
+            <h2>Individual Tracks</h2>
+        </div>
+        {% if direct_tracks %}
+        <div class="crate-tracks-list">
+            {% for track in direct_tracks %}
+            <div class="crate-track-item">
+                <a href="{{ url_for('releases.view_release', release_id=track.release_id) }}" class="track-link">
+                    <span class="track-title-sm">{{ track.title }}</span>
+                    <span class="track-artist-sm text-secondary">{{ track.release.display_artist }}</span>
+                    {% if track.bpm %}<span class="track-bpm-sm">{{ track.bpm }} BPM</span>{% endif %}
+                </a>
+                <button class="btn-remove" data-track-id="{{ track.id }}" title="Remove from crate">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">No individual tracks. You can add specific tracks from a release's detail page.</p>
+        {% endif %}
     </section>
 </div>
+
+<!-- Edit Modal -->
+<div class="modal" id="edit-crate-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Crate</h2>
+            <button class="modal-close" id="edit-modal-close">&times;</button>
+        </div>
+        <form id="edit-crate-form">
+            <div class="form-group">
+                <label for="edit-crate-name">Name</label>
+                <input type="text" id="edit-crate-name" value="{{ crate.name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-crate-description">Description</label>
+                <input type="text" id="edit-crate-description" value="{{ crate.description or '' }}" placeholder="Optional">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="edit-btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="delete-crate-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-content-sm">
+        <div class="modal-header">
+            <h2>Delete Crate</h2>
+            <button class="modal-close" id="delete-modal-close">&times;</button>
+        </div>
+        <p>Are you sure you want to delete <strong>{{ crate.name }}</strong>?</p>
+        {% if children %}
+        <p class="text-warning">This will also delete {{ children|length }} sub-crate{% if children|length != 1 %}s{% endif %}.</p>
+        {% endif %}
+        <p class="text-muted">Releases and tracks won't be deleted from your collection.</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="delete-btn-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="btn-confirm-delete" style="background-color: var(--error);">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const crateId = document.querySelector('.crate-detail').dataset.crateId;
+
+    // Edit modal
+    const editModal = document.getElementById('edit-crate-modal');
+    const editForm = document.getElementById('edit-crate-form');
+
+    document.getElementById('btn-edit-crate').addEventListener('click', () => {
+        editModal.classList.add('open');
+    });
+
+    document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
+    document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
+    editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
+
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('edit-crate-name').value.trim(),
+            description: document.getElementById('edit-crate-description').value.trim(),
+        };
+
+        try {
+            const response = await fetch(`/crates/${crateId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const result = await response.json();
+                alert(result.error || 'Failed to update crate');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+
+    // Delete modal
+    const deleteModal = document.getElementById('delete-crate-modal');
+
+    document.getElementById('btn-delete-crate').addEventListener('click', () => {
+        deleteModal.classList.add('open');
+    });
+
+    document.getElementById('delete-modal-close').addEventListener('click', () => deleteModal.classList.remove('open'));
+    document.getElementById('delete-btn-cancel').addEventListener('click', () => deleteModal.classList.remove('open'));
+    deleteModal.querySelector('.modal-backdrop').addEventListener('click', () => deleteModal.classList.remove('open'));
+
+    document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+        try {
+            const response = await fetch(`/crates/${crateId}`, { method: 'DELETE' });
+            if (response.ok) {
+                window.location.href = '/crates/';
+            } else {
+                alert('Failed to delete crate');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+
+    // Remove release from crate
+    document.querySelectorAll('.btn-remove[data-release-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const releaseId = btn.dataset.releaseId;
+            if (!confirm('Remove this release from the crate?')) return;
+
+            try {
+                const response = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
+                    method: 'DELETE',
+                });
+                if (response.ok) {
+                    btn.closest('.crate-release-card').remove();
+                } else {
+                    alert('Failed to remove release');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+    });
+
+    // Remove track from crate
+    document.querySelectorAll('.btn-remove[data-track-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const trackId = btn.dataset.trackId;
+            if (!confirm('Remove this track from the crate?')) return;
+
+            try {
+                const response = await fetch(`/crates/${crateId}/tracks/${trackId}`, {
+                    method: 'DELETE',
+                });
+                if (response.ok) {
+                    btn.closest('.crate-track-item').remove();
+                } else {
+                    alert('Failed to remove track');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+    });
+
+    // Close modals on escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            editModal.classList.remove('open');
+            deleteModal.classList.remove('open');
+        }
+    });
+})();
+</script>
 {% endblock %}

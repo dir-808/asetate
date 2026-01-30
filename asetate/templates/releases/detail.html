@@ -39,6 +39,10 @@
                     Suggest Edit
                 </a>
                 {% endif %}
+                <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Add to Crate</button>
+            </div>
+            <div class="release-crates" id="release-crates">
+                <!-- Crates will be loaded via JS -->
             </div>
         </div>
     </header>
@@ -144,6 +148,25 @@
         <p class="text-muted">No tracks found for this release.</p>
         {% endif %}
     </section>
+</div>
+
+<!-- Add to Crate Modal -->
+<div class="modal" id="crate-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add to Crate</h2>
+            <button class="modal-close" id="crate-modal-close">&times;</button>
+        </div>
+        <div class="crate-selector">
+            <div id="crate-list" class="crate-select-list">
+                <p class="text-muted">Loading crates...</p>
+            </div>
+            <div class="crate-selector-footer">
+                <a href="{{ url_for('crates.list_crates') }}" class="text-secondary">Manage crates</a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -268,6 +291,110 @@
             }
         });
     });
+
+    // Crate management
+    const crateModal = document.getElementById('crate-modal');
+    const crateList = document.getElementById('crate-list');
+    const releaseCratesContainer = document.getElementById('release-crates');
+    let allCrates = [];
+    let releaseCrateIds = [];
+
+    async function loadCrates() {
+        try {
+            const [cratesRes, releaseRes] = await Promise.all([
+                fetch('/crates/api/list'),
+                fetch(`/crates/api/for-release/${releaseId}`)
+            ]);
+            const cratesData = await cratesRes.json();
+            const releaseData = await releaseRes.json();
+
+            allCrates = cratesData.crates;
+            releaseCrateIds = releaseData.crate_ids;
+
+            updateReleaseCratesDisplay();
+        } catch (err) {
+            console.error('Failed to load crates:', err);
+        }
+    }
+
+    function updateReleaseCratesDisplay() {
+        const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
+        if (inCrates.length > 0) {
+            releaseCratesContainer.innerHTML = inCrates.map(c =>
+                `<span class="crate-badge">${c.full_path}</span>`
+            ).join('');
+        } else {
+            releaseCratesContainer.innerHTML = '<span class="text-muted">Not in any crate</span>';
+        }
+    }
+
+    function renderCrateList() {
+        if (allCrates.length === 0) {
+            crateList.innerHTML = '<p class="text-muted">No crates yet. <a href="/crates/">Create one</a></p>';
+            return;
+        }
+
+        crateList.innerHTML = allCrates.map(c => {
+            const isIn = releaseCrateIds.includes(c.id);
+            const indent = '&nbsp;&nbsp;'.repeat(c.depth);
+            return `
+                <label class="crate-select-item">
+                    <input type="checkbox" data-crate-id="${c.id}" ${isIn ? 'checked' : ''}>
+                    <span>${indent}${c.name}</span>
+                </label>
+            `;
+        }).join('');
+
+        // Add event listeners
+        crateList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', async (e) => {
+                const crateId = parseInt(cb.dataset.crateId);
+                const isChecked = cb.checked;
+
+                try {
+                    if (isChecked) {
+                        await fetch(`/crates/${crateId}/releases`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ release_id: parseInt(releaseId) })
+                        });
+                        releaseCrateIds.push(crateId);
+                    } else {
+                        await fetch(`/crates/${crateId}/releases/${releaseId}`, {
+                            method: 'DELETE'
+                        });
+                        releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
+                    }
+                    updateReleaseCratesDisplay();
+                } catch (err) {
+                    cb.checked = !isChecked; // Revert
+                    alert('Failed to update crate');
+                }
+            });
+        });
+    }
+
+    document.getElementById('btn-add-to-crate').addEventListener('click', () => {
+        renderCrateList();
+        crateModal.classList.add('open');
+    });
+
+    document.getElementById('crate-modal-close').addEventListener('click', () => {
+        crateModal.classList.remove('open');
+    });
+
+    crateModal.querySelector('.modal-backdrop').addEventListener('click', () => {
+        crateModal.classList.remove('open');
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && crateModal.classList.contains('open')) {
+            crateModal.classList.remove('open');
+        }
+    });
+
+    // Load crates on page load
+    loadCrates();
 })();
 </script>
 {% endblock %}
