@@ -29,12 +29,13 @@ def create_app(config_name: str = "default") -> Flask:
     migrate.init_app(app, db)
 
     # Register blueprints
-    from .routes import main, releases, crates, sync, export
+    from .routes import main, releases, crates, sync, export, tags
 
     app.register_blueprint(main.bp)
     app.register_blueprint(releases.bp, url_prefix="/releases")
     app.register_blueprint(crates.bp, url_prefix="/crates")
     app.register_blueprint(sync.bp, url_prefix="/sync")
     app.register_blueprint(export.bp, url_prefix="/export")
+    app.register_blueprint(tags.bp, url_prefix="/tags")
 
     return app

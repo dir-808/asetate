@@ -6,66 +6,426 @@
 <div class="export-page">
     <header class="page-header">
         <h1>Export for Labels</h1>
-        <p class="text-secondary">Filter and export your tracks to CSV</p>
+        <p class="text-secondary">Filter and export your tracks to CSV for label printing</p>
     </header>
 
     <div class="export-layout">
-        <aside class="export-filters card">
-            <h2>Filters</h2>
-
-            <div class="filter-group">
-                <label>Crate</label>
-                <select name="crate">
-                    <option value="">All crates</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>BPM Range</label>
-                <div class="range-inputs">
-                    <input type="number" placeholder="Min" name="bpm_min">
-                    <span>to</span>
-                    <input type="number" placeholder="Max" name="bpm_max">
+        <aside class="export-sidebar">
+            <!-- Presets -->
+            <div class="export-section card">
+                <h3>Presets</h3>
+                {% if presets %}
+                <div class="preset-list">
+                    {% for preset in presets %}
+                    <button class="preset-btn" data-preset-id="{{ preset.id }}">
+                        {{ preset.name }}
+                    </button>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <p class="text-muted">No saved presets</p>
+                {% endif %}
             </div>
 
-            <div class="filter-group">
-                <label>Energy</label>
-                <div class="range-inputs">
-                    <input type="number" min="1" max="10" placeholder="Min" name="energy_min">
-                    <span>to</span>
-                    <input type="number" min="1" max="10" placeholder="Max" name="energy_max">
+            <!-- Filters -->
+            <div class="export-section card">
+                <h3>Filters</h3>
+
+                <div class="filter-group">
+                    <label for="filter-crate">Crate</label>
+                    <select id="filter-crate" name="crate_id">
+                        <option value="">All crates</option>
+                        {% for crate in crates %}
+                        <option value="{{ crate.id }}">{{ crate.full_path }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+
+                <div class="filter-group">
+                    <label for="filter-search">Search</label>
+                    <input type="text" id="filter-search" name="search" placeholder="Artist, title...">
+                </div>
+
+                <div class="filter-group">
+                    <label>BPM Range</label>
+                    <div class="range-inputs">
+                        <input type="number" id="filter-bpm-min" placeholder="Min" min="20" max="300">
+                        <span>to</span>
+                        <input type="number" id="filter-bpm-max" placeholder="Max" min="20" max="300">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Energy</label>
+                    <div class="range-inputs">
+                        <input type="number" id="filter-energy-min" min="1" max="10" placeholder="Min">
+                        <span>to</span>
+                        <input type="number" id="filter-energy-max" min="1" max="10" placeholder="Max">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-key">Key / Camelot</label>
+                    <input type="text" id="filter-key" name="key" placeholder="e.g., 8A, Am">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-tags">Tags</label>
+                    <input type="text" id="filter-tags" placeholder="house, deep, vocal...">
+                </div>
+
+                <div class="filter-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filter-playable" checked>
+                        <span>Playable tracks only</span>
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filter-has-bpm">
+                        <span>Has BPM</span>
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filter-has-key">
+                        <span>Has Key</span>
+                    </label>
+                </div>
+
+                <button class="btn btn-secondary btn-block" id="btn-clear-filters">Clear Filters</button>
             </div>
 
-            <div class="filter-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="playable_only" checked>
-                    Playable tracks only
-                </label>
-            </div>
-
-            <div class="filter-group">
-                <label>Tags</label>
-                <input type="text" placeholder="house, deep, vocal..." name="tags">
+            <!-- Columns -->
+            <div class="export-section card">
+                <h3>Columns</h3>
+                <div class="column-checkboxes">
+                    {% for col_id, col_label in columns %}
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="columns" value="{{ col_id }}"
+                            {% if col_id in default_columns %}checked{% endif %}>
+                        <span>{{ col_label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
             </div>
         </aside>
 
-        <main class="export-preview">
+        <main class="export-main">
             <div class="preview-header">
-                <h2>Preview</h2>
-                <span class="preview-count">0 tracks</span>
+                <div>
+                    <h2>Preview</h2>
+                    <span class="preview-count" id="preview-count">Loading...</span>
+                </div>
+                <div class="export-actions">
+                    <button class="btn btn-secondary" id="btn-save-preset">Save Preset</button>
+                    <button class="btn btn-primary" id="btn-download">Download CSV</button>
+                </div>
             </div>
 
-            <div class="preview-table">
-                <p class="text-muted">Adjust filters to preview matching tracks</p>
-            </div>
-
-            <div class="export-actions">
-                <button class="btn btn-secondary">Save as Preset</button>
-                <button class="btn btn-primary">Download CSV</button>
+            <div class="preview-table-wrapper" id="preview-wrapper">
+                <p class="text-muted loading-message">Loading preview...</p>
             </div>
         </main>
     </div>
 </div>
+
+<!-- Save Preset Modal -->
+<div class="modal" id="preset-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-content-sm">
+        <div class="modal-header">
+            <h2>Save Preset</h2>
+            <button class="modal-close" id="preset-modal-close">&times;</button>
+        </div>
+        <form id="preset-form">
+            <div class="form-group">
+                <label for="preset-name">Preset Name</label>
+                <input type="text" id="preset-name" placeholder="e.g., House 120-130 BPM" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="preset-btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    let debounceTimer = null;
+
+    // Collect current filter values
+    function getFilters() {
+        return {
+            crate_id: document.getElementById('filter-crate').value,
+            search: document.getElementById('filter-search').value,
+            bpm_min: document.getElementById('filter-bpm-min').value,
+            bpm_max: document.getElementById('filter-bpm-max').value,
+            energy_min: document.getElementById('filter-energy-min').value,
+            energy_max: document.getElementById('filter-energy-max').value,
+            key: document.getElementById('filter-key').value,
+            tags: document.getElementById('filter-tags').value,
+            playable_only: document.getElementById('filter-playable').checked,
+            has_bpm: document.getElementById('filter-has-bpm').checked,
+            has_key: document.getElementById('filter-has-key').checked,
+        };
+    }
+
+    // Collect selected columns
+    function getColumns() {
+        return Array.from(document.querySelectorAll('input[name="columns"]:checked'))
+            .map(cb => cb.value);
+    }
+
+    // Set filters from object (for presets)
+    function setFilters(filters) {
+        document.getElementById('filter-crate').value = filters.crate_id || '';
+        document.getElementById('filter-search').value = filters.search || '';
+        document.getElementById('filter-bpm-min').value = filters.bpm_min || '';
+        document.getElementById('filter-bpm-max').value = filters.bpm_max || '';
+        document.getElementById('filter-energy-min').value = filters.energy_min || '';
+        document.getElementById('filter-energy-max').value = filters.energy_max || '';
+        document.getElementById('filter-key').value = filters.key || '';
+        document.getElementById('filter-tags').value = filters.tags || '';
+        document.getElementById('filter-playable').checked = filters.playable_only !== false;
+        document.getElementById('filter-has-bpm').checked = !!filters.has_bpm;
+        document.getElementById('filter-has-key').checked = !!filters.has_key;
+    }
+
+    // Set columns from array
+    function setColumns(columns) {
+        document.querySelectorAll('input[name="columns"]').forEach(cb => {
+            cb.checked = columns.includes(cb.value);
+        });
+    }
+
+    // Update preview
+    async function updatePreview() {
+        const wrapper = document.getElementById('preview-wrapper');
+        const countEl = document.getElementById('preview-count');
+
+        wrapper.innerHTML = '<p class="text-muted loading-message">Loading preview...</p>';
+
+        const filters = getFilters();
+        const columns = getColumns();
+
+        if (columns.length === 0) {
+            wrapper.innerHTML = '<p class="text-muted">Select at least one column to preview</p>';
+            countEl.textContent = '0 tracks';
+            return;
+        }
+
+        try {
+            const response = await fetch('/export/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filters, columns, limit: 50 }),
+            });
+
+            const data = await response.json();
+            countEl.textContent = `${data.count} track${data.count !== 1 ? 's' : ''}`;
+
+            if (data.tracks.length === 0) {
+                wrapper.innerHTML = '<p class="text-muted">No tracks match your filters</p>';
+                return;
+            }
+
+            // Build table
+            const columnLabels = {
+                artist: 'Artist',
+                release_title: 'Release',
+                track_title: 'Track',
+                position: 'Side',
+                label: 'Label',
+                year: 'Year',
+                bpm: 'BPM',
+                musical_key: 'Key',
+                camelot: 'Camelot',
+                energy: 'Energy',
+                duration: 'Length',
+                notes: 'Notes',
+                tags: 'Tags',
+                crates: 'Crates',
+            };
+
+            let html = '<table class="preview-table"><thead><tr>';
+            for (const col of columns) {
+                html += `<th>${columnLabels[col] || col}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            for (const track of data.tracks) {
+                html += '<tr>';
+                for (const col of columns) {
+                    html += `<td>${track[col] || '—'}</td>`;
+                }
+                html += '</tr>';
+            }
+
+            html += '</tbody></table>';
+
+            if (data.count > data.preview_count) {
+                html += `<p class="text-muted preview-note">Showing ${data.preview_count} of ${data.count} tracks</p>`;
+            }
+
+            wrapper.innerHTML = html;
+        } catch (err) {
+            console.error('Preview failed:', err);
+            wrapper.innerHTML = '<p class="text-error">Failed to load preview</p>';
+        }
+    }
+
+    // Debounced preview update
+    function debouncedUpdate() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updatePreview, 300);
+    }
+
+    // Attach filter change listeners
+    document.querySelectorAll('.export-sidebar input, .export-sidebar select').forEach(el => {
+        el.addEventListener('input', debouncedUpdate);
+        el.addEventListener('change', debouncedUpdate);
+    });
+
+    // Clear filters
+    document.getElementById('btn-clear-filters').addEventListener('click', () => {
+        document.getElementById('filter-crate').value = '';
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-bpm-min').value = '';
+        document.getElementById('filter-bpm-max').value = '';
+        document.getElementById('filter-energy-min').value = '';
+        document.getElementById('filter-energy-max').value = '';
+        document.getElementById('filter-key').value = '';
+        document.getElementById('filter-tags').value = '';
+        document.getElementById('filter-playable').checked = true;
+        document.getElementById('filter-has-bpm').checked = false;
+        document.getElementById('filter-has-key').checked = false;
+        updatePreview();
+    });
+
+    // Download CSV
+    document.getElementById('btn-download').addEventListener('click', async () => {
+        const filters = getFilters();
+        const columns = getColumns();
+
+        if (columns.length === 0) {
+            alert('Select at least one column to export');
+            return;
+        }
+
+        try {
+            const response = await fetch('/export/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filters, columns }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Download failed');
+            }
+
+            // Get filename from header
+            const disposition = response.headers.get('Content-Disposition');
+            const filenameMatch = disposition && disposition.match(/filename=(.+)/);
+            const filename = filenameMatch ? filenameMatch[1] : 'asetate_export.csv';
+
+            // Download file
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } catch (err) {
+            console.error('Download failed:', err);
+            alert('Failed to download CSV');
+        }
+    });
+
+    // Preset modal
+    const presetModal = document.getElementById('preset-modal');
+    const presetForm = document.getElementById('preset-form');
+
+    document.getElementById('btn-save-preset').addEventListener('click', () => {
+        presetModal.classList.add('open');
+        document.getElementById('preset-name').focus();
+    });
+
+    document.getElementById('preset-modal-close').addEventListener('click', () => {
+        presetModal.classList.remove('open');
+    });
+
+    document.getElementById('preset-btn-cancel').addEventListener('click', () => {
+        presetModal.classList.remove('open');
+    });
+
+    presetModal.querySelector('.modal-backdrop').addEventListener('click', () => {
+        presetModal.classList.remove('open');
+    });
+
+    presetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('preset-name').value.trim();
+        if (!name) return;
+
+        const filters = getFilters();
+        const columns = getColumns();
+
+        try {
+            const response = await fetch('/export/presets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, filters, columns }),
+            });
+
+            if (response.ok) {
+                presetModal.classList.remove('open');
+                presetForm.reset();
+                window.location.reload(); // Refresh to show new preset
+            } else {
+                const result = await response.json();
+                alert(result.error || 'Failed to save preset');
+            }
+        } catch (err) {
+            alert('Error saving preset');
+        }
+    });
+
+    // Load preset
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const presetId = btn.dataset.presetId;
+            try {
+                const response = await fetch(`/export/presets/${presetId}`);
+                const preset = await response.json();
+
+                setFilters(preset.filters || {});
+                setColumns(preset.columns || []);
+                updatePreview();
+            } catch (err) {
+                console.error('Failed to load preset:', err);
+            }
+        });
+    });
+
+    // Escape key closes modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && presetModal.classList.contains('open')) {
+            presetModal.classList.remove('open');
+        }
+    });
+
+    // Initial preview
+    updatePreview();
+})();
+</script>
 {% endblock %}

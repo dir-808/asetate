@@ -64,6 +64,7 @@
                         <th class="col-bpm">BPM</th>
                         <th class="col-key">Key</th>
                         <th class="col-energy">Energy</th>
+                        <th class="col-tags">Tags</th>
                         <th class="col-playable">Playable</th>
                     </tr>
                 </thead>
@@ -110,6 +111,17 @@
                                 max="10"
                                 data-field="energy"
                             >
+                        </td>
+                        <td class="col-tags">
+                            <div class="track-tags" data-track-id="{{ track.id }}">
+                                {% for tag in track.tags %}
+                                <span class="tag-badge" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">
+                                    {{ tag.name }}
+                                    <button class="tag-remove" title="Remove tag">&times;</button>
+                                </span>
+                                {% endfor %}
+                                <button class="tag-add-btn" title="Add tag">+</button>
+                            </div>
                         </td>
                         <td class="col-playable">
                             <label class="toggle">
@@ -395,6 +407,146 @@
 
     // Load crates on page load
     loadCrates();
+
+    // Tag management
+    let allTags = [];
+
+    async function loadAllTags() {
+        try {
+            const response = await fetch('/tags/');
+            const data = await response.json();
+            allTags = data.tags;
+        } catch (err) {
+            console.error('Failed to load tags:', err);
+        }
+    }
+
+    function createTagElement(tag, trackId) {
+        const span = document.createElement('span');
+        span.className = 'tag-badge';
+        span.dataset.tagId = tag.id;
+        span.style.setProperty('--tag-color', tag.color || '#E07A5F');
+        span.innerHTML = `${tag.name}<button class="tag-remove" title="Remove tag">&times;</button>`;
+
+        span.querySelector('.tag-remove').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await removeTagFromTrack(trackId, tag.id);
+            span.remove();
+        });
+
+        return span;
+    }
+
+    async function removeTagFromTrack(trackId, tagId) {
+        try {
+            await fetch(`/tags/track/${trackId}/${tagId}`, { method: 'DELETE' });
+        } catch (err) {
+            console.error('Failed to remove tag:', err);
+        }
+    }
+
+    async function addTagToTrack(trackId, tagName) {
+        try {
+            const response = await fetch(`/tags/track/${trackId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: tagName.trim().toLowerCase() })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                return result.tag;
+            } else {
+                alert(result.error || 'Failed to add tag');
+                return null;
+            }
+        } catch (err) {
+            console.error('Failed to add tag:', err);
+            return null;
+        }
+    }
+
+    function showTagInput(container, trackId) {
+        // Check if input already exists
+        if (container.querySelector('.tag-input-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'tag-input-wrapper';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'tag-input';
+        input.placeholder = 'Add tag...';
+        input.setAttribute('list', 'all-tags-list');
+
+        wrapper.appendChild(input);
+        container.insertBefore(wrapper, container.querySelector('.tag-add-btn'));
+
+        input.focus();
+
+        async function submitTag() {
+            const value = input.value.trim();
+            if (value) {
+                const tag = await addTagToTrack(trackId, value);
+                if (tag) {
+                    const tagEl = createTagElement(tag, trackId);
+                    container.insertBefore(tagEl, wrapper);
+                }
+            }
+            wrapper.remove();
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitTag();
+            } else if (e.key === 'Escape') {
+                wrapper.remove();
+            }
+        });
+
+        input.addEventListener('blur', () => {
+            setTimeout(() => wrapper.remove(), 150);
+        });
+    }
+
+    // Add tag button click handlers
+    document.querySelectorAll('.tag-add-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const container = btn.closest('.track-tags');
+            const trackId = container.dataset.trackId;
+            showTagInput(container, trackId);
+        });
+    });
+
+    // Remove tag button handlers for existing tags
+    document.querySelectorAll('.tag-remove').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const badge = btn.closest('.tag-badge');
+            const container = btn.closest('.track-tags');
+            const trackId = container.dataset.trackId;
+            const tagId = badge.dataset.tagId;
+
+            await removeTagFromTrack(trackId, tagId);
+            badge.remove();
+        });
+    });
+
+    // Load tags on page load
+    loadAllTags();
+})();
+</script>
+
+<!-- Global datalist for tag autocomplete -->
+<datalist id="all-tags-list"></datalist>
+<script>
+(function() {
+    // Populate tag datalist after page load
+    fetch('/tags/').then(r => r.json()).then(data => {
+        const datalist = document.getElementById('all-tags-list');
+        datalist.innerHTML = data.tags.map(t => `<option value="${t.name}">`).join('');
+    });
 })();
 </script>
 {% endblock %}
