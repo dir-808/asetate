@@ -4,17 +4,170 @@
 
 {% block content %}
 <div class="crates-page">
-    <header class="page-header">
-        <h1>Crates</h1>
-        <p class="text-secondary">Organize your releases and tracks</p>
+    <header class="crates-header">
+        <div>
+            <h1>Crates</h1>
+            <p class="text-secondary">{{ total_crates }} crate{% if total_crates != 1 %}s{% endif %}</p>
+        </div>
+        <button class="btn btn-primary" id="btn-new-crate">New Crate</button>
     </header>
 
-    <div class="crates-toolbar">
-        <button class="btn btn-primary">New Crate</button>
-    </div>
-
+    {% if crate_tree %}
     <div class="crates-tree">
-        <p class="text-muted">No crates yet. Create your first crate to start organizing.</p>
+        {% macro render_crate(node, depth=0) %}
+        <div class="crate-item" style="--depth: {{ depth }}">
+            <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="crate-link">
+                <span class="crate-icon">{% if node.children %}📁{% else %}📂{% endif %}</span>
+                <span class="crate-name">{{ node.crate.name }}</span>
+                <span class="crate-counts">
+                    {% if node.release_count > 0 %}
+                    <span class="count-badge">{{ node.release_count }} releases</span>
+                    {% endif %}
+                    {% if node.track_count > 0 %}
+                    <span class="count-badge">{{ node.track_count }} tracks</span>
+                    {% endif %}
+                </span>
+            </a>
+            <button class="crate-action btn-icon" data-crate-id="{{ node.crate.id }}" data-crate-name="{{ node.crate.name }}" title="Add sub-crate">+</button>
+        </div>
+        {% if node.children %}
+        <div class="crate-children">
+            {% for child in node.children %}
+            {{ render_crate(child, depth + 1) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endmacro %}
+
+        {% for node in crate_tree %}
+        {{ render_crate(node) }}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No crates yet</h2>
+        <p>Create crates to organize your releases and tracks by genre, mood, or however you like.</p>
+        <button class="btn btn-primary" id="btn-new-crate-empty">Create Your First Crate</button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- New Crate Modal -->
+<div class="modal" id="new-crate-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">New Crate</h2>
+            <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <form id="new-crate-form">
+            <div class="form-group">
+                <label for="crate-name">Name</label>
+                <input type="text" id="crate-name" name="name" placeholder="e.g., Deep House" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="crate-description">Description (optional)</label>
+                <input type="text" id="crate-description" name="description" placeholder="e.g., Late night vibes">
+            </div>
+            <input type="hidden" id="crate-parent-id" name="parent_id" value="">
+            <div class="form-group" id="parent-display" style="display: none;">
+                <label>Inside</label>
+                <span id="parent-name" class="parent-badge"></span>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Crate</button>
+            </div>
+        </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const modal = document.getElementById('new-crate-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const form = document.getElementById('new-crate-form');
+    const nameInput = document.getElementById('crate-name');
+    const parentIdInput = document.getElementById('crate-parent-id');
+    const parentDisplay = document.getElementById('parent-display');
+    const parentName = document.getElementById('parent-name');
+
+    function openModal(parentId = null, parentCrateName = null) {
+        if (parentId) {
+            modalTitle.textContent = 'New Sub-Crate';
+            parentIdInput.value = parentId;
+            parentName.textContent = parentCrateName;
+            parentDisplay.style.display = 'block';
+        } else {
+            modalTitle.textContent = 'New Crate';
+            parentIdInput.value = '';
+            parentDisplay.style.display = 'none';
+        }
+        modal.classList.add('open');
+        nameInput.focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove('open');
+        form.reset();
+    }
+
+    // Open modal buttons
+    document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
+    document.getElementById('btn-new-crate-empty')?.addEventListener('click', () => openModal());
+
+    // Sub-crate buttons
+    document.querySelectorAll('.crate-action').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(btn.dataset.crateId, btn.dataset.crateName);
+        });
+    });
+
+    // Close modal
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('btn-cancel').addEventListener('click', closeModal);
+    document.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+
+    // Close on escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) {
+            closeModal();
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            name: nameInput.value.trim(),
+            description: document.getElementById('crate-description').value.trim(),
+            parent_id: parentIdInput.value ? parseInt(parentIdInput.value) : null,
+        };
+
+        try {
+            const response = await fetch('/crates/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Redirect to new crate or reload page
+                window.location.href = '/crates/' + result.crate.id;
+            } else {
+                alert(result.error || 'Failed to create crate');
+            }
+        } catch (err) {
+            alert('Error creating crate: ' + err.message);
+        }
+    });
+})();
+</script>
 {% endblock %}
