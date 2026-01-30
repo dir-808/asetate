@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Export - Asetate{% endblock %}
+
+{% block content %}
+<div class="export-page">
+    <header class="page-header">
+        <h1>Export for Labels</h1>
+        <p class="text-secondary">Filter and export your tracks to CSV</p>
+    </header>
+
+    <div class="export-layout">
+        <aside class="export-filters card">
+            <h2>Filters</h2>
+
+            <div class="filter-group">
+                <label>Crate</label>
+                <select name="crate">
+                    <option value="">All crates</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>BPM Range</label>
+                <div class="range-inputs">
+                    <input type="number" placeholder="Min" name="bpm_min">
+                    <span>to</span>
+                    <input type="number" placeholder="Max" name="bpm_max">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>Energy</label>
+                <div class="range-inputs">
+                    <input type="number" min="1" max="10" placeholder="Min" name="energy_min">
+                    <span>to</span>
+                    <input type="number" min="1" max="10" placeholder="Max" name="energy_max">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="playable_only" checked>
+                    Playable tracks only
+                </label>
+            </div>
+
+            <div class="filter-group">
+                <label>Tags</label>
+                <input type="text" placeholder="house, deep, vocal..." name="tags">
+            </div>
+        </aside>
+
+        <main class="export-preview">
+            <div class="preview-header">
+                <h2>Preview</h2>
+                <span class="preview-count">0 tracks</span>
+            </div>
+
+            <div class="preview-table">
+                <p class="text-muted">Adjust filters to preview matching tracks</p>
+            </div>
+
+            <div class="export-actions">
+                <button class="btn btn-secondary">Save as Preset</button>
+                <button class="btn btn-primary">Download CSV</button>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
