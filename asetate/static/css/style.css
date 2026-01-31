@@ -1059,9 +1059,9 @@ input::placeholder, textarea::placeholder {
     border-top-color: rgba(249, 115, 22, 0.4);
 }
 
-/* Playable track after a non-playable gets orange top border */
-.track-row:not(.track-playable) + .track-row.track-playable {
-    border-top: 1px solid rgba(249, 115, 22, 0.4);
+/* Non-playable followed by playable: make its bottom border orange (this IS the top edge of the playable section) */
+.track-row:not(.track-playable):has(+ .track-row.track-playable) {
+    border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
 /* Last playable in a group (not followed by another playable) gets orange bottom border */

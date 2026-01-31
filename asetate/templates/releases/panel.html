@@ -237,9 +237,9 @@
     border-top-color: rgba(249, 115, 22, 0.4);
 }
 
-/* Playable track after a non-playable gets orange top border */
-.panel-track-row.track-dimmed + .panel-track-row:not(.track-dimmed) {
-    border-top: 1px solid rgba(249, 115, 22, 0.4);
+/* Non-playable followed by playable: make its bottom border orange (this IS the top edge of the playable section) */
+.panel-track-row.track-dimmed:has(+ .panel-track-row:not(.track-dimmed)) {
+    border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
 /* Last playable in a group (not followed by another playable) gets orange bottom border */
