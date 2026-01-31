@@ -173,8 +173,8 @@ def update_track(release_id: int, track_id: int):
         energy = data["energy"]
         if energy is not None and energy != "":
             energy = int(energy)
-            if not (1 <= energy <= 10):
-                return jsonify({"error": "Energy must be between 1 and 10"}), 400
+            if not (1 <= energy <= 5):
+                return jsonify({"error": "Energy must be between 1 and 5"}), 400
             track.energy = energy
         else:
             track.energy = None
@@ -240,3 +240,25 @@ def update_corrections(release_id: int):
             "discogs_edit_url": release.discogs_edit_url,
         }
     )
+
+
+@bp.route("/<int:release_id>/notes", methods=["PATCH"])
+@login_required
+def update_release_notes(release_id: int):
+    """Update notes for a release."""
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
+
+    data = request.get_json()
+    if data is None:
+        return jsonify({"error": "No data provided"}), 400
+
+    if "notes" in data:
+        release.notes = data["notes"] or None
+
+    db.session.commit()
+
+    return jsonify({"status": "ok", "notes": release.notes})

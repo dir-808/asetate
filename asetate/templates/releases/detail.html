@@ -48,6 +48,23 @@
         </div>
     </header>
 
+    <!-- Release Notes Section -->
+    <section class="release-notes-section">
+        <div class="release-notes-header">
+            <h3>Release Notes</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-edit-release-notes">
+                {% if release.notes %}Edit{% else %}Add{% endif %}
+            </button>
+        </div>
+        <div class="release-notes-content" id="release-notes-content">
+            {% if release.notes %}
+            <p>{{ release.notes }}</p>
+            {% else %}
+            <p class="text-muted">No notes yet. Click "Add" to add notes about this release.</p>
+            {% endif %}
+        </div>
+    </section>
+
     <section class="tracks-section">
         <div class="tracks-header">
             <h2>Tracklist</h2>
@@ -76,9 +93,13 @@
                         <td class="col-pos">{{ track.display_position }}</td>
                         <td class="col-title">
                             <span class="track-title">{{ track.title }}</span>
-                            {% if track.notes %}
-                            <span class="track-notes-indicator" title="{{ track.notes }}">Notes</span>
-                            {% endif %}
+                            <span class="track-notes-btn {% if track.notes %}track-notes-indicator{% else %}track-notes-add{% endif %}"
+                                  data-track-id="{{ track.id }}"
+                                  data-track-title="{{ track.title }}"
+                                  data-track-notes="{{ track.notes or '' }}"
+                                  title="{{ track.notes if track.notes else 'Add notes' }}">
+                                {% if track.notes %}Notes{% else %}+{% endif %}
+                            </span>
                         </td>
                         <td class="col-duration">{{ track.display_duration }}</td>
                         <td class="col-bpm">
@@ -183,6 +204,121 @@
         </div>
     </div>
 </div>
+
+<!-- Release Notes Modal -->
+<div class="modal" id="release-notes-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Release Notes</h2>
+            <button class="modal-close" id="release-notes-modal-close">&times;</button>
+        </div>
+        <div class="form-group">
+            <textarea id="release-notes-textarea" rows="6" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="release-notes-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="release-notes-save">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Track Notes Modal -->
+<div class="modal" id="track-notes-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Track Notes</h2>
+            <button class="modal-close" id="track-notes-modal-close">&times;</button>
+        </div>
+        <p class="track-notes-title" id="track-notes-title"></p>
+        <div class="form-group">
+            <textarea id="track-notes-textarea" rows="4" placeholder="Add notes about this track..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="track-notes-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="track-notes-save">Save</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Release Notes Section */
+.release-notes-section {
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.release-notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.release-notes-header h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.release-notes-content p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Notes modal textarea */
+#release-notes-textarea,
+#track-notes-textarea {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+}
+
+.track-notes-title {
+    font-weight: 500;
+    margin-bottom: var(--space-sm);
+    color: var(--text-secondary);
+}
+
+/* Track notes indicator - clickable */
+.track-notes-indicator {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.track-notes-indicator:hover {
+    background-color: rgba(251, 191, 36, 0.3);
+}
+
+.track-notes-add {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.track-row:hover .track-notes-add {
+    opacity: 1;
+}
+
+.track-notes-add:hover {
+    border-color: var(--text-muted);
+    color: var(--text-secondary);
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -616,6 +752,128 @@
             }
         });
     }
+
+    // Release Notes Modal
+    const releaseNotesModal = document.getElementById('release-notes-modal');
+    const releaseNotesTextarea = document.getElementById('release-notes-textarea');
+    const releaseNotesContent = document.getElementById('release-notes-content');
+
+    function openReleaseNotesModal() {
+        releaseNotesModal.classList.add('open');
+        releaseNotesTextarea.focus();
+    }
+
+    function closeReleaseNotesModal() {
+        releaseNotesModal.classList.remove('open');
+    }
+
+    document.getElementById('btn-edit-release-notes').addEventListener('click', openReleaseNotesModal);
+    document.getElementById('release-notes-modal-close').addEventListener('click', closeReleaseNotesModal);
+    document.getElementById('release-notes-cancel').addEventListener('click', closeReleaseNotesModal);
+    releaseNotesModal.querySelector('.modal-backdrop').addEventListener('click', closeReleaseNotesModal);
+
+    document.getElementById('release-notes-save').addEventListener('click', async () => {
+        const notes = releaseNotesTextarea.value.trim();
+        showSaving();
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: notes || null })
+            });
+
+            if (response.ok) {
+                showSaved();
+                closeReleaseNotesModal();
+                // Update the display
+                if (notes) {
+                    releaseNotesContent.innerHTML = `<p>${notes.replace(/\n/g, '<br>')}</p>`;
+                    document.getElementById('btn-edit-release-notes').textContent = 'Edit';
+                } else {
+                    releaseNotesContent.innerHTML = '<p class="text-muted">No notes yet. Click "Add" to add notes about this release.</p>';
+                    document.getElementById('btn-edit-release-notes').textContent = 'Add';
+                }
+            } else {
+                showError('Failed to save notes');
+            }
+        } catch (err) {
+            showError('Network error');
+        }
+    });
+
+    // Track Notes Modal
+    const trackNotesModal = document.getElementById('track-notes-modal');
+    const trackNotesTextarea = document.getElementById('track-notes-textarea');
+    const trackNotesTitle = document.getElementById('track-notes-title');
+    let currentTrackNotesBtn = null;
+
+    function openTrackNotesModal(btn) {
+        currentTrackNotesBtn = btn;
+        trackNotesTitle.textContent = btn.dataset.trackTitle;
+        trackNotesTextarea.value = btn.dataset.trackNotes || '';
+        trackNotesModal.classList.add('open');
+        trackNotesTextarea.focus();
+    }
+
+    function closeTrackNotesModal() {
+        trackNotesModal.classList.remove('open');
+        currentTrackNotesBtn = null;
+    }
+
+    document.getElementById('track-notes-modal-close').addEventListener('click', closeTrackNotesModal);
+    document.getElementById('track-notes-cancel').addEventListener('click', closeTrackNotesModal);
+    trackNotesModal.querySelector('.modal-backdrop').addEventListener('click', closeTrackNotesModal);
+
+    document.getElementById('track-notes-save').addEventListener('click', async () => {
+        if (!currentTrackNotesBtn) return;
+
+        const trackId = currentTrackNotesBtn.dataset.trackId;
+        const notes = trackNotesTextarea.value.trim();
+        showSaving();
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/tracks/${trackId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: notes || null })
+            });
+
+            if (response.ok) {
+                showSaved();
+                closeTrackNotesModal();
+                // Update the button display
+                currentTrackNotesBtn.dataset.trackNotes = notes;
+                currentTrackNotesBtn.title = notes || 'Add notes';
+                if (notes) {
+                    currentTrackNotesBtn.textContent = 'Notes';
+                    currentTrackNotesBtn.classList.remove('track-notes-add');
+                    currentTrackNotesBtn.classList.add('track-notes-indicator');
+                } else {
+                    currentTrackNotesBtn.textContent = '+';
+                    currentTrackNotesBtn.classList.remove('track-notes-indicator');
+                    currentTrackNotesBtn.classList.add('track-notes-add');
+                }
+            } else {
+                showError('Failed to save notes');
+            }
+        } catch (err) {
+            showError('Network error');
+        }
+    });
+
+    // Track notes button click handlers
+    document.querySelectorAll('.track-notes-btn').forEach(btn => {
+        btn.addEventListener('click', () => openTrackNotesModal(btn));
+    });
+
+    // Close notes modals on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (releaseNotesModal.classList.contains('open')) closeReleaseNotesModal();
+            if (trackNotesModal.classList.contains('open')) closeTrackNotesModal();
+        }
+    });
 })();
 </script>
 

@@ -49,6 +49,9 @@ class Release(db.Model):
     # Export tracking
     last_exported_at = db.Column(db.DateTime)  # For "export since last export" feature
 
+    # User notes (freeform text for the whole release)
+    notes = db.Column(db.Text)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
