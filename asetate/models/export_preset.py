@@ -67,6 +67,8 @@ class ExportPreset(db.Model):
         ("notes", "Notes"),
         ("tags", "Tags"),
         ("crates", "Crates"),
+        ("crate_icons", "Crate Icons"),
+        ("crate_colors", "Crate Colors"),
         ("release_url", "Discogs URL"),
         ("discogs_id", "Discogs ID"),
         # Inventory columns (seller mode only)

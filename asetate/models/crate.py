@@ -131,6 +131,20 @@ class Crate(db.Model):
         return None
 
     @property
+    def color_name(self) -> str:
+        """Get the human-readable color name for this crate."""
+        if not self.color:
+            return ""
+        # Check if it's a preset color ID
+        for preset in CRATE_COLORS:
+            if preset["id"] == self.color:
+                return preset["name"]
+        # Custom hex color - return as is
+        if self.color.startswith("#"):
+            return self.color
+        return ""
+
+    @property
     def display_icon(self) -> str:
         """Get the icon to display, with fallback to folder emoji."""
         return self.icon or "📁"
