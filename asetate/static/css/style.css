@@ -121,9 +121,11 @@ a:hover {
     gap: var(--space-sm);
 }
 
-/* Chunky rectangular nav buttons */
+/* Chunky rectangular nav buttons with LED indicator */
 .nav-links a {
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 0.75rem;
@@ -136,29 +138,29 @@ a:hover {
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+/* LED indicator inside nav link */
+.nav-links a .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 50%; /* LED dots are round - mimics hardware */
+    transition: background-color 0.15s ease;
+}
+
 .nav-links a:hover {
     color: var(--text-primary);
     background-color: var(--bg-hover);
     border-color: var(--text-muted);
 }
 
-/* Active nav link with LED indicator */
+/* Active nav link with lit LED */
 .nav-links a.active {
     color: var(--primary);
     border-color: var(--primary);
 }
 
-/* LED indicator dot for active state */
-.nav-links a.active::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+.nav-links a.active .led {
     background: var(--primary);
-    border-radius: 50%; /* Only rounded element allowed - mimics actual LED */
 }
 
 .nav-user {
@@ -181,6 +183,15 @@ a:hover {
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+/* LED indicator inside user link */
+.user-link .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 50%;
+    transition: background-color 0.15s ease;
+}
+
 .user-link:hover {
     color: var(--text-primary);
     background-color: var(--bg-hover);
@@ -190,6 +201,10 @@ a:hover {
 .user-link.active {
     color: var(--primary);
     border-color: var(--primary);
+}
+
+.user-link.active .led {
+    background: var(--primary);
 }
 
 /* ============================================
@@ -236,7 +251,7 @@ a:hover {
 
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 240px));
     gap: var(--space-md);
 }
 
@@ -298,7 +313,7 @@ a:hover {
     letter-spacing: 0.05em;
     border: 2px solid transparent;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease, opacity 0.1s ease;
 }
 
 .btn-primary {
@@ -363,6 +378,29 @@ a:hover {
 
 .btn-block {
     width: 100%;
+}
+
+.btn-danger {
+    background-color: var(--bg-elevated);
+    color: var(--error);
+    border-color: var(--error);
+    /* MPC2000 depth effect with error color */
+    border-top-color: #f87171;
+    border-bottom-color: #991b1b;
+}
+
+.btn-danger:hover {
+    background-color: var(--error);
+    color: var(--bg-primary);
+    border-color: var(--error);
+    border-top-color: #fca5a5;
+    border-bottom-color: #7f1d1d;
+}
+
+.btn-danger:active {
+    /* Pressed state - invert depth */
+    border-top-color: #7f1d1d;
+    border-bottom-color: #fca5a5;
 }
 
 /* ============================================
@@ -828,8 +866,13 @@ input::placeholder, textarea::placeholder {
     color: var(--text-secondary);
 }
 
-/* Button loading state - MPC2000 style with blinking LED */
-.btn-spinner {
+/* Activity LED - MPC2000 style blinking indicator for long-running operations
+   Use for any button where user waits for a process to complete:
+   - Sync operations (collection sync, inventory sync, release sync)
+   - Import/export operations
+   - Any async action that takes noticeable time
+   The LED is hidden by default and appears blinking when .is-loading is added */
+.activity-led {
     display: none;
     width: 8px;
     height: 8px;
@@ -839,7 +882,7 @@ input::placeholder, textarea::placeholder {
     animation: led-blink 0.6s ease-in-out infinite;
 }
 
-.btn.is-loading .btn-spinner {
+.btn.is-loading .activity-led {
     display: inline-block;
 }
 
@@ -1158,7 +1201,7 @@ input::placeholder, textarea::placeholder {
     overflow: hidden;
     background-color: var(--bg-surface);
     border: 2px solid var(--border);
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease;
 }
 
 .release-card:hover {
@@ -1280,7 +1323,7 @@ input::placeholder, textarea::placeholder {
     border: 2px solid var(--border);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .pagination-btn:hover {
@@ -1456,7 +1499,7 @@ input::placeholder, textarea::placeholder {
 
 .save-indicator {
     font-size: 0.75rem;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease;
 }
 
 .save-indicator.saving { color: var(--warning); }
@@ -1534,6 +1577,22 @@ input::placeholder, textarea::placeholder {
 /* Last playable in a group (not followed by another playable) gets orange bottom border */
 .track-row.track-playable:not(:has(+ .track-row.track-playable)) {
     border-bottom-color: rgba(249, 115, 22, 0.4);
+}
+
+/* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
+.track-row.track-playable:has(+ .track-row.track-playable) {
+    position: relative;
+    border-bottom-color: transparent;
+}
+
+.track-row.track-playable:has(+ .track-row.track-playable)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
 }
 
 .track-row.track-playable:hover {
@@ -1894,7 +1953,7 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     font-family: var(--font-mono);
     font-size: 0.85rem;
-    transition: all 0.15s ease;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .crate-item:hover .crate-action {
@@ -2007,7 +2066,7 @@ input::placeholder, textarea::placeholder {
     border: 2px solid var(--border);
     text-decoration: none;
     color: inherit;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease;
 }
 
 .sub-crate-card:hover {
@@ -2102,7 +2161,7 @@ input::placeholder, textarea::placeholder {
     color: var(--text-muted);
     cursor: pointer;
     opacity: 0;
-    transition: all 0.15s ease;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
     font-size: 1rem;
     font-family: var(--font-mono);
     line-height: 1;
@@ -2245,10 +2304,10 @@ body.crate-panel-open .crates-main {
     padding-right: 420px;
 }
 
-/* Crate grid - square cards */
+/* Crate grid - square cards with fixed max-width so items reflow but don't resize */
 .crates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
     gap: var(--space-md);
 }
 
@@ -2417,7 +2476,7 @@ body.crate-panel-open .crates-main {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .crate-action-btn:hover {
@@ -2906,7 +2965,7 @@ body.crate-panel-open .crates-main {
     font-size: 0.85rem;
     font-family: var(--font-mono);
     line-height: 1;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .tag-add-btn:hover {
@@ -2990,7 +3049,7 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     font-family: var(--font-mono);
     font-size: 0.8rem;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .preset-btn:hover {
@@ -3157,7 +3216,7 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
-    transition: all 0.2s;
+    transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .tab-btn:hover {
@@ -3442,7 +3501,7 @@ body.crate-panel-open .crates-main {
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-discogs:hover {
@@ -3789,7 +3848,7 @@ body.panel-open .collection-page {
     padding: var(--space-xs) var(--space-sm);
     font-family: var(--font-mono);
     line-height: 1;
-    transition: all 0.15s;
+    transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .panel-close:hover {
@@ -3821,6 +3880,44 @@ body.panel-open .collection-page {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
+}
+
+/* Discogs Card - LCD screen style, clickable to open full page */
+.panel-discogs-card {
+    background-color: var(--lcd-bg);
+    border: 2px solid var(--border);
+    padding: var(--space-md);
+    cursor: pointer;
+    /* Functional shadow for recessed LCD screen effect */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.15s ease;
+}
+
+.panel-discogs-card:hover {
+    border-color: var(--primary);
+}
+
+.panel-discogs-card .panel-info h2,
+.panel-discogs-card .panel-artist,
+.panel-discogs-card .panel-meta,
+.panel-discogs-card .panel-stats {
+    color: var(--lcd-text);
+}
+
+.panel-discogs-card .panel-stats .text-success {
+    color: var(--success);
+}
+
+.panel-discogs-card .panel-meta {
+    opacity: 0.7;
+}
+
+.panel-discogs-actions {
+    display: flex;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--border);
 }
 
 .panel-header {
@@ -4124,7 +4221,7 @@ body.panel-open .collection-page {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--primary);
-    transition: all 0.15s;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .panel-expand-btn:hover {
@@ -4186,7 +4283,7 @@ body.panel-open .collection-page {
     color: var(--text-muted);
     cursor: pointer;
     font-family: var(--font-mono);
-    transition: all 0.15s;
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
 .panel-notes-btn:hover {
@@ -4655,7 +4752,7 @@ body.panel-open .collection-page {
     font-size: 0.65rem;
     font-family: var(--font-mono);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
 .track-notes-btn--empty {
@@ -4756,9 +4853,45 @@ body.panel-open .collection-page {
     border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
+/* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
+.panel-track-row:not(.track-dimmed):has(+ .panel-track-row:not(.track-dimmed)) {
+    position: relative;
+    border-bottom-color: transparent;
+}
+
+.panel-track-row:not(.track-dimmed):has(+ .panel-track-row:not(.track-dimmed))::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
+
 .panel-track-row:not(.track-dimmed):hover {
     background-color: rgba(249, 115, 22, 0.08);
 }
+
+/* ============================================
+   UTILITIES - Common helper classes
+   ============================================ */
+
+/* Spacing utilities - use instead of inline margin/padding styles */
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.pt-sm { padding-top: var(--space-sm); }
+.pt-md { padding-top: var(--space-md); }
+.pl-lg { padding-left: var(--space-lg); }
+
+/* Text utilities */
+.text-sm { font-size: 0.75rem; }
+.text-xs { font-size: 0.65rem; }
+.cursor-pointer { cursor: pointer; }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {

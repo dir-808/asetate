@@ -42,8 +42,23 @@ style.css is organized into sections:
 - **RELEASE DETAIL PAGE** - Track table, header layout
 - **SIDE PANEL** - Panel positioning, content
 - **SHARED COMPONENTS** - Components used across multiple pages
+- **UTILITIES** - Common helper classes (spacing, text)
 
 When adding new styles, find the appropriate section or create a new one.
+
+### Utility Classes
+Use utility classes instead of inline styles for common patterns:
+
+| Class | CSS |
+|-------|-----|
+| `.mt-sm`, `.mt-md`, `.mt-lg` | `margin-top: var(--space-*)` |
+| `.mb-sm`, `.mb-md`, `.mb-lg` | `margin-bottom: var(--space-*)` |
+| `.pt-sm`, `.pt-md` | `padding-top: var(--space-*)` |
+| `.pl-lg` | `padding-left: var(--space-lg)` |
+| `.text-sm`, `.text-xs` | `font-size: 0.75rem / 0.65rem` |
+| `.cursor-pointer` | `cursor: pointer` |
+
+**Prefer utility classes over inline styles** for spacing and text. Keep `style="display: none;"` for JS-toggled elements.
 
 ### Naming Conventions
 - **Base class**: `.component` (e.g., `.energy-bar`)
@@ -60,7 +75,10 @@ These are used across multiple pages - changes apply everywhere:
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper` |
 | **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` |
-| **Side Panel** | `.release-panel`, `.panel-header-bar`, `.panel-content` |
+| **Side Panel** | `.release-panel`, `.panel-content`, `.panel-discogs-card` |
+| **Buttons** | `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm` |
+| **Playable Toggle** | `.toggle`, `.toggle-slider`, `.toggle-sm` |
+| **Toggle Button (Settings)** | `.toggle-btn`, `.toggle-btn .led` |
 
 ---
 
@@ -112,6 +130,84 @@ Key principles:
 }
 ```
 
+**Activity LED (blinking indicator for long-running operations):**
+Use `.activity-led` for any button where the user waits for a process to complete. The LED is hidden by default and appears blinking when the button enters a loading state.
+
+**When to use:**
+- Sync operations (collection sync, inventory sync, release sync)
+- Import/export operations
+- Any async action that takes noticeable time
+
+**When NOT to use:**
+- Instant actions (Save, Cancel, Delete)
+- Navigation (handled by nav link `.led` pattern)
+
+```html
+<button class="btn btn-secondary btn-sm" id="btn-sync">
+    <span class="activity-led"></span>
+    <span class="btn-text">Sync</span>
+</button>
+```
+
+```css
+/* Activity LED - hidden by default, shows blinking when loading */
+.activity-led {
+    display: none;
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 50%; /* LED dots mimic hardware */
+    margin-right: var(--space-xs);
+    animation: led-blink 0.6s ease-in-out infinite;
+}
+
+.btn.is-loading .activity-led {
+    display: inline-block;
+}
+
+@keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+```
+
+**JavaScript pattern:**
+```javascript
+const btn = document.getElementById('btn-sync');
+const btnText = btn.querySelector('.btn-text');
+
+// Start loading - LED appears and blinks
+btn.classList.add('is-loading');
+btnText.textContent = 'Processing...';
+
+// Stop loading - LED disappears
+btn.classList.remove('is-loading');
+btnText.textContent = 'Sync';
+```
+
+**Danger Button (destructive actions):**
+Use `.btn-danger` for delete/remove actions. Red border with hover fill.
+
+```html
+<button class="btn btn-danger">Delete</button>
+```
+
+**Playable Toggle (track checkbox):**
+The sliding toggle used for marking tracks as playable. Square knob (no border-radius) to maintain MPC aesthetic.
+
+```html
+<label class="toggle">
+    <input type="checkbox" class="track-playable">
+    <span class="toggle-slider"></span>
+</label>
+```
+
+Key points:
+- `.toggle` is the outer container with fixed width
+- `.toggle-slider` is the track background
+- `::before` pseudo-element creates the sliding knob
+- Square corners throughout - no border-radius
+
 #### Borders
 - **1px borders only** - consistent thickness throughout
 - Grey (`--border`) for inactive/structural borders
@@ -120,14 +216,38 @@ Key principles:
 - 2px borders only for major containers (cards, panels, modals)
 
 #### Track Highlighting (Playable Sections)
-The playable track border system uses a specific pattern to create orange "boxes" around playable tracks without causing layout shifts:
+The playable track border system creates orange "boxes" around playable tracks. This pattern is shared between:
+- **`.panel-track-row`** (sidebar) - the **blueprint**, uses `.track-dimmed` on non-playable
+- **`.track-row`** (full release page) - uses `.track-playable` on playable
+
+**Both must behave identically.** When updating one, update both.
 
 ```css
 /* Base: all tracks have left/right/bottom borders (grey), first-child also has top */
 /* Playable: change left/right to orange, add subtle background */
 /* Orange top edge: change BOTTOM border of preceding non-playable to orange */
 /* Orange bottom edge: change bottom of last playable in group to orange */
-/* Grey lines between adjacent playable tracks stay grey */
+/* Adjacent playable tracks: use ::after pseudo-element for inset gray separator */
+```
+
+**Adjacent playable tracks fix:**
+Gray separator between adjacent playable tracks uses a pseudo-element positioned inside the border box, so it doesn't overlap the orange side borders:
+
+```css
+.track-row.track-playable:has(+ .track-row.track-playable) {
+    position: relative;
+    border-bottom-color: transparent;
+}
+
+.track-row.track-playable:has(+ .track-row.track-playable)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
 ```
 
 Key rule: **Only change border colors, never add/remove borders.** Use `:has()` selector to style elements based on what follows them.
@@ -161,6 +281,63 @@ grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
 
 Reference: [Every Layout - Sidebar](https://every-layout.dev/layouts/sidebar/)
 
+**Discogs Card (clickable metadata section):**
+The Discogs card groups release metadata and Discogs actions at the top of the sidebar panel. The entire card is clickable to navigate to the full release page.
+
+Structure:
+```html
+<div class="panel-discogs-card" id="panel-discogs-card"
+     data-href="{{ url_for('releases.view_release', release_id=release.id) }}">
+    <header class="panel-header">
+        <!-- Cover, title, artist, stats -->
+    </header>
+    <div class="panel-discogs-actions">
+        <!-- Buttons with onclick="event.stopPropagation();" -->
+        <a href="..." onclick="event.stopPropagation();">View</a>
+        <button onclick="event.stopPropagation();">Sync</button>
+    </div>
+</div>
+```
+
+Styling:
+```css
+.panel-discogs-card {
+    background-color: var(--lcd-bg);
+    border: 2px solid var(--border);
+    padding: var(--space-md);
+    cursor: pointer;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); /* Recessed LCD effect */
+}
+
+.panel-discogs-card:hover {
+    border-color: var(--primary);
+}
+
+/* Text uses LCD colors */
+.panel-discogs-card .panel-info h2,
+.panel-discogs-card .panel-artist,
+.panel-discogs-card .panel-meta,
+.panel-discogs-card .panel-stats {
+    color: var(--lcd-text);
+}
+```
+
+JavaScript:
+```javascript
+const discogsCard = document.getElementById('panel-discogs-card');
+if (discogsCard) {
+    discogsCard.addEventListener('click', () => {
+        window.location.href = discogsCard.dataset.href;
+    });
+}
+```
+
+Key points:
+- Buttons inside must have `onclick="event.stopPropagation();"` to prevent card navigation
+- Uses `data-href` attribute for the destination URL
+- LCD-style background and text colors
+- Orange border on hover indicates interactivity
+
 #### Inputs & Forms
 - Minimal styling - transparent background until hover/focus
 - 1px border on focus (orange)
@@ -185,24 +362,42 @@ The nav bar should feel like the MPC's top control panel - a functional toolbar,
 **Styling approach:**
 - Subtle panel depth via border colors (light top edge, dark bottom edge)
 - Nav links styled as chunky rectangular "buttons" (generous padding, uppercase, letter-spacing)
-- Active state: orange text + LED indicator dot (small colored circle)
+- Active state: orange text + border + LED indicator lights up
 - Hover state: subtle background change, no shadows
 - Keep brand simple - solid orange text, no glow effects
 
+**Nav link HTML structure:**
+```html
+<a href="/collection" class="active">
+    <span class="led"></span>Collection
+</a>
+```
+
 **LED indicator pattern:**
 ```css
-.nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+/* Chunky rectangular nav buttons with LED indicator */
+.nav-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    /* ... other styles */
+}
+
+/* LED indicator inside nav link - always visible */
+.nav-links a .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border); /* Grey when inactive */
+    border-radius: 50%; /* LEDs are round - mimics hardware */
+}
+
+/* Active state - LED lights up orange */
+.nav-links a.active .led {
     background: var(--primary);
-    border-radius: 50%; /* Only rounded element allowed - mimics actual LED */
 }
 ```
+
+**Why inline LED (not ::after):** Consistent with toggle-btn and btn-led patterns. LED is part of the button content, not a decorative overlay. This makes it easier to maintain and keeps the visual language consistent across all MPC-style controls.
 
 **Why rounded LED is OK:** Physical LEDs are round. This is the one exception to "no rounded corners" because it mimics actual hardware indicators.
 
@@ -312,7 +507,6 @@ Use CSS variables consistently:
 
 ```css
 /* BAD: triggers layout reflow every frame */
-.panel { transition: margin-left 0.3s; }
 .element { transition: width 0.3s, height 0.3s; }
 
 /* GOOD: GPU-accelerated, no reflow */
@@ -322,12 +516,31 @@ Use CSS variables consistently:
 
 **Avoid animating:** `width`, `height`, `margin`, `padding`, `top/left/right/bottom`, `font-size`, `border-width`
 
+**Exception - Sidebar Panel:** The sidebar uses `margin-right` transition on the main content area to push content aside. This is acceptable because:
+1. It only affects one container (not many items)
+2. Grid items have fixed max-width so they reflow, not resize
+3. The alternative (transform) would require complex layout changes
+
+```css
+/* Sidebar exception - acceptable margin animation */
+.collection-main { transition: margin-right 0.3s ease; }
+```
+
 **Use `will-change` sparingly** for elements you know will animate:
 ```css
 .release-panel { will-change: transform; }
 ```
 
 **Transitions:** Keep to 0.15s for micro-interactions, 0.3s max for larger movements.
+
+**Transition property specificity:** Never use `transition: all`. Always specify exact properties:
+```css
+/* BAD */
+.btn { transition: all 0.15s; }
+
+/* GOOD */
+.btn { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+```
 
 Reference: [MDN - CSS/JS Animation Performance](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance)
 
