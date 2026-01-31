@@ -60,8 +60,15 @@
                     Suggest Edit
                 </a>
                 {% endif %}
-                <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Add to Crate</button>
-                <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to export cue">Add to Cue</button>
+                <div class="crate-dropdown-wrapper">
+                    <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Crate ▾</button>
+                    <div class="crate-dropdown" id="crate-dropdown" style="display: none;">
+                        <div class="crate-dropdown-list" id="crate-dropdown-list">
+                            <!-- Crates loaded via JS -->
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to print cue">Add to print cue</button>
             </div>
             <div class="release-crates" id="release-crates">
                 <!-- Crates will be loaded via JS -->
@@ -199,25 +206,6 @@
     </section>
 </div>
 
-<!-- Add to Crate Modal -->
-<div class="modal" id="crate-modal">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Add to Crate</h2>
-            <button class="modal-close" id="crate-modal-close">&times;</button>
-        </div>
-        <div class="crate-selector">
-            <div id="crate-list" class="crate-select-list">
-                <p class="text-muted">Loading crates...</p>
-            </div>
-            <div class="crate-selector-footer">
-                <a href="{{ url_for('crates.list_crates') }}" class="text-secondary">Manage crates</a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Track Notes Modal -->
 <div class="modal" id="track-notes-modal">
     <div class="modal-backdrop"></div>
@@ -318,6 +306,61 @@
     color: var(--text-muted);
 }
 
+/* Crate dropdown */
+.crate-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.crate-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--bg-surface);
+    border: 2px solid var(--border);
+    z-index: 100;
+    margin-top: 2px;
+}
+
+.crate-dropdown-list {
+    padding: var(--space-xs) 0;
+}
+
+.crate-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.1s;
+}
+
+.crate-dropdown-item:hover {
+    background-color: var(--bg-elevated);
+}
+
+.crate-dropdown-item.selected {
+    background-color: var(--primary-dim);
+}
+
+.crate-dropdown-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.crate-dropdown-item-icon {
+    font-size: 1rem;
+}
+
+.crate-dropdown-item-name {
+    flex: 1;
+}
+
 /* Release header with notes panel on right */
 .release-header {
     display: grid;
@@ -326,13 +369,16 @@
     align-items: start;
 }
 
-/* Release Notes Panel (right side of header) */
+/* Release Notes Panel (right side of header) - same height as cover */
 .release-notes-panel {
     width: 350px;
+    height: 250px;
     background: var(--bg-surface);
     border: 2px solid var(--border);
     padding: var(--space-md);
-    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .release-notes-header {
@@ -361,16 +407,19 @@
 .notes-save-indicator.error { color: var(--error); }
 
 .release-notes-content {
-    max-height: none;
+    flex: 1;
+    display: flex;
+    min-height: 0;
 }
 
 #release-notes-inline {
     width: 100%;
-    min-height: 120px;
+    flex: 1;
     padding: var(--space-sm);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--bg-input);
+    resize: none;
     color: var(--text-primary);
     font-family: inherit;
     font-size: 0.85rem;
@@ -705,9 +754,10 @@
         });
     });
 
-    // Crate management
-    const crateModal = document.getElementById('crate-modal');
-    const crateList = document.getElementById('crate-list');
+    // Crate dropdown management
+    const crateBtn = document.getElementById('btn-add-to-crate');
+    const crateDropdown = document.getElementById('crate-dropdown');
+    const crateDropdownList = document.getElementById('crate-dropdown-list');
     const releaseCratesContainer = document.getElementById('release-crates');
     let allCrates = [];
     let releaseCrateIds = [];
@@ -725,6 +775,7 @@
             releaseCrateIds = releaseData.crate_ids;
 
             updateReleaseCratesDisplay();
+            updateCrateDropdown();
         } catch (err) {
             console.error('Failed to load crates:', err);
         }
@@ -745,68 +796,74 @@
         }
     }
 
-    function renderCrateList() {
+    function updateCrateDropdown() {
         if (allCrates.length === 0) {
-            crateList.innerHTML = '<p class="text-muted">No crates yet. <a href="/crates/">Create one</a></p>';
+            crateDropdownList.innerHTML = '<p class="text-muted" style="padding: var(--space-sm);">No crates yet. <a href="/crates/">Create one</a></p>';
             return;
         }
 
-        crateList.innerHTML = allCrates.map(c => {
-            const isIn = releaseCrateIds.includes(c.id);
-            const indent = '&nbsp;&nbsp;'.repeat(c.depth);
-            return `
-                <label class="crate-select-item">
-                    <input type="checkbox" data-crate-id="${c.id}" ${isIn ? 'checked' : ''}>
-                    <span>${indent}${c.name}</span>
-                </label>
-            `;
+        crateDropdownList.innerHTML = allCrates.map(c => {
+            const isSelected = releaseCrateIds.includes(c.id);
+            return `<label class="crate-dropdown-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
+                <input type="checkbox" ${isSelected ? 'checked' : ''}>
+                <span class="crate-dropdown-item-icon">${c.icon || '📁'}</span>
+                <span class="crate-dropdown-item-name">${c.name}</span>
+            </label>`;
         }).join('');
 
         // Add event listeners
-        crateList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        crateDropdownList.querySelectorAll('.crate-dropdown-item input[type="checkbox"]').forEach(cb => {
             cb.addEventListener('change', async (e) => {
-                const crateId = parseInt(cb.dataset.crateId);
-                const isChecked = cb.checked;
+                const item = cb.closest('.crate-dropdown-item');
+                const crateId = parseInt(item.dataset.crateId);
 
-                try {
-                    if (isChecked) {
-                        await fetch(`/crates/${crateId}/releases`, {
+                if (cb.checked) {
+                    try {
+                        const res = await fetch(`/crates/${crateId}/releases`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ release_id: parseInt(releaseId) })
                         });
-                        releaseCrateIds.push(crateId);
-                    } else {
-                        await fetch(`/crates/${crateId}/releases/${releaseId}`, {
+                        if (res.ok) {
+                            releaseCrateIds.push(crateId);
+                            item.classList.add('selected');
+                        } else {
+                            cb.checked = false;
+                        }
+                    } catch (err) {
+                        cb.checked = false;
+                    }
+                } else {
+                    try {
+                        const res = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
                             method: 'DELETE'
                         });
-                        releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
+                        if (res.ok) {
+                            releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
+                            item.classList.remove('selected');
+                        } else {
+                            cb.checked = true;
+                        }
+                    } catch (err) {
+                        cb.checked = true;
                     }
-                    updateReleaseCratesDisplay();
-                } catch (err) {
-                    cb.checked = !isChecked; // Revert
-                    alert('Failed to update crate');
                 }
+                updateReleaseCratesDisplay();
             });
         });
     }
 
-    document.getElementById('btn-add-to-crate').addEventListener('click', () => {
-        renderCrateList();
-        crateModal.classList.add('open');
+    // Toggle dropdown
+    crateBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = crateDropdown.style.display !== 'none';
+        crateDropdown.style.display = isOpen ? 'none' : 'block';
     });
 
-    document.getElementById('crate-modal-close').addEventListener('click', () => {
-        crateModal.classList.remove('open');
-    });
-
-    crateModal.querySelector('.modal-backdrop').addEventListener('click', () => {
-        crateModal.classList.remove('open');
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && crateModal.classList.contains('open')) {
-            crateModal.classList.remove('open');
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!crateDropdown.contains(e.target) && e.target !== crateBtn) {
+            crateDropdown.style.display = 'none';
         }
     });
 
@@ -867,8 +924,11 @@
                     datalist.innerHTML = allTags.map(t => `<option value="${t.name}">`).join('');
                 }
                 return result.tag;
+            } else if (response.status === 409) {
+                // Tag already exists on track - silently ignore
+                return null;
             } else {
-                alert(result.error || 'Failed to add tag');
+                console.error(result.error || 'Failed to add tag');
                 return null;
             }
         } catch (err) {

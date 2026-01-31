@@ -411,7 +411,6 @@
 }
 
 .tag-badge-sm .tag-remove-sm {
-    display: none;
     background: none;
     border: none;
     color: inherit;
@@ -420,11 +419,12 @@
     margin-left: 2px;
     font-size: 0.7rem;
     line-height: 1;
-    opacity: 0.7;
+    opacity: 0;
+    transition: opacity 0.1s;
 }
 
 .tag-badge-sm:hover .tag-remove-sm {
-    display: inline;
+    opacity: 0.7;
 }
 
 .panel-tag-add-btn {
@@ -766,17 +766,56 @@
         });
     });
 
-    // Energy bar click handler
+    // Energy bar click and drag handler
     document.querySelectorAll('.energy-bar-panel').forEach(bar => {
-        bar.querySelectorAll('.energy-segment').forEach(segment => {
-            segment.addEventListener('click', (e) => {
-                const level = parseInt(segment.dataset.level);
-                const row = bar.closest('.panel-track-row');
-                const trackId = row.dataset.trackId;
+        let isDragging = false;
+        let currentRow = null;
+        let currentTrackId = null;
 
-                bar.setAttribute('data-value', level);
-                updateTrack(trackId, 'energy', level);
-            });
+        function setEnergyLevel(bar, level) {
+            bar.setAttribute('data-value', level);
+        }
+
+        function getLevelFromEvent(bar, e) {
+            const rect = bar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const segmentWidth = rect.width / 5;
+            let level = Math.ceil(x / segmentWidth);
+            return Math.max(1, Math.min(5, level));
+        }
+
+        bar.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            currentRow = bar.closest('.panel-track-row');
+            currentTrackId = currentRow.dataset.trackId;
+            const level = getLevelFromEvent(bar, e);
+            setEnergyLevel(bar, level);
+            e.preventDefault();
+        });
+
+        bar.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const level = getLevelFromEvent(bar, e);
+                setEnergyLevel(bar, level);
+            }
+        });
+
+        bar.addEventListener('mouseup', (e) => {
+            if (isDragging && currentTrackId) {
+                const level = parseInt(bar.getAttribute('data-value'));
+                updateTrack(currentTrackId, 'energy', level);
+            }
+            isDragging = false;
+            currentTrackId = null;
+        });
+
+        bar.addEventListener('mouseleave', (e) => {
+            if (isDragging && currentTrackId) {
+                const level = parseInt(bar.getAttribute('data-value'));
+                updateTrack(currentTrackId, 'energy', level);
+            }
+            isDragging = false;
+            currentTrackId = null;
         });
     });
 
@@ -871,6 +910,10 @@
                     datalist.innerHTML = allTags.map(t => `<option value="${t.name}">`).join('');
                 }
                 return result.tag;
+            }
+            // Silently ignore 409 (tag already exists) - not an error for the user
+            if (response.status === 409) {
+                return null;
             }
             return null;
         } catch (err) {
@@ -1040,26 +1083,32 @@
                 if (cb.checked) {
                     // Add to crate
                     try {
-                        await fetch(`/crates/${crateId}/add-release`, {
+                        const res = await fetch(`/crates/${crateId}/releases`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ release_id: releaseId })
                         });
-                        releaseCrateIds.push(crateId);
-                        item.classList.add('selected');
+                        if (res.ok) {
+                            releaseCrateIds.push(crateId);
+                            item.classList.add('selected');
+                        } else {
+                            cb.checked = false;
+                        }
                     } catch (err) {
                         cb.checked = false;
                     }
                 } else {
                     // Remove from crate
                     try {
-                        await fetch(`/crates/${crateId}/remove-release`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ release_id: releaseId })
+                        const res = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
+                            method: 'DELETE'
                         });
-                        releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
-                        item.classList.remove('selected');
+                        if (res.ok) {
+                            releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
+                            item.classList.remove('selected');
+                        } else {
+                            cb.checked = true;
+                        }
                     } catch (err) {
                         cb.checked = true;
                     }
