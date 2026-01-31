@@ -1,13 +1,14 @@
 {# Side panel partial for release details - loaded via AJAX #}
 <div class="panel-release" data-release-id="{{ release.id }}">
-    <!-- Full page button in top left -->
-    <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="panel-fullpage-corner" title="Open full page">
+    <!-- Hidden expand button - will be moved to header bar by JS -->
+    <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="panel-expand-btn" id="panel-expand-btn" title="Open full page" style="display: none;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
         </svg>
     </a>
 
     <header class="panel-header">
+        <span class="save-indicator" id="panel-save-indicator"></span>
         <div class="panel-cover">
             {% if release.cover_art_url %}
             <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
@@ -39,27 +40,34 @@
 
     <div class="panel-actions">
         <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Discogs</a>
-        <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate</button>
-        <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to export cue">Cue</button>
+        <button class="btn btn-secondary btn-sm" id="panel-btn-sync" title="Sync this release from Discogs">Sync</button>
+        <div class="panel-crate-dropdown-wrapper">
+            <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate ▾</button>
+            <div class="panel-crate-dropdown" id="panel-crate-dropdown" style="display: none;">
+                <div class="panel-crate-dropdown-list" id="panel-crate-dropdown-list">
+                    <!-- Crates loaded via JS -->
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to print cue">Print cue</button>
     </div>
 
     <div class="panel-crates" id="panel-release-crates">
         <!-- Crates will be loaded via JS -->
     </div>
 
-    <!-- Release Notes -->
-    {% if release.notes %}
-    <div class="panel-notes">
-        <h4>Notes</h4>
-        <p>{{ release.notes }}</p>
+    <!-- Release Notes - Inline editable -->
+    <div class="panel-notes-section">
+        <div class="panel-notes-header">
+            <h4>Notes</h4>
+        </div>
+        <textarea class="panel-notes-textarea" id="panel-release-notes" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
     </div>
-    {% endif %}
 
     <!-- Tracks Section -->
     <section class="panel-tracks">
         <div class="panel-tracks-header">
             <h3>Tracklist</h3>
-            <span class="save-indicator" id="panel-save-indicator"></span>
         </div>
 
         {% if tracks %}
@@ -97,12 +105,12 @@
                     </div>
                     <div class="panel-field panel-field-energy">
                         <label>NRG</label>
-                        <div class="energy-bar-compact" data-field="energy" data-value="{{ track.energy or 3 }}">
-                            <span class="energy-dot" data-level="1"></span>
-                            <span class="energy-dot" data-level="2"></span>
-                            <span class="energy-dot" data-level="3"></span>
-                            <span class="energy-dot" data-level="4"></span>
-                            <span class="energy-dot" data-level="5"></span>
+                        <div class="energy-bar-panel" data-field="energy" data-value="{{ track.energy or 3 }}">
+                            <div class="energy-segment" data-level="1"></div>
+                            <div class="energy-segment" data-level="2"></div>
+                            <div class="energy-segment" data-level="3"></div>
+                            <div class="energy-segment" data-level="4"></div>
+                            <div class="energy-segment" data-level="5"></div>
                         </div>
                     </div>
                 </div>
@@ -163,55 +171,72 @@
 <datalist id="panel-all-tags"></datalist>
 
 <style>
-/* Full page button - top left corner */
-.panel-fullpage-corner {
-    position: absolute;
-    top: var(--space-sm);
-    left: var(--space-sm);
-    width: 32px;
-    height: 32px;
+/* Panel release - flex layout to fill available space */
+.panel-release {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Expand button - orange arrows */
+.panel-expand-btn {
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-elevated);
+    background: transparent;
     border: 1px solid var(--border);
-    color: var(--text-secondary);
-    z-index: 10;
+    color: var(--primary);
     transition: all 0.15s;
 }
 
-.panel-fullpage-corner:hover {
+.panel-expand-btn:hover {
     border-color: var(--primary);
-    color: var(--primary);
     background: var(--primary-dim);
 }
 
-.panel-release {
-    position: relative;
-    padding-top: var(--space-xl);
+.panel-expand-btn svg {
+    stroke: var(--primary);
 }
 
-/* Track row - dimmed for non-playable */
+/* Save indicator in header */
+.panel-header .save-indicator {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    font-size: 0.7rem;
+}
+
+/* Track row - dimmed for non-playable, orange box for playable */
 .panel-track-row {
     padding: var(--space-sm) var(--space-md);
     border-bottom: 1px solid var(--border);
-    transition: opacity 0.15s, background-color 0.15s;
+    transition: opacity 0.15s, background-color 0.15s, box-shadow 0.15s;
 }
 
 .panel-track-row:last-child {
     border-bottom: none;
 }
 
+/* Non-playable tracks are dimmed */
 .panel-track-row.track-dimmed {
     opacity: 0.5;
 }
 
 .panel-track-row.track-dimmed:hover {
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
-.panel-track-row:hover {
-    background-color: var(--bg-surface);
+/* Playable tracks get a faint orange box */
+.panel-track-row:not(.track-dimmed) {
+    box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.3);
+    background-color: rgba(249, 115, 22, 0.03);
+}
+
+.panel-track-row:not(.track-dimmed):hover {
+    background-color: rgba(249, 115, 22, 0.08);
 }
 
 /* Track main row */
@@ -299,36 +324,36 @@
     outline: none;
 }
 
-/* Compact energy bar - small dots */
-.energy-bar-compact {
+/* Energy bar for panel - matches release page style */
+.energy-bar-panel {
     display: flex;
-    gap: 3px;
+    gap: 2px;
+    height: 14px;
     cursor: pointer;
 }
 
-.energy-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+.energy-bar-panel .energy-segment {
+    width: 10px;
     background-color: var(--border);
+    border-radius: 2px;
     transition: background-color 0.15s, transform 0.1s;
 }
 
-.energy-dot:hover {
-    transform: scale(1.2);
+.energy-bar-panel .energy-segment:hover {
+    transform: scaleY(1.15);
 }
 
-.energy-bar-compact[data-value="1"] .energy-dot[data-level="1"] { background-color: var(--success); }
-.energy-bar-compact[data-value="2"] .energy-dot[data-level="1"],
-.energy-bar-compact[data-value="2"] .energy-dot[data-level="2"] { background-color: #84cc16; }
-.energy-bar-compact[data-value="3"] .energy-dot[data-level="1"],
-.energy-bar-compact[data-value="3"] .energy-dot[data-level="2"],
-.energy-bar-compact[data-value="3"] .energy-dot[data-level="3"] { background-color: var(--warning); }
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="1"],
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="2"],
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="3"],
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="4"] { background-color: var(--primary); }
-.energy-bar-compact[data-value="5"] .energy-dot { background-color: var(--error); }
+.energy-bar-panel[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
+.energy-bar-panel[data-value="2"] .energy-segment[data-level="1"],
+.energy-bar-panel[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
+.energy-bar-panel[data-value="3"] .energy-segment[data-level="1"],
+.energy-bar-panel[data-value="3"] .energy-segment[data-level="2"],
+.energy-bar-panel[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="1"],
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="2"],
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="3"],
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
+.energy-bar-panel[data-value="5"] .energy-segment { background-color: var(--error); }
 
 /* Track extras row - notes and tags */
 .panel-track-extras {
@@ -432,9 +457,136 @@
     color: var(--text-primary);
 }
 
-/* Tracks list - no max-height, let it flow */
+/* Header section - flex shrink 0 */
+.panel-header {
+    flex-shrink: 0;
+    position: relative;
+    padding: var(--space-md);
+}
+
+.panel-actions {
+    flex-shrink: 0;
+}
+
+.panel-crates {
+    flex-shrink: 0;
+}
+
+/* Notes section - inline editable */
+.panel-notes-section {
+    flex-shrink: 0;
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-notes-header {
+    margin-bottom: var(--space-xs);
+}
+
+.panel-notes-header h4 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.panel-notes-textarea {
+    width: 100%;
+    min-height: 60px;
+    max-height: 100px;
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    resize: vertical;
+}
+
+.panel-notes-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.panel-notes-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* Crate dropdown */
+.panel-crate-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.panel-crate-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 180px;
+    max-height: 250px;
+    overflow-y: auto;
+    background: var(--bg-surface);
+    border: 2px solid var(--border);
+    z-index: 100;
+    margin-top: 2px;
+}
+
+.panel-crate-dropdown-list {
+    padding: var(--space-xs) 0;
+}
+
+.panel-crate-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.1s;
+}
+
+.panel-crate-item:hover {
+    background-color: var(--bg-elevated);
+}
+
+.panel-crate-item.selected {
+    background-color: var(--primary-dim);
+}
+
+.panel-crate-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.panel-crate-item-icon {
+    font-size: 0.9rem;
+}
+
+.panel-crate-item-name {
+    flex: 1;
+}
+
+/* Tracks section - fills remaining space */
+.panel-tracks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel-tracks-header {
+    flex-shrink: 0;
+}
+
+/* Tracks list - scrollable, fills available space */
 .panel-tracks-list {
-    /* No max-height - removes unnecessary scrollbar */
+    flex: 1;
+    overflow-y: auto;
 }
 
 /* Notes modal within panel */
@@ -600,20 +752,25 @@
         });
     });
 
-    // Checkbox handler
+    // Checkbox handler - immediate visual update
     document.querySelectorAll('.panel-track-playable').forEach(cb => {
         cb.addEventListener('change', (e) => {
             const row = cb.closest('.panel-track-row');
             const trackId = row.dataset.trackId;
-            updateTrack(trackId, 'is_playable', cb.checked);
+            const isPlayable = cb.checked;
+
+            // Immediate visual update before API call
+            row.classList.toggle('track-dimmed', !isPlayable);
+
+            updateTrack(trackId, 'is_playable', isPlayable);
         });
     });
 
     // Energy bar click handler
-    document.querySelectorAll('.energy-bar-compact').forEach(bar => {
-        bar.querySelectorAll('.energy-dot').forEach(dot => {
-            dot.addEventListener('click', (e) => {
-                const level = parseInt(dot.dataset.level);
+    document.querySelectorAll('.energy-bar-panel').forEach(bar => {
+        bar.querySelectorAll('.energy-segment').forEach(segment => {
+            segment.addEventListener('click', (e) => {
+                const level = parseInt(segment.dataset.level);
                 const row = bar.closest('.panel-track-row');
                 const trackId = row.dataset.trackId;
 
@@ -706,8 +863,13 @@
             });
             const result = await response.json();
             if (response.ok) {
-                // Refresh tags list to include new tag
-                loadAllTags();
+                // Add new tag to allTags immediately if it doesn't exist
+                if (!allTags.some(t => t.id === result.tag.id)) {
+                    allTags.push(result.tag);
+                    // Update datalist
+                    const datalist = document.getElementById('panel-all-tags');
+                    datalist.innerHTML = allTags.map(t => `<option value="${t.name}">`).join('');
+                }
                 return result.tag;
             }
             return null;
@@ -781,7 +943,51 @@
         });
     });
 
-    // Load crates for this release
+    // Inline Release Notes - auto-save with debounce
+    const releaseNotesTextarea = document.getElementById('panel-release-notes');
+    let notesDebounceTimer = null;
+
+    async function saveReleaseNotes() {
+        const notes = releaseNotesTextarea.value.trim();
+        showSaving();
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: notes || null })
+            });
+
+            if (response.ok) {
+                showSaved();
+            } else {
+                showError();
+            }
+        } catch (err) {
+            showError();
+        }
+    }
+
+    releaseNotesTextarea.addEventListener('input', () => {
+        clearTimeout(notesDebounceTimer);
+        notesDebounceTimer = setTimeout(saveReleaseNotes, 800);
+    });
+
+    releaseNotesTextarea.addEventListener('blur', () => {
+        clearTimeout(notesDebounceTimer);
+        if (releaseNotesTextarea.value !== releaseNotesTextarea.defaultValue) {
+            saveReleaseNotes();
+        }
+    });
+
+    // Crate dropdown with multi-select
+    let allCrates = [];
+    let releaseCrateIds = [];
+    const crateBtn = document.getElementById('panel-btn-add-to-crate');
+    const crateDropdown = document.getElementById('panel-crate-dropdown');
+    const crateDropdownList = document.getElementById('panel-crate-dropdown-list');
+    const cratesContainer = document.getElementById('panel-release-crates');
+
     async function loadCrates() {
         try {
             const [cratesRes, releaseRes] = await Promise.all([
@@ -791,28 +997,131 @@
             const cratesData = await cratesRes.json();
             const releaseData = await releaseRes.json();
 
-            const allCrates = cratesData.crates;
-            const releaseCrateIds = releaseData.crate_ids;
-            const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
+            allCrates = cratesData.crates;
+            releaseCrateIds = releaseData.crate_ids;
 
-            const container = document.getElementById('panel-release-crates');
-            if (inCrates.length > 0) {
-                container.innerHTML = inCrates.map(c => {
-                    return `<a href="/crates/${c.id}" class="crate-badge-panel">
-                        <span class="crate-badge-icon">${c.icon || '📁'}</span>
-                        <span class="crate-badge-name">${c.name}</span>
-                    </a>`;
-                }).join('');
-            } else {
-                container.innerHTML = '<span class="text-muted" style="font-size: 0.75rem;">Not in any crate</span>';
-            }
+            updateCratesDisplay();
+            updateCrateDropdown();
         } catch (err) {
             console.error('Failed to load crates:', err);
         }
     }
+
+    function updateCratesDisplay() {
+        const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
+        if (inCrates.length > 0) {
+            cratesContainer.innerHTML = inCrates.map(c => {
+                return `<a href="/crates/${c.id}" class="crate-badge-panel">
+                    <span class="crate-badge-icon">${c.icon || '📁'}</span>
+                    <span class="crate-badge-name">${c.name}</span>
+                </a>`;
+            }).join('');
+        } else {
+            cratesContainer.innerHTML = '<span class="text-muted" style="font-size: 0.75rem;">Not in any crate</span>';
+        }
+    }
+
+    function updateCrateDropdown() {
+        crateDropdownList.innerHTML = allCrates.map(c => {
+            const isSelected = releaseCrateIds.includes(c.id);
+            return `<label class="panel-crate-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
+                <input type="checkbox" ${isSelected ? 'checked' : ''}>
+                <span class="panel-crate-item-icon">${c.icon || '📁'}</span>
+                <span class="panel-crate-item-name">${c.name}</span>
+            </label>`;
+        }).join('');
+
+        // Add event listeners to checkboxes
+        crateDropdownList.querySelectorAll('.panel-crate-item input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', async (e) => {
+                const item = cb.closest('.panel-crate-item');
+                const crateId = parseInt(item.dataset.crateId);
+
+                if (cb.checked) {
+                    // Add to crate
+                    try {
+                        await fetch(`/crates/${crateId}/add-release`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ release_id: releaseId })
+                        });
+                        releaseCrateIds.push(crateId);
+                        item.classList.add('selected');
+                    } catch (err) {
+                        cb.checked = false;
+                    }
+                } else {
+                    // Remove from crate
+                    try {
+                        await fetch(`/crates/${crateId}/remove-release`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ release_id: releaseId })
+                        });
+                        releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
+                        item.classList.remove('selected');
+                    } catch (err) {
+                        cb.checked = true;
+                    }
+                }
+                updateCratesDisplay();
+            });
+        });
+    }
+
+    // Toggle dropdown
+    crateBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = crateDropdown.style.display !== 'none';
+        crateDropdown.style.display = isOpen ? 'none' : 'block';
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!crateDropdown.contains(e.target) && e.target !== crateBtn) {
+            crateDropdown.style.display = 'none';
+        }
+    });
+
     loadCrates();
 
-    // Add to Cue
+    // Sync release button
+    const syncBtn = document.getElementById('panel-btn-sync');
+    if (syncBtn) {
+        syncBtn.addEventListener('click', async () => {
+            syncBtn.disabled = true;
+            syncBtn.textContent = 'Syncing...';
+
+            try {
+                const response = await fetch(`/sync/inventory/release/${releaseId}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    syncBtn.textContent = 'Synced!';
+                    setTimeout(() => {
+                        syncBtn.textContent = 'Sync';
+                        syncBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    const data = await response.json();
+                    syncBtn.textContent = 'Error';
+                    setTimeout(() => {
+                        syncBtn.textContent = 'Sync';
+                        syncBtn.disabled = false;
+                    }, 2000);
+                }
+            } catch (err) {
+                syncBtn.textContent = 'Error';
+                setTimeout(() => {
+                    syncBtn.textContent = 'Sync';
+                    syncBtn.disabled = false;
+                }, 2000);
+            }
+        });
+    }
+
+    // Add to Print Cue
     const addCueBtn = document.getElementById('panel-btn-add-to-cue');
     if (addCueBtn) {
         addCueBtn.addEventListener('click', () => {
@@ -842,10 +1151,10 @@
 
             if (addedCount > 0) {
                 addCueBtn.textContent = `+${addedCount}`;
-                setTimeout(() => { addCueBtn.textContent = 'Cue'; }, 1500);
+                setTimeout(() => { addCueBtn.textContent = 'Print cue'; }, 1500);
             } else {
                 addCueBtn.textContent = 'In cue';
-                setTimeout(() => { addCueBtn.textContent = 'Cue'; }, 1500);
+                setTimeout(() => { addCueBtn.textContent = 'Print cue'; }, 1500);
             }
         });
     }

@@ -137,12 +137,12 @@
                     <div class="toggle-switch-wrapper">
                         <span class="toggle-label-left">Tracks</span>
                         <label class="toggle">
-                            <input type="checkbox" id="export-group-by-release">
+                            <input type="checkbox" id="export-group-by-release" checked>
                             <span class="toggle-slider"></span>
                         </label>
                         <span class="toggle-label-right">Releases</span>
                     </div>
-                    <p class="text-muted toggle-hint" id="grouping-hint">One row per playable track</p>
+                    <p class="text-muted toggle-hint" id="grouping-hint">One row per release with playable track info combined</p>
                 </div>
             </div>
 
@@ -326,13 +326,7 @@
 .toggle-label-left,
 .toggle-label-right {
     font-size: 0.8rem;
-    color: var(--text-muted);
-    transition: color 0.2s;
-}
-
-.toggle-label-left.active,
-.toggle-label-right.active {
-    color: var(--text-primary);
+    color: var(--primary);
     font-weight: 500;
 }
 
@@ -872,8 +866,6 @@
 
     function updateGroupingUI() {
         const isRelease = groupingToggle.checked;
-        leftLabel.classList.toggle('active', !isRelease);
-        rightLabel.classList.toggle('active', isRelease);
         groupingHint.textContent = isRelease
             ? 'One row per release with playable track info combined'
             : 'One row per playable track';
