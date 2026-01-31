@@ -4756,6 +4756,22 @@ body.panel-open .collection-page {
     border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
+/* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
+.panel-track-row:not(.track-dimmed):has(+ .panel-track-row:not(.track-dimmed)) {
+    position: relative;
+    border-bottom-color: transparent;
+}
+
+.panel-track-row:not(.track-dimmed):has(+ .panel-track-row:not(.track-dimmed))::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
+
 .panel-track-row:not(.track-dimmed):hover {
     background-color: rgba(249, 115, 22, 0.08);
 }
