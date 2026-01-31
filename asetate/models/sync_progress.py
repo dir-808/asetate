@@ -39,6 +39,10 @@ class SyncProgress(db.Model):
     updated_releases = db.Column(db.Integer, default=0)
     removed_releases = db.Column(db.Integer, default=0)
 
+    # Current release being processed (for UI feedback)
+    current_release_artist = db.Column(db.String(500))
+    current_release_title = db.Column(db.String(500))
+
     # Pagination tracking (for resuming)
     current_page = db.Column(db.Integer, default=1)
     per_page = db.Column(db.Integer, default=100)
