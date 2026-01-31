@@ -39,30 +39,32 @@
     </header>
 
     <div class="panel-actions">
-        <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Discogs</a>
-        <button class="btn btn-secondary btn-sm" id="panel-btn-sync" title="Sync this release from Discogs">Sync</button>
-        <div class="panel-crate-dropdown-wrapper">
-            <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate ▾</button>
-            <div class="panel-crate-dropdown" id="panel-crate-dropdown" style="display: none;">
-                <div class="panel-crate-dropdown-list" id="panel-crate-dropdown-list">
-                    <!-- Crates loaded via JS -->
+        <div class="panel-action-group discogs-group">
+            <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View</a>
+            {% if release.discogs_edit_url %}
+            <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Edit</a>
+            {% endif %}
+            <button class="btn btn-secondary btn-sm" id="panel-btn-sync" title="Sync from Discogs">Sync</button>
+        </div>
+        <div class="panel-action-group asetate-group">
+            <div class="panel-crate-dropdown-wrapper">
+                <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate ▾</button>
+                <div class="panel-crate-dropdown" id="panel-crate-dropdown" style="display: none;">
+                    <div class="panel-crate-dropdown-list" id="panel-crate-dropdown-list">
+                        <!-- Crates loaded via JS -->
+                    </div>
                 </div>
             </div>
+            <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to print cue">Print cue</button>
         </div>
-        <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to print cue">Print cue</button>
     </div>
 
     <div class="panel-crates" id="panel-release-crates">
         <!-- Crates will be loaded via JS -->
     </div>
 
-    <!-- Release Notes - Inline editable -->
-    <div class="panel-notes-section">
-        <div class="panel-notes-header">
-            <h4>Notes</h4>
-        </div>
-        <textarea class="panel-notes-textarea" id="panel-release-notes" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
-    </div>
+    <!-- Release Notes - simplified -->
+    <textarea class="panel-notes-textarea" id="panel-release-notes" placeholder="Add notes...">{{ release.notes or '' }}</textarea>
 
     <!-- Tracks Section -->
     <section class="panel-tracks">
@@ -466,49 +468,59 @@
 
 .panel-actions {
     flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-action-group {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.panel-action-group.discogs-group {
+    padding-right: var(--space-sm);
+    border-right: 1px solid var(--border);
+}
+
+.panel-crate-dropdown-wrapper {
+    display: inline-flex;
+    align-items: stretch;
+}
+
+.panel-crate-dropdown-wrapper .btn {
+    display: flex;
+    align-items: center;
 }
 
 .panel-crates {
     flex-shrink: 0;
 }
 
-/* Notes section - inline editable */
-.panel-notes-section {
-    flex-shrink: 0;
-    padding: var(--space-sm) var(--space-md);
-    border-bottom: 1px solid var(--border);
-}
-
-.panel-notes-header {
-    margin-bottom: var(--space-xs);
-}
-
-.panel-notes-header h4 {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    margin: 0;
-}
-
+/* Notes textarea - full width, same as tracklist */
 .panel-notes-textarea {
+    flex-shrink: 0;
     width: 100%;
-    min-height: 60px;
-    max-height: 100px;
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    min-height: 50px;
+    max-height: 80px;
+    padding: var(--space-sm) var(--space-md);
+    border: none;
+    border-bottom: 1px solid var(--border);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
     font-size: 0.8rem;
     line-height: 1.4;
-    resize: vertical;
+    resize: none;
+    box-sizing: border-box;
 }
 
 .panel-notes-textarea:focus {
     outline: none;
-    border-color: var(--primary);
+    background: var(--bg-elevated);
 }
 
 .panel-notes-textarea::placeholder {
@@ -581,12 +593,24 @@
 
 .panel-tracks-header {
     flex-shrink: 0;
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-tracks-header h3 {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--success);
+    font-weight: 600;
 }
 
 /* Tracks list - scrollable, fills available space */
 .panel-tracks-list {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
 /* Notes modal within panel */
@@ -766,57 +790,53 @@
         });
     });
 
-    // Energy bar click and drag handler
+    // Energy bar click and drag handler - supports dragging outside the bar
+    let energyDragState = {
+        isDragging: false,
+        currentBar: null,
+        currentTrackId: null
+    };
+
+    function setEnergyLevel(bar, level) {
+        bar.setAttribute('data-value', level);
+    }
+
+    function getEnergyLevelFromEvent(bar, e) {
+        const rect = bar.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const segmentWidth = rect.width / 5;
+        let level = Math.ceil(x / segmentWidth);
+        return Math.max(1, Math.min(5, level));
+    }
+
     document.querySelectorAll('.energy-bar-panel').forEach(bar => {
-        let isDragging = false;
-        let currentRow = null;
-        let currentTrackId = null;
-
-        function setEnergyLevel(bar, level) {
-            bar.setAttribute('data-value', level);
-        }
-
-        function getLevelFromEvent(bar, e) {
-            const rect = bar.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const segmentWidth = rect.width / 5;
-            let level = Math.ceil(x / segmentWidth);
-            return Math.max(1, Math.min(5, level));
-        }
-
         bar.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            currentRow = bar.closest('.panel-track-row');
-            currentTrackId = currentRow.dataset.trackId;
-            const level = getLevelFromEvent(bar, e);
+            energyDragState.isDragging = true;
+            energyDragState.currentBar = bar;
+            const row = bar.closest('.panel-track-row');
+            energyDragState.currentTrackId = row.dataset.trackId;
+            const level = getEnergyLevelFromEvent(bar, e);
             setEnergyLevel(bar, level);
             e.preventDefault();
         });
+    });
 
-        bar.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const level = getLevelFromEvent(bar, e);
-                setEnergyLevel(bar, level);
-            }
-        });
+    // Document-level listeners for drag tracking
+    document.addEventListener('mousemove', (e) => {
+        if (energyDragState.isDragging && energyDragState.currentBar) {
+            const level = getEnergyLevelFromEvent(energyDragState.currentBar, e);
+            setEnergyLevel(energyDragState.currentBar, level);
+        }
+    });
 
-        bar.addEventListener('mouseup', (e) => {
-            if (isDragging && currentTrackId) {
-                const level = parseInt(bar.getAttribute('data-value'));
-                updateTrack(currentTrackId, 'energy', level);
-            }
-            isDragging = false;
-            currentTrackId = null;
-        });
-
-        bar.addEventListener('mouseleave', (e) => {
-            if (isDragging && currentTrackId) {
-                const level = parseInt(bar.getAttribute('data-value'));
-                updateTrack(currentTrackId, 'energy', level);
-            }
-            isDragging = false;
-            currentTrackId = null;
-        });
+    document.addEventListener('mouseup', (e) => {
+        if (energyDragState.isDragging && energyDragState.currentTrackId && energyDragState.currentBar) {
+            const level = parseInt(energyDragState.currentBar.getAttribute('data-value'));
+            updateTrack(energyDragState.currentTrackId, 'energy', level);
+        }
+        energyDragState.isDragging = false;
+        energyDragState.currentBar = null;
+        energyDragState.currentTrackId = null;
     });
 
     // Track Notes Modal
