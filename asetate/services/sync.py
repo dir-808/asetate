@@ -161,6 +161,12 @@ class SyncService:
 
             seen_discogs_ids.add(discogs_id)
 
+            # Update current release info for UI feedback
+            artist = ", ".join(a.get("name", "") for a in basic_info.get("artists", [])) or "Unknown"
+            title = basic_info.get("title", "Untitled")
+            progress.current_release_artist = artist[:500]  # Truncate to fit column
+            progress.current_release_title = title[:500]
+
             try:
                 details = self.client.get_release_details(discogs_id)
                 release_data = self.client.parse_release(item, details)
@@ -347,6 +353,8 @@ def get_sync_status(user_id: int) -> dict:
         "can_sync": not latest.is_running,
         "can_resume": latest.can_resume,
         "message": _get_status_message(latest),
+        "current_release_artist": latest.current_release_artist,
+        "current_release_title": latest.current_release_title,
     }
 
 

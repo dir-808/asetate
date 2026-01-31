@@ -19,9 +19,29 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill" style="width: {{ sync_status.progress_percent or 0 }}%"></div>
             </div>
-            <p class="progress-text" id="progress-text">
-                {{ sync_status.processed or 0 }} / {{ sync_status.total or 0 }} releases
-            </p>
+            <div class="progress-details">
+                <span class="progress-text" id="progress-text">
+                    {{ sync_status.processed or 0 }} / {{ sync_status.total or 0 }} releases
+                </span>
+                <span class="progress-percent" id="progress-percent">{{ sync_status.progress_percent|round(1) if sync_status.progress_percent else 0 }}%</span>
+            </div>
+            <!-- Current release being processed -->
+            <div class="current-release" id="current-release">
+                <span class="current-release-label">Now importing:</span>
+                <span class="current-release-text" id="current-release-text">
+                    {% if sync_status.current_release_artist and sync_status.current_release_title %}
+                        {{ sync_status.current_release_artist }} - {{ sync_status.current_release_title }}
+                    {% else %}
+                        Starting...
+                    {% endif %}
+                </span>
+            </div>
+            <!-- Live stats during sync -->
+            <div class="sync-live-stats" id="sync-live-stats">
+                <span class="live-stat"><span class="live-stat-value" id="live-added">{{ sync_status.added or 0 }}</span> added</span>
+                <span class="live-stat-sep">·</span>
+                <span class="live-stat"><span class="live-stat-value" id="live-updated">{{ sync_status.updated or 0 }}</span> updated</span>
+            </div>
         </div>
 
         <div class="sync-stats" id="sync-stats" style="display: {% if sync_status.status == 'completed' %}grid{% else %}none{% endif %};">
@@ -41,16 +61,29 @@
 
         {% if sync_status.last_error %}
         <div class="sync-error" id="sync-error">
-            <p>{{ sync_status.last_error }}</p>
+            <div class="sync-error-header">
+                <span class="error-icon">⚠</span>
+                <span class="error-title">Sync Error</span>
+            </div>
+            <p class="error-message" id="error-message">{{ sync_status.last_error }}</p>
+            <p class="error-hint">You can try resuming the sync or start a fresh sync.</p>
         </div>
         {% else %}
-        <div class="sync-error" id="sync-error" style="display: none;"></div>
+        <div class="sync-error" id="sync-error" style="display: none;">
+            <div class="sync-error-header">
+                <span class="error-icon">⚠</span>
+                <span class="error-title">Sync Error</span>
+            </div>
+            <p class="error-message" id="error-message"></p>
+            <p class="error-hint">You can try resuming the sync or start a fresh sync.</p>
+        </div>
         {% endif %}
 
         <div class="sync-actions">
             <button class="btn btn-primary" id="btn-sync"
                 {% if not sync_status.can_sync %}disabled{% endif %}>
-                Pull from Discogs
+                <span class="btn-icon" id="btn-sync-icon"></span>
+                <span class="btn-text" id="btn-sync-text">Pull from Discogs</span>
             </button>
             <button class="btn btn-secondary" id="btn-resume"
                 style="display: {% if sync_status.can_resume %}inline-flex{% else %}none{% endif %};">
@@ -137,6 +170,119 @@
 </div>
 
 <style>
+/* Sync Progress Enhancements */
+.progress-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-xs);
+    font-size: 0.85rem;
+}
+.progress-percent {
+    font-weight: 600;
+    color: var(--lcd-text);
+}
+.current-release {
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+    overflow: hidden;
+}
+.current-release-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
+}
+.current-release-text {
+    display: block;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: pulse-text 2s ease-in-out infinite;
+}
+@keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+.sync-live-stats {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.live-stat-value {
+    font-weight: 600;
+    color: var(--lcd-text);
+}
+.live-stat-sep {
+    opacity: 0.5;
+}
+
+/* Enhanced Error Display */
+.sync-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-sm);
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+}
+.sync-error-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+.error-icon {
+    font-size: 1.2rem;
+}
+.error-title {
+    font-weight: 600;
+    color: #ef4444;
+}
+.error-message {
+    margin: 0 0 var(--space-sm) 0;
+    font-family: monospace;
+    font-size: 0.85rem;
+    background: var(--bg-surface);
+    padding: var(--space-sm);
+    border-radius: var(--radius-xs);
+    word-break: break-word;
+}
+.error-hint {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Button Loading State */
+.btn-icon {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: var(--space-xs);
+}
+.btn.is-loading .btn-icon {
+    display: inline-block;
+}
+.btn.is-loading {
+    opacity: 0.8;
+    pointer-events: none;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* Inventory Notifications */
 .inventory-notifications {
     border-left: 3px solid var(--primary);
@@ -216,9 +362,15 @@
     const progressSection = document.getElementById('sync-progress');
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
+    const progressPercent = document.getElementById('progress-percent');
+    const currentReleaseText = document.getElementById('current-release-text');
+    const liveAdded = document.getElementById('live-added');
+    const liveUpdated = document.getElementById('live-updated');
     const statsSection = document.getElementById('sync-stats');
     const errorSection = document.getElementById('sync-error');
+    const errorMessage = document.getElementById('error-message');
     const btnSync = document.getElementById('btn-sync');
+    const btnSyncText = document.getElementById('btn-sync-text');
     const btnResume = document.getElementById('btn-resume');
     const btnCancel = document.getElementById('btn-cancel');
 
@@ -228,14 +380,33 @@
         statusText.textContent = status.message;
         statusIndicator.className = 'status-indicator status-' + status.status;
 
-        // Progress bar
+        // Progress bar and details
         if (status.status === 'running') {
             progressSection.style.display = 'block';
             progressFill.style.width = status.progress_percent + '%';
             progressText.textContent = status.processed + ' / ' + status.total + ' releases';
+            progressPercent.textContent = status.progress_percent.toFixed(1) + '%';
+
+            // Current release being imported
+            if (status.current_release_artist && status.current_release_title) {
+                currentReleaseText.textContent = status.current_release_artist + ' - ' + status.current_release_title;
+            } else if (status.processed === 0) {
+                currentReleaseText.textContent = 'Connecting to Discogs...';
+            }
+
+            // Live stats
+            liveAdded.textContent = status.added || 0;
+            liveUpdated.textContent = status.updated || 0;
+
             statsSection.style.display = 'none';
+
+            // Update button state
+            btnSync.classList.add('is-loading');
+            btnSyncText.textContent = 'Syncing...';
         } else {
             progressSection.style.display = 'none';
+            btnSync.classList.remove('is-loading');
+            btnSyncText.textContent = 'Pull from Discogs';
         }
 
         // Stats (show when completed)
@@ -246,10 +417,10 @@
             document.getElementById('stat-removed').textContent = status.removed;
         }
 
-        // Error
-        if (status.last_error && status.status === 'failed') {
+        // Error display
+        if (status.last_error && (status.status === 'failed' || status.status === 'paused')) {
             errorSection.style.display = 'block';
-            errorSection.innerHTML = '<p>' + status.last_error + '</p>';
+            errorMessage.textContent = status.last_error;
         } else {
             errorSection.style.display = 'none';
         }
@@ -269,7 +440,7 @@
 
     function startPolling() {
         if (pollInterval) return;
-        pollInterval = setInterval(fetchStatus, 2000);
+        pollInterval = setInterval(fetchStatus, 1500); // Poll every 1.5s for smoother updates
     }
 
     function stopPolling() {
@@ -282,6 +453,11 @@
     async function fetchStatus() {
         try {
             const response = await fetch('/sync/status');
+            if (!response.ok) {
+                const result = await response.json();
+                showError(result.error || 'Failed to fetch status');
+                return;
+            }
             const status = await response.json();
             updateUI(status);
         } catch (err) {
@@ -289,9 +465,16 @@
         }
     }
 
+    function showError(message) {
+        errorSection.style.display = 'block';
+        errorMessage.textContent = message;
+    }
+
     async function startSync() {
         btnSync.disabled = true;
-        btnSync.textContent = 'Starting...';
+        btnSync.classList.add('is-loading');
+        btnSyncText.textContent = 'Starting...';
+        errorSection.style.display = 'none';
 
         try {
             const response = await fetch('/sync/start', { method: 'POST' });
@@ -301,19 +484,22 @@
                 startPolling();
                 fetchStatus();
             } else {
-                alert(result.error || 'Failed to start sync');
+                showError(result.error || 'Failed to start sync');
                 btnSync.disabled = false;
+                btnSync.classList.remove('is-loading');
+                btnSyncText.textContent = 'Pull from Discogs';
             }
         } catch (err) {
-            alert('Failed to start sync: ' + err.message);
+            showError('Failed to start sync: ' + err.message);
             btnSync.disabled = false;
+            btnSync.classList.remove('is-loading');
+            btnSyncText.textContent = 'Pull from Discogs';
         }
-
-        btnSync.textContent = 'Pull from Discogs';
     }
 
     async function resumeSync() {
         btnResume.disabled = true;
+        errorSection.style.display = 'none';
 
         try {
             const response = await fetch('/sync/resume', { method: 'POST' });
@@ -323,16 +509,18 @@
                 startPolling();
                 fetchStatus();
             } else {
-                alert(result.error || 'Failed to resume sync');
+                showError(result.error || 'Failed to resume sync');
             }
         } catch (err) {
-            alert('Failed to resume sync: ' + err.message);
+            showError('Failed to resume sync: ' + err.message);
         }
 
         btnResume.disabled = false;
     }
 
     async function cancelSync() {
+        btnCancel.disabled = true;
+
         try {
             const response = await fetch('/sync/cancel', { method: 'POST' });
             const result = await response.json();
@@ -340,11 +528,13 @@
             if (response.ok) {
                 fetchStatus();
             } else {
-                alert(result.error || 'Failed to pause sync');
+                showError(result.error || 'Failed to pause sync');
             }
         } catch (err) {
-            alert('Failed to pause sync: ' + err.message);
+            showError('Failed to pause sync: ' + err.message);
         }
+
+        btnCancel.disabled = false;
     }
 
     // Event listeners
