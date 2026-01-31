@@ -315,7 +315,6 @@ a:hover {
     border-color: var(--primary-hover);
     border-top-color: #fdba74;
     border-bottom-color: #9a3412;
-    box-shadow: 0 0 12px rgba(249, 115, 22, 0.4);
 }
 
 .btn-primary:active {
@@ -828,16 +827,15 @@ input::placeholder, textarea::placeholder {
     color: var(--text-secondary);
 }
 
-/* Button loading state */
+/* Button loading state - MPC2000 style with blinking LED */
 .btn-spinner {
     display: none;
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 50%; /* LED indicator - round is OK per MPC2000 guidelines */
     margin-right: var(--space-xs);
+    animation: led-blink 0.6s ease-in-out infinite;
 }
 
 .btn.is-loading .btn-spinner {
@@ -845,12 +843,13 @@ input::placeholder, textarea::placeholder {
 }
 
 .btn.is-loading {
-    opacity: 0.8;
+    opacity: 0.9;
     pointer-events: none;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+@keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
 
 /* Inventory notifications */
