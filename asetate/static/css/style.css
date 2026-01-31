@@ -1035,32 +1035,29 @@ input::placeholder, textarea::placeholder {
     background-color: var(--bg-elevated);
 }
 
-/* Playable tracks get a faint orange box with overlapping borders */
+/* Track rows have stable borders to prevent layout shift */
+.track-row {
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+}
+
+/* Playable tracks get a faint orange box */
 .track-row.track-playable {
-    position: relative;
     background-color: rgba(249, 115, 22, 0.03);
-    border-left: 2px solid rgba(249, 115, 22, 0.4);
-    border-right: 2px solid rgba(249, 115, 22, 0.4);
-    margin-left: -2px;
-    margin-right: -2px;
-    padding-left: calc(var(--space-sm) + 2px);
-    padding-right: calc(var(--space-sm) + 2px);
+    border-left-color: rgba(249, 115, 22, 0.4);
+    border-right-color: rgba(249, 115, 22, 0.4);
 }
 
+/* First playable track in a group gets top border */
 .track-row.track-playable:first-of-type,
-.track-row.track-playable:not(.track-playable + .track-playable) {
+.track-row:not(.track-playable) + .track-row.track-playable {
     border-top: 2px solid rgba(249, 115, 22, 0.4);
-    margin-top: -1px;
 }
 
+/* Last playable track in a group gets bottom border */
 .track-row.track-playable:last-of-type,
 .track-row.track-playable:has(+ .track-row:not(.track-playable)) {
     border-bottom: 2px solid rgba(249, 115, 22, 0.4);
-}
-
-/* Adjacent playable rows share borders */
-.track-row.track-playable + .track-row.track-playable {
-    border-top: none;
 }
 
 .track-row.track-playable:hover {

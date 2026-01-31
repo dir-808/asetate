@@ -153,18 +153,24 @@
 
 {% block scripts %}
 <style>
-/* Sidebar overlay behavior - no content push */
+/* Sidebar pushes content */
 .collection-layout {
     display: flex;
     position: relative;
+    min-height: calc(100vh - 150px);
 }
 
 .collection-page {
     flex: 1;
     min-width: 0;
+    transition: margin-right 0.3s ease-out;
 }
 
-/* Panel overlays content - no reflow */
+.collection-page.panel-open {
+    margin-right: 450px;
+}
+
+/* Panel slides in from right */
 .release-panel {
     position: fixed;
     top: 0;
@@ -174,7 +180,7 @@
     background-color: var(--bg-surface);
     border-left: 2px solid var(--border);
     transform: translateX(100%);
-    transition: transform 0.25s ease-out;
+    transition: transform 0.3s ease-out;
     z-index: 900;
     display: flex;
     flex-direction: column;
@@ -317,6 +323,7 @@ function filterByCrate(crateId) {
 
         currentReleaseId = releaseId;
         panel.classList.add('open');
+        collectionMain.classList.add('panel-open');
         panelContent.innerHTML = '<div class="panel-loading"><span>Loading...</span></div>';
 
         // Update URL without full navigation
@@ -360,6 +367,7 @@ function filterByCrate(crateId) {
     // Close panel
     function closePanel() {
         panel.classList.remove('open');
+        collectionMain.classList.remove('panel-open');
         currentReleaseId = null;
 
         // Remove release param from URL
