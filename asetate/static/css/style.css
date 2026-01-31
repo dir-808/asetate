@@ -1035,29 +1035,25 @@ input::placeholder, textarea::placeholder {
     background-color: var(--bg-elevated);
 }
 
-/* Track rows have stable borders to prevent layout shift */
+/* Track rows have consistent grey borders by default */
 .track-row {
-    border-left: 2px solid transparent;
-    border-right: 2px solid transparent;
+    border: 1px solid var(--border);
+    margin-top: -1px; /* Collapse adjacent borders */
 }
 
-/* Playable tracks get a faint orange box */
+.track-row:first-child {
+    margin-top: 0;
+}
+
+/* Playable tracks get orange borders (same thickness) */
 .track-row.track-playable {
     background-color: rgba(249, 115, 22, 0.03);
-    border-left-color: rgba(249, 115, 22, 0.4);
-    border-right-color: rgba(249, 115, 22, 0.4);
+    border-color: rgba(249, 115, 22, 0.4);
 }
 
-/* First playable track in a group gets top border */
-.track-row.track-playable:first-of-type,
-.track-row:not(.track-playable) + .track-row.track-playable {
-    border-top: 2px solid rgba(249, 115, 22, 0.4);
-}
-
-/* Last playable track in a group gets bottom border */
-.track-row.track-playable:last-of-type,
-.track-row.track-playable:has(+ .track-row:not(.track-playable)) {
-    border-bottom: 2px solid rgba(249, 115, 22, 0.4);
+/* Adjacent playable tracks keep grey horizontal line between them */
+.track-row.track-playable + .track-row.track-playable {
+    border-top-color: var(--border);
 }
 
 .track-row.track-playable:hover {

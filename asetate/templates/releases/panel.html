@@ -202,18 +202,17 @@
     stroke: var(--primary);
 }
 
-/* Track row - stable layout with no reflow */
+/* Track row - consistent grey borders by default */
 .panel-track-row {
     padding: var(--space-sm) var(--space-md);
-    border-bottom: 1px solid var(--border);
-    border-left: 2px solid transparent;
-    border-right: 2px solid transparent;
+    border: 1px solid var(--border);
+    margin-top: -1px; /* Collapse adjacent borders */
     transition: opacity 0.15s, background-color 0.15s;
     box-sizing: border-box;
 }
 
-.panel-track-row:last-child {
-    border-bottom: none;
+.panel-track-row:first-child {
+    margin-top: 0;
 }
 
 /* Non-playable tracks are dimmed */
@@ -225,25 +224,15 @@
     opacity: 0.7;
 }
 
-/* Playable tracks get a faint orange box - stable borders */
+/* Playable tracks get orange borders (same thickness) */
 .panel-track-row:not(.track-dimmed) {
-    border-left-color: rgba(249, 115, 22, 0.4);
-    border-right-color: rgba(249, 115, 22, 0.4);
+    border-color: rgba(249, 115, 22, 0.4);
     background-color: rgba(249, 115, 22, 0.03);
 }
 
-/* First playable track in a group gets top border */
-.panel-track-row:not(.track-dimmed):first-child,
-.panel-track-row.track-dimmed + .panel-track-row:not(.track-dimmed) {
-    border-top: 2px solid rgba(249, 115, 22, 0.4);
-    margin-top: -1px;
-    padding-top: calc(var(--space-sm) - 1px);
-}
-
-/* Last playable track in a group gets bottom border */
-.panel-track-row:not(.track-dimmed):last-child,
-.panel-track-row:not(.track-dimmed):has(+ .panel-track-row.track-dimmed) {
-    border-bottom: 2px solid rgba(249, 115, 22, 0.4);
+/* Adjacent playable tracks keep grey horizontal line between them */
+.panel-track-row:not(.track-dimmed) + .panel-track-row:not(.track-dimmed) {
+    border-top-color: var(--border);
 }
 
 .panel-track-row:not(.track-dimmed):hover {
@@ -487,7 +476,14 @@
 .panel-action-group {
     display: flex;
     gap: var(--space-xs);
+    align-items: stretch;
+}
+
+/* Ensure buttons match link height in action groups */
+.panel-action-group .btn {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
 }
 
 .panel-action-group.discogs-group {
@@ -509,20 +505,19 @@
     flex-shrink: 0;
 }
 
-/* Notes textarea - full width with orange border */
+/* Notes textarea - matches release page style, same width as tracklist */
 .panel-notes-textarea {
     flex-shrink: 0;
-    width: calc(100% - var(--space-md) * 2);
-    min-height: 50px;
-    max-height: 80px;
-    margin: var(--space-sm) var(--space-md);
-    padding: var(--space-sm);
-    border: 2px solid rgba(249, 115, 22, 0.4);
+    width: 100%;
+    min-height: 80px;
+    max-height: 120px;
+    padding: var(--space-md);
+    border: 1px solid var(--border);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.8rem;
-    line-height: 1.4;
+    font-size: 0.85rem;
+    line-height: 1.5;
     resize: none;
     box-sizing: border-box;
 }
@@ -530,7 +525,6 @@
 .panel-notes-textarea:focus {
     outline: none;
     border-color: var(--primary);
-    background: var(--bg-elevated);
 }
 
 .panel-notes-textarea::placeholder {
