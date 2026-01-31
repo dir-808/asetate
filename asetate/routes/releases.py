@@ -136,6 +136,33 @@ def view_release(release_id: int):
     )
 
 
+@bp.route("/<int:release_id>/panel")
+@login_required
+def release_panel(release_id: int):
+    """Get release details as a partial HTML for side panel loading."""
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
+    tracks = release.tracks.order_by(Track.position).all()
+
+    # Calculate release stats
+    playable_count = sum(1 for t in tracks if t.is_playable)
+    has_bpm = sum(1 for t in tracks if t.bpm is not None)
+
+    return render_template(
+        "releases/panel.html",
+        release=release,
+        tracks=tracks,
+        stats={
+            "total": len(tracks),
+            "playable": playable_count,
+            "has_bpm": has_bpm,
+        },
+    )
+
+
 @bp.route("/<int:release_id>/tracks/<int:track_id>", methods=["PATCH"])
 @login_required
 def update_track(release_id: int, track_id: int):

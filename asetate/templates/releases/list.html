@@ -3,112 +3,232 @@
 {% block title %}Collection - Asetate{% endblock %}
 
 {% block content %}
-<div class="collection-page">
-    <header class="collection-header">
-        <div class="collection-title">
-            <h1>Your Collection</h1>
-            <div class="collection-stats">
-                <span>{{ stats.releases }} releases</span>
-                <span class="stat-divider">•</span>
-                <span>{{ stats.tracks }} tracks</span>
-                <span class="stat-divider">•</span>
-                <span class="text-success">{{ stats.playable }} playable</span>
-            </div>
-        </div>
-    </header>
-
-    <div class="collection-toolbar">
-        <form class="search-form" method="get" action="{{ url_for('releases.list_releases') }}">
-            <input
-                type="search"
-                name="q"
-                placeholder="Search artist, title, label..."
-                value="{{ search }}"
-                class="search-input"
-            >
-            {% if filter_type %}
-            <input type="hidden" name="filter" value="{{ filter_type }}">
-            {% endif %}
-        </form>
-
-        <div class="filter-buttons">
-            <a href="{{ url_for('releases.list_releases', q=search) }}"
-               class="filter-btn {% if not filter_type %}active{% endif %}">
-                All
-            </a>
-            <a href="{{ url_for('releases.list_releases', q=search, filter='playable') }}"
-               class="filter-btn {% if filter_type == 'playable' %}active{% endif %}">
-                Has Playable
-            </a>
-            <a href="{{ url_for('releases.list_releases', q=search, filter='needs_metadata') }}"
-               class="filter-btn {% if filter_type == 'needs_metadata' %}active{% endif %}">
-                Needs BPM/Key
-            </a>
-        </div>
-    </div>
-
-    {% if releases %}
-    <div class="releases-grid">
-        {% for release in releases %}
-        <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="release-card">
-            <div class="release-cover">
-                {% if release.cover_art_url %}
-                <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}" loading="lazy">
-                {% else %}
-                <div class="cover-placeholder">
-                    <span>No Cover</span>
+<div class="collection-layout">
+    <div class="collection-page" id="collection-main">
+        <header class="collection-header">
+            <div class="collection-title">
+                <h1>Your Collection</h1>
+                <div class="collection-stats">
+                    <span>{{ stats.releases }} releases</span>
+                    <span class="stat-divider">•</span>
+                    <span>{{ stats.tracks }} tracks</span>
+                    <span class="stat-divider">•</span>
+                    <span class="text-success">{{ stats.playable }} playable</span>
                 </div>
-                {% endif %}
             </div>
-            <div class="release-info">
-                <h3 class="release-title">{{ release.display_title }}</h3>
-                <p class="release-artist">{{ release.display_artist }}</p>
-                {% if release.label or release.year %}
-                <p class="release-meta">
-                    {% if release.label %}{{ release.label }}{% endif %}
-                    {% if release.label and release.year %} • {% endif %}
-                    {% if release.year %}{{ release.year }}{% endif %}
-                </p>
-                {% endif %}
-            </div>
-        </a>
-        {% endfor %}
-    </div>
+        </header>
 
-    {% if pagination.pages > 1 %}
-    <nav class="pagination">
-        {% if pagination.has_prev %}
-        <a href="{{ url_for('releases.list_releases', page=pagination.prev_num, q=search, filter=filter_type) }}"
-           class="pagination-btn">
-            Previous
-        </a>
+        <div class="collection-toolbar">
+            <form class="search-form" method="get" action="{{ url_for('releases.list_releases') }}">
+                <input
+                    type="search"
+                    name="q"
+                    placeholder="Search artist, title, label..."
+                    value="{{ search }}"
+                    class="search-input"
+                >
+                {% if filter_type %}
+                <input type="hidden" name="filter" value="{{ filter_type }}">
+                {% endif %}
+            </form>
+
+            <div class="filter-buttons">
+                <a href="{{ url_for('releases.list_releases', q=search) }}"
+                   class="filter-btn {% if not filter_type %}active{% endif %}">
+                    All
+                </a>
+                <a href="{{ url_for('releases.list_releases', q=search, filter='playable') }}"
+                   class="filter-btn {% if filter_type == 'playable' %}active{% endif %}">
+                    Has Playable
+                </a>
+                <a href="{{ url_for('releases.list_releases', q=search, filter='needs_metadata') }}"
+                   class="filter-btn {% if filter_type == 'needs_metadata' %}active{% endif %}">
+                    Needs BPM/Key
+                </a>
+            </div>
+        </div>
+
+        {% if releases %}
+        <div class="releases-grid">
+            {% for release in releases %}
+            <div class="release-card" data-release-id="{{ release.id }}" tabindex="0">
+                <div class="release-cover">
+                    {% if release.cover_art_url %}
+                    <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}" loading="lazy">
+                    {% else %}
+                    <div class="cover-placeholder">
+                        <span>No Cover</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="release-info">
+                    <h3 class="release-title">{{ release.display_title }}</h3>
+                    <p class="release-artist">{{ release.display_artist }}</p>
+                    {% if release.label or release.year %}
+                    <p class="release-meta">
+                        {% if release.label %}{{ release.label }}{% endif %}
+                        {% if release.label and release.year %} • {% endif %}
+                        {% if release.year %}{{ release.year }}{% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <nav class="pagination">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('releases.list_releases', page=pagination.prev_num, q=search, filter=filter_type) }}"
+               class="pagination-btn">
+                Previous
+            </a>
+            {% endif %}
+
+            <span class="pagination-info">
+                Page {{ pagination.page }} of {{ pagination.pages }}
+            </span>
+
+            {% if pagination.has_next %}
+            <a href="{{ url_for('releases.list_releases', page=pagination.next_num, q=search, filter=filter_type) }}"
+               class="pagination-btn">
+                Next
+            </a>
+            {% endif %}
+        </nav>
         {% endif %}
 
-        <span class="pagination-info">
-            Page {{ pagination.page }} of {{ pagination.pages }}
-        </span>
-
-        {% if pagination.has_next %}
-        <a href="{{ url_for('releases.list_releases', page=pagination.next_num, q=search, filter=filter_type) }}"
-           class="pagination-btn">
-            Next
-        </a>
-        {% endif %}
-    </nav>
-    {% endif %}
-
-    {% else %}
-    <div class="empty-state">
-        {% if search or filter_type %}
-        <h2>No releases found</h2>
-        <p>Try adjusting your search or filters</p>
-        <a href="{{ url_for('releases.list_releases') }}" class="btn btn-secondary">Clear filters</a>
         {% else %}
-        <h2>Your collection is empty</h2>
-        <p>Pull your vinyl collection from Discogs to get started</p>
-        <a href="{{ url_for('sync.sync_page') }}" class="btn btn-primary">Pull from Discogs</a>
+        <div class="empty-state">
+            {% if search or filter_type %}
+            <h2>No releases found</h2>
+            <p>Try adjusting your search or filters</p>
+            <a href="{{ url_for('releases.list_releases') }}" class="btn btn-secondary">Clear filters</a>
+            {% else %}
+            <h2>Your collection is empty</h2>
+            <p>Pull your vinyl collection from Discogs to get started</p>
+            <a href="{{ url_for('sync.sync_page') }}" class="btn btn-primary">Pull from Discogs</a>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
-    {% endif %}
+
+    <!-- Side Panel for Release Details -->
+    <aside class="release-panel" id="release-panel">
+        <div class="panel-header-bar">
+            <button class="panel-close" id="panel-close" title="Close panel">&times;</button>
+        </div>
+        <div class="panel-content" id="panel-content">
+            <div class="panel-loading">
+                <span>Loading...</span>
+            </div>
+        </div>
+    </aside>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const panel = document.getElementById('release-panel');
+    const panelContent = document.getElementById('panel-content');
+    const panelClose = document.getElementById('panel-close');
+    const collectionMain = document.getElementById('collection-main');
+    let currentReleaseId = null;
+
+    // Open panel with release details
+    async function openPanel(releaseId) {
+        if (currentReleaseId === releaseId && panel.classList.contains('open')) {
+            return; // Already showing this release
+        }
+
+        currentReleaseId = releaseId;
+        panel.classList.add('open');
+        document.body.classList.add('panel-open');
+        panelContent.innerHTML = '<div class="panel-loading"><span>Loading...</span></div>';
+
+        // Update URL without full navigation
+        const url = new URL(window.location);
+        url.searchParams.set('r', releaseId);
+        history.pushState({ releaseId }, '', url);
+
+        // Highlight selected card
+        document.querySelectorAll('.release-card').forEach(card => {
+            card.classList.toggle('selected', card.dataset.releaseId == releaseId);
+        });
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/panel`);
+            if (response.ok) {
+                panelContent.innerHTML = await response.text();
+            } else {
+                panelContent.innerHTML = '<div class="panel-error">Failed to load release</div>';
+            }
+        } catch (err) {
+            panelContent.innerHTML = '<div class="panel-error">Network error</div>';
+        }
+    }
+
+    // Close panel
+    function closePanel() {
+        panel.classList.remove('open');
+        document.body.classList.remove('panel-open');
+        currentReleaseId = null;
+
+        // Remove release param from URL
+        const url = new URL(window.location);
+        url.searchParams.delete('r');
+        history.pushState({}, '', url);
+
+        // Remove selected state
+        document.querySelectorAll('.release-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+    }
+
+    // Handle release card clicks
+    document.querySelectorAll('.release-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPanel(card.dataset.releaseId);
+        });
+
+        // Keyboard support
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPanel(card.dataset.releaseId);
+            }
+        });
+    });
+
+    // Close panel button
+    panelClose.addEventListener('click', closePanel);
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel.classList.contains('open')) {
+            closePanel();
+        }
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', (e) => {
+        const url = new URL(window.location);
+        const releaseId = url.searchParams.get('r');
+        if (releaseId) {
+            openPanel(releaseId);
+        } else {
+            closePanel();
+        }
+    });
+
+    // Check if URL has release param on load
+    const url = new URL(window.location);
+    const releaseId = url.searchParams.get('r');
+    if (releaseId) {
+        openPanel(releaseId);
+    }
+})();
+</script>
 {% endblock %}
