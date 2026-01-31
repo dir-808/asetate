@@ -53,7 +53,7 @@
                         <option value="">All Crates</option>
                         {% for crate in available_crates %}
                         <option value="{{ crate.id }}" {% if crate_filter == crate.id|string %}selected{% endif %}>
-                            {{ crate.icon or '📁' }} {{ crate.name }}
+                            {{ crate.name }}
                         </option>
                         {% endfor %}
                     </select>
@@ -76,7 +76,7 @@
                     {% if release.crate_icons %}
                     <div class="release-crate-icons">
                         {% for icon in release.crate_icons[:3] %}
-                        <span class="release-crate-icon">{{ icon }}</span>
+                        <img src="/static/icons/{{ icon }}.png" alt="" class="release-crate-icon">
                         {% endfor %}
                         {% if release.crate_icons|length > 3 %}
                         <span class="release-crate-more">+{{ release.crate_icons|length - 3 }}</span>
@@ -152,150 +152,7 @@
 {% endblock %}
 
 {% block scripts %}
-<style>
-/* Sidebar pushes content */
-.collection-layout {
-    display: flex;
-    position: relative;
-    min-height: calc(100vh - 150px);
-}
-
-.collection-page {
-    flex: 1;
-    min-width: 0;
-    transition: margin-right 0.3s ease-out;
-}
-
-.collection-page.panel-open {
-    margin-right: 450px;
-}
-
-/* Panel slides in from right */
-.release-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 450px;
-    height: 100vh;
-    background-color: var(--bg-surface);
-    border-left: 2px solid var(--border);
-    transform: translateX(100%);
-    transition: transform 0.3s ease-out;
-    z-index: 900;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
-}
-
-.release-panel.open {
-    transform: translateX(0);
-}
-
-.panel-header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--bg-elevated);
-    border-bottom: 2px solid var(--border);
-    flex-shrink: 0;
-}
-
-#panel-expand-slot {
-    display: flex;
-}
-
-.panel-content {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-
-/* Crate icons on release cards */
-.release-crate-icons {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    display: flex;
-    gap: 2px;
-}
-
-.release-crate-icon {
-    width: 20px;
-    height: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-}
-
-.release-crate-more {
-    width: 20px;
-    height: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.55rem;
-    color: var(--text-muted);
-}
-
-.release-cover {
-    position: relative;
-}
-
-/* Crate filter dropdown */
-.crate-filter-dropdown {
-    display: inline-block;
-}
-
-.filter-select {
-    padding: var(--space-xs) var(--space-sm);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: 2px solid var(--border);
-    background: transparent;
-    cursor: pointer;
-}
-
-.filter-select:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.filter-select option {
-    background: var(--bg-surface);
-    color: var(--text-primary);
-}
-
-/* Crate badge in panel (without color) */
-.crate-badge-panel {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    font-size: 0.75rem;
-    background-color: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s;
-}
-
-.crate-badge-panel:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--text-muted);
-}
-</style>
+<!-- NOTE: All collection page styles now in style.css COLLECTION PAGE section -->
 <script>
 // Crate filter function
 function filterByCrate(crateId) {

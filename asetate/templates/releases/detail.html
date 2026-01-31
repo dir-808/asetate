@@ -76,7 +76,7 @@
             </div>
         </div>
         <!-- Release Notes (right side) -->
-        <textarea class="release-notes-simple" id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
+        <textarea class="notes-textarea release-notes-simple" id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
     </header>
 
     <section class="tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
@@ -140,7 +140,7 @@
                             >
                         </td>
                         <td class="col-energy {% if 'energy' not in visible_fields %}hidden{% endif %}">
-                            <div class="energy-bar-table" data-field="energy" data-value="{{ track.energy or 3 }}">
+                            <div class="energy-bar" data-field="energy" data-value="{{ track.energy or 3 }}">
                                 <div class="energy-segment" data-level="1"></div>
                                 <div class="energy-segment" data-level="2"></div>
                                 <div class="energy-segment" data-level="3"></div>
@@ -266,285 +266,7 @@
     </div>
 </div>
 
-<style>
-/* Column settings */
-.tracks-header-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
-
-.column-settings-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-}
-
-.column-setting {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xs) 0;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-.column-setting input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-}
-
-.column-setting input:disabled + span {
-    color: var(--text-muted);
-}
-
-/* Crate dropdown */
-.crate-dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.crate-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    min-width: 200px;
-    max-height: 300px;
-    overflow-y: auto;
-    background: var(--bg-surface);
-    border: 2px solid var(--border);
-    z-index: 100;
-    margin-top: 2px;
-}
-
-.crate-dropdown-list {
-    padding: var(--space-xs) 0;
-}
-
-.crate-dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-sm);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background-color 0.1s;
-}
-
-.crate-dropdown-item:hover {
-    background-color: var(--bg-elevated);
-}
-
-.crate-dropdown-item.selected {
-    background-color: var(--primary-dim);
-}
-
-.crate-dropdown-item input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    cursor: pointer;
-}
-
-.crate-dropdown-item-icon {
-    font-size: 1rem;
-}
-
-.crate-dropdown-item-name {
-    flex: 1;
-}
-
-/* Release header with notes panel on right */
-.release-header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: var(--space-xl);
-    align-items: start;
-}
-
-/* Action groups - Discogs vs Asetate */
-.release-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-    margin-bottom: var(--space-sm);
-}
-
-.action-group {
-    display: flex;
-    gap: var(--space-xs);
-    align-items: stretch;
-}
-
-.action-group .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.action-group.discogs-actions {
-    padding-right: var(--space-md);
-    border-right: 1px solid var(--border);
-}
-
-/* Crate dropdown wrapper - ensure same height as buttons */
-.crate-dropdown-wrapper {
-    position: relative;
-    display: inline-flex;
-    align-items: stretch;
-}
-
-.crate-dropdown-wrapper .btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Simple release notes - just a textarea */
-.release-notes-simple {
-    width: 400px;
-    height: 250px;
-    padding: var(--space-md);
-    border: 1px solid var(--border);
-    background: var(--bg-input);
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    resize: none;
-}
-
-.release-notes-simple:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.release-notes-simple::placeholder {
-    color: var(--text-muted);
-}
-
-/* Notes modal textarea */
-#release-notes-textarea,
-#track-notes-textarea {
-    width: 100%;
-    padding: var(--space-sm);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-input);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.9rem;
-    resize: vertical;
-}
-
-.track-notes-title {
-    font-weight: 500;
-    margin-bottom: var(--space-sm);
-    color: var(--text-secondary);
-}
-
-/* Track notes indicator - clickable */
-.track-notes-indicator {
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.track-notes-indicator:hover {
-    background-color: rgba(251, 191, 36, 0.3);
-}
-
-.track-notes-add {
-    display: inline-block;
-    padding: 2px 6px;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    border: 1px dashed var(--border);
-    border-radius: var(--radius-xs);
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.15s;
-}
-
-.track-row:hover .track-notes-add {
-    opacity: 1;
-}
-
-.track-notes-add:hover {
-    border-color: var(--text-muted);
-    color: var(--text-secondary);
-}
-
-/* Segmented Energy Bar for table */
-.energy-bar-table {
-    display: flex;
-    gap: 2px;
-    height: 18px;
-    cursor: pointer;
-    justify-content: center;
-}
-
-.energy-bar-table .energy-segment {
-    width: 14px;
-    background-color: var(--border);
-    border-radius: 2px;
-    transition: background-color 0.15s, transform 0.1s;
-}
-
-.energy-bar-table .energy-segment:hover {
-    transform: scaleY(1.15);
-}
-
-.energy-bar-table[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
-.energy-bar-table[data-value="2"] .energy-segment[data-level="1"],
-.energy-bar-table[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
-.energy-bar-table[data-value="3"] .energy-segment[data-level="1"],
-.energy-bar-table[data-value="3"] .energy-segment[data-level="2"],
-.energy-bar-table[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
-.energy-bar-table[data-value="4"] .energy-segment[data-level="1"],
-.energy-bar-table[data-value="4"] .energy-segment[data-level="2"],
-.energy-bar-table[data-value="4"] .energy-segment[data-level="3"],
-.energy-bar-table[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
-.energy-bar-table[data-value="5"] .energy-segment { background-color: var(--error); }
-
-/* Additional release info */
-.release-extra-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    margin-top: var(--space-sm);
-}
-
-.release-extra-info span {
-    display: inline-block;
-    padding: 2px 8px;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-}
-
-.release-format {
-    border-left: 2px solid var(--primary) !important;
-}
-
-.release-genre {
-    border-left: 2px solid var(--success) !important;
-}
-
-.release-style {
-    border-left: 2px solid var(--warning) !important;
-}
-
-/* Responsive: stack notes below on smaller screens */
-@media (max-width: 1100px) {
-    .release-header {
-        grid-template-columns: auto 1fr;
-    }
-    .release-notes-panel {
-        grid-column: 1 / -1;
-        width: 100%;
-    }
-}
-</style>
+<!-- NOTE: All detail page styles now in style.css RELEASE DETAIL PAGE section -->
 {% endblock %}
 
 {% block scripts %}
@@ -664,7 +386,7 @@
     window._detailEnergyDrag.updateTrackFn = updateTrack;
 
     // Attach mousedown to energy bars
-    document.querySelectorAll('.energy-bar-table').forEach(bar => {
+    document.querySelectorAll('.energy-bar').forEach(bar => {
         bar.addEventListener('mousedown', (e) => {
             const state = window._detailEnergyDrag;
             state.isDragging = true;

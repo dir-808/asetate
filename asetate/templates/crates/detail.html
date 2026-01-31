@@ -18,8 +18,8 @@
     </nav>
 
     <header class="crate-header">
-        <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; color: {{ crate.color_hex }}; border-color: {{ crate.color_hex }}40"{% endif %}>
-            {{ crate.display_icon }}
+        <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; border-color: {{ crate.color_hex }}40"{% endif %}>
+            <img src="{{ crate.icon_url }}" alt="" class="crate-pixel-icon-lg">
         </div>
         <div class="crate-info">
             <h1>{{ crate.name }}</h1>
@@ -137,20 +137,17 @@
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
-                        <button type="button" class="icon-preview" id="edit-icon-preview" title="Click to select an emoji">{{ crate.display_icon }}</button>
+                        <div class="icon-preview-box" id="edit-icon-preview">
+                            <img src="{{ crate.icon_url }}" alt="" class="icon-preview-img" id="edit-icon-preview-img">
+                        </div>
                         <input type="text"
-                               id="edit-crate-icon-input"
-                               class="icon-text-input"
-                               placeholder="Type or paste any emoji"
-                               maxlength="4"
-                               value="{{ crate.icon or '' }}">
+                               id="edit-icon-search"
+                               class="icon-search-input"
+                               placeholder="Search icons...">
                         <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Clear</button>
                     </div>
-                    <div class="icon-suggestions" id="edit-icon-suggestions">
-                        <span class="suggestions-label">Suggestions:</span>
-                        {% for icon in crate_icons[:20] %}
-                        <button type="button" class="icon-suggestion" data-icon="{{ icon }}">{{ icon }}</button>
-                        {% endfor %}
+                    <div class="icon-grid" id="edit-icon-grid">
+                        <!-- Icons loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="edit-crate-icon" name="icon" value="{{ crate.icon or '' }}">
@@ -214,188 +211,62 @@
         </div>
     </div>
 </div>
-
-<style>
-/* Crate header with large icon */
-.crate-header {
-    display: flex;
-    gap: var(--space-lg);
-    align-items: flex-start;
-    margin-bottom: var(--space-xl);
-}
-
-.crate-icon-large {
-    width: 64px;
-    height: 64px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    background: var(--bg-surface);
-    border: 2px solid var(--border);
-    flex-shrink: 0;
-}
-
-/* Sub-crate cards with color */
-.sub-crate-card {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    background: var(--bg-surface);
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.15s;
-}
-
-.sub-crate-card:hover {
-    background: var(--bg-hover);
-}
-
-/* Icon and color picker styles for edit modal */
-.icon-picker-container {
-    margin-top: var(--space-xs);
-}
-
-.icon-input-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-sm);
-}
-
-.icon-preview {
-    width: 40px;
-    height: 40px;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    cursor: pointer;
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.icon-text-input {
-    flex: 1;
-    max-width: 150px;
-    padding: var(--space-sm);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 1.1rem;
-    text-align: center;
-}
-
-.icon-suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-}
-
-.suggestions-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-right: var(--space-xs);
-}
-
-.icon-suggestion {
-    width: 28px;
-    height: 28px;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.icon-suggestion:hover {
-    border-color: var(--border);
-    transform: scale(1.1);
-}
-
-.color-picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: var(--space-xs);
-}
-
-.color-option {
-    width: 24px;
-    height: 24px;
-    border: 2px solid transparent;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.15s, border-color 0.15s;
-}
-
-.color-option:hover {
-    transform: scale(1.1);
-}
-
-.color-option.selected {
-    border-color: var(--text);
-    box-shadow: 0 0 0 2px var(--bg);
-}
-
-.color-custom-label {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    border: 2px solid var(--border);
-    border-radius: 50%;
-}
-
-.color-custom-label:hover {
-    border-color: var(--text);
-}
-
-.color-custom-icon {
-    font-size: 0.9rem;
-}
-
-.color-custom input[type="color"] {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
-
-.form-select {
-    width: 100%;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-input);
-    color: var(--text);
-    font-size: 0.9rem;
-}
-</style>
+<!-- NOTE: Crate detail page styles now in style.css CRATES section -->
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function() {
     const crateId = document.querySelector('.crate-detail').dataset.crateId;
+    const DEFAULT_ICON = 'folder';
+    let allIcons = [];
+    let searchTimeout = null;
+
+    // Load icons from API
+    async function loadIcons(query = '') {
+        try {
+            const response = await fetch(`/crates/api/icons?q=${encodeURIComponent(query)}&limit=60`);
+            const data = await response.json();
+            return data.icons;
+        } catch (err) {
+            console.error('Failed to load icons:', err);
+            return [];
+        }
+    }
+
+    // Render icon grid
+    function renderIconGrid(icons, container, onSelect) {
+        container.innerHTML = '';
+        icons.forEach(icon => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'icon-grid-item';
+            btn.dataset.icon = icon.name;
+            btn.title = icon.keywords.slice(0, 3).join(', ');
+            btn.innerHTML = `<img src="${icon.url}" alt="${icon.name}">`;
+            btn.addEventListener('click', () => onSelect(icon.name, icon.url));
+            container.appendChild(btn);
+        });
+    }
 
     // Edit modal
     const editModal = document.getElementById('edit-crate-modal');
     const editForm = document.getElementById('edit-crate-form');
 
-    document.getElementById('btn-edit-crate').addEventListener('click', () => {
+    document.getElementById('btn-edit-crate').addEventListener('click', async () => {
         editModal.classList.add('open');
+        // Load icons when modal opens
+        if (allIcons.length === 0) {
+            allIcons = await loadIcons('');
+        }
+        renderIconGrid(allIcons, editIconGrid, selectEditIcon);
+        // Highlight current icon
+        const currentIcon = editIconInput.value;
+        if (currentIcon) {
+            editIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.icon === currentIcon);
+            });
+        }
     });
 
     document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
@@ -404,45 +275,40 @@
 
     // Icon picker for edit modal
     const editIconInput = document.getElementById('edit-crate-icon');
-    const editIconPreview = document.getElementById('edit-icon-preview');
-    const editIconTextInput = document.getElementById('edit-crate-icon-input');
+    const editIconPreviewImg = document.getElementById('edit-icon-preview-img');
+    const editIconSearch = document.getElementById('edit-icon-search');
+    const editIconGrid = document.getElementById('edit-icon-grid');
     const editClearIconBtn = document.getElementById('edit-clear-icon');
     const editColorInput = document.getElementById('edit-crate-color');
 
-    function extractFirstEmoji(str) {
-        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-        const match = str.match(emojiRegex);
-        return match ? match[0] : null;
+    function selectEditIcon(iconName, iconUrl) {
+        editIconInput.value = iconName;
+        editIconPreviewImg.src = iconUrl;
+        editIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        });
     }
 
-    function updateEditIconFromInput() {
-        const value = editIconTextInput.value.trim();
-        if (value) {
-            const emoji = extractFirstEmoji(value);
-            if (emoji) {
-                editIconInput.value = emoji;
-                editIconPreview.textContent = emoji;
-                editIconTextInput.value = emoji;
+    // Search icons with debounce
+    editIconSearch.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            const query = editIconSearch.value.trim();
+            if (query) {
+                const results = await loadIcons(query);
+                renderIconGrid(results, editIconGrid, selectEditIcon);
+            } else {
+                renderIconGrid(allIcons, editIconGrid, selectEditIcon);
             }
-        }
-    }
-
-    editIconTextInput.addEventListener('input', updateEditIconFromInput);
-    editIconTextInput.addEventListener('paste', () => setTimeout(updateEditIconFromInput, 0));
+        }, 200);
+    });
 
     editClearIconBtn.addEventListener('click', () => {
         editIconInput.value = '';
-        editIconPreview.textContent = '📁';
-        editIconTextInput.value = '';
-    });
-
-    document.querySelectorAll('#edit-icon-suggestions .icon-suggestion').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const icon = btn.dataset.icon;
-            editIconInput.value = icon;
-            editIconPreview.textContent = icon;
-            editIconTextInput.value = icon;
-        });
+        editIconPreviewImg.src = `/static/icons/${DEFAULT_ICON}.png`;
+        editIconSearch.value = '';
+        renderIconGrid(allIcons, editIconGrid, selectEditIcon);
+        editIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => btn.classList.remove('selected'));
     });
 
     // Color picker for edit modal

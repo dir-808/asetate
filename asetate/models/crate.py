@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from asetate import db
+from .pixel_icons import PIXEL_ICONS, DEFAULT_ICON, get_icon_url, is_valid_icon
 
 # Preset colors for crates (Notion-inspired palette)
 CRATE_COLORS = [
@@ -17,23 +18,8 @@ CRATE_COLORS = [
     {"id": "red", "hex": "#D44C47", "name": "Red"},
 ]
 
-# Preset icons for crates (emoji-based, music/DJ themed)
-CRATE_ICONS = [
-    # Music & Audio
-    "🎵", "🎶", "🎧", "🎤", "🎹", "🎸", "🎺", "🎷", "🥁", "🪘",
-    # Vinyl & DJ
-    "💿", "📀", "🎚️", "🎛️",
-    # Genres/Moods
-    "🔥", "❄️", "🌙", "☀️", "⭐", "💫", "✨", "🌈", "🌊", "🌴",
-    # Categories
-    "📁", "📂", "🗂️", "📦", "🏷️", "🔖",
-    # Energy/Vibe
-    "💃", "🕺", "🪩", "🎉", "🎊", "💎", "👑", "🏆",
-    # Colors/Abstract
-    "🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "⚫", "⚪", "🟤",
-    # Other
-    "❤️", "💜", "💙", "💚", "💛", "🧡", "🖤", "🤍",
-]
+# Export pixel icons for templates
+CRATE_ICONS = PIXEL_ICONS
 
 # Junction table for crates containing releases
 crate_releases = db.Table(
@@ -83,7 +69,7 @@ class Crate(db.Model):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     color = db.Column(db.String(20))  # Preset color ID or hex color
-    icon = db.Column(db.String(10))   # Emoji icon
+    icon = db.Column(db.String(50))   # Pixel icon name (e.g., "music", "fire")
     sort_order = db.Column(db.Integer, default=0)  # For manual ordering
 
     # Timestamps
@@ -146,8 +132,13 @@ class Crate(db.Model):
 
     @property
     def display_icon(self) -> str:
-        """Get the icon to display, with fallback to folder emoji."""
-        return self.icon or "📁"
+        """Get the icon name to display, with fallback to default folder icon."""
+        return self.icon or DEFAULT_ICON
+
+    @property
+    def icon_url(self) -> str:
+        """Get the URL path for the icon image."""
+        return get_icon_url(self.icon or DEFAULT_ICON)
 
     @property
     def is_top_level(self) -> bool:
