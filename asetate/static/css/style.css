@@ -766,6 +766,7 @@ input::placeholder, textarea::placeholder {
     flex-direction: column;
     gap: 2px;
     background-color: var(--lcd-bg);
+    flex: 1; /* Fill remaining card height so no grey gap shows */
 }
 
 .release-title {
@@ -1063,8 +1064,8 @@ input::placeholder, textarea::placeholder {
     border-top: 1px solid rgba(249, 115, 22, 0.4);
 }
 
-/* Last playable track gets orange bottom border */
-.track-row.track-playable:last-child {
+/* Last playable in a group (not followed by another playable) gets orange bottom border */
+.track-row.track-playable:not(:has(+ .track-row.track-playable)) {
     border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
