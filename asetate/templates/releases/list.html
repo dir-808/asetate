@@ -139,6 +139,7 @@
     <!-- Side Panel for Release Details -->
     <aside class="release-panel" id="release-panel">
         <div class="panel-header-bar">
+            <span id="panel-expand-slot"></span>
             <button class="panel-close" id="panel-close" title="Close panel">&times;</button>
         </div>
         <div class="panel-content" id="panel-content">
@@ -186,6 +187,26 @@ body.panel-open .collection-page {
 
 .release-panel.open {
     transform: translateX(0);
+}
+
+.panel-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-elevated);
+    border-bottom: 2px solid var(--border);
+    flex-shrink: 0;
+}
+
+#panel-expand-slot {
+    display: flex;
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 @media (max-width: 1200px) {
@@ -321,6 +342,13 @@ function filterByCrate(crateId) {
             const response = await fetch(`/releases/${releaseId}/panel`);
             if (response.ok) {
                 panelContent.innerHTML = await response.text();
+                // Move expand button to header bar
+                const expandBtn = document.getElementById('panel-expand-btn');
+                const expandSlot = document.getElementById('panel-expand-slot');
+                if (expandBtn && expandSlot) {
+                    expandBtn.style.display = 'flex';
+                    expandSlot.appendChild(expandBtn);
+                }
             } else {
                 panelContent.innerHTML = '<div class="panel-error">Failed to load release</div>';
             }
