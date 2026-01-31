@@ -300,6 +300,53 @@ class SyncService:
             ]
         )
 
+    def sync_single_release(self, release: Release) -> None:
+        """Sync a single release from Discogs.
+
+        Re-fetches the release data from Discogs and updates local database.
+        Preserves user-entered DJ metadata (BPM, key, energy, notes, tags).
+
+        Args:
+            release: The Release object to sync
+        """
+        # Create client based on available credentials
+        if self.personal_token:
+            self.client = DiscogsClient(personal_token=self.personal_token)
+        else:
+            self.client = DiscogsClient(
+                oauth_token=self.oauth_token,
+                oauth_token_secret=self.oauth_token_secret,
+            )
+
+        # Get fresh release details from Discogs
+        details = self.client.get_release_details(release.discogs_id)
+
+        # Build a minimal collection item structure for parse_release
+        item = {
+            "basic_information": {
+                "id": release.discogs_id,
+                "title": details.get("title", release.title),
+                "artists": details.get("artists", []),
+                "labels": details.get("labels", []),
+                "year": details.get("year"),
+                "cover_image": details.get("images", [{}])[0].get("uri") if details.get("images") else None,
+            }
+        }
+
+        release_data = self.client.parse_release(item, details)
+
+        # Update release fields (preserve user data by only updating Discogs fields)
+        release.title = release_data.title
+        release.artist = release_data.artist
+        release.label = release_data.label
+        release.year = release_data.year
+        release.cover_art_url = release_data.cover_art_url
+        release.discogs_uri = release_data.discogs_uri
+        release.synced_at = datetime.utcnow()
+
+        # Sync tracks (preserves user DJ metadata)
+        self._sync_tracks(release, release_data.tracks)
+
     def _mark_removed_releases(self, seen_ids: set[int], progress: SyncProgress):
         """Mark releases that are no longer in the Discogs collection.
 

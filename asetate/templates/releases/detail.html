@@ -77,14 +77,12 @@
         </div>
         <!-- Release Notes (right side) -->
         <textarea class="release-notes-simple" id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
-        <span class="notes-save-indicator" id="notes-save-indicator"></span>
     </header>
 
     <section class="tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
         <div class="tracks-header">
             <h2>Tracklist</h2>
             <div class="tracks-header-actions">
-                <span class="save-indicator" id="save-indicator"></span>
                 <button class="btn btn-secondary btn-sm" id="btn-column-settings" title="Column visibility">Columns</button>
             </div>
         </div>
@@ -416,17 +414,6 @@
     color: var(--text-muted);
 }
 
-.notes-save-indicator {
-    position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    font-size: 0.7rem;
-}
-
-.notes-save-indicator.saving { color: var(--warning); }
-.notes-save-indicator.saved { color: var(--success); }
-.notes-save-indicator.error { color: var(--error); }
-
 /* Notes modal textarea */
 #release-notes-textarea,
 #track-notes-textarea {
@@ -556,32 +543,8 @@
 <script>
 (function() {
     const releaseId = document.querySelector('.release-detail').dataset.releaseId;
-    const saveIndicator = document.getElementById('save-indicator');
-    let saveTimeout = null;
-
-    function showSaving() {
-        saveIndicator.textContent = 'Saving...';
-        saveIndicator.className = 'save-indicator saving';
-    }
-
-    function showSaved() {
-        saveIndicator.textContent = 'Saved';
-        saveIndicator.className = 'save-indicator saved';
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            saveIndicator.textContent = '';
-            saveIndicator.className = 'save-indicator';
-        }, 2000);
-    }
-
-    function showError(message) {
-        saveIndicator.textContent = message || 'Error saving';
-        saveIndicator.className = 'save-indicator error';
-    }
 
     async function updateTrack(trackId, field, value) {
-        showSaving();
-
         const data = {};
         data[field] = value;
 
@@ -592,11 +555,7 @@
                 body: JSON.stringify(data)
             });
 
-            const result = await response.json();
-
             if (response.ok) {
-                showSaved();
-
                 // Update row styling for playable status
                 if (field === 'is_playable') {
                     const row = document.querySelector(`tr[data-track-id="${trackId}"]`);
@@ -612,11 +571,8 @@
                 if (field === 'bpm') {
                     updateStats();
                 }
-            } else {
-                showError(result.error);
             }
         } catch (err) {
-            showError('Network error');
             console.error('Failed to update track:', err);
         }
     }
@@ -869,16 +825,13 @@
             syncBtn.textContent = 'Syncing...';
 
             try {
-                const response = await fetch(`/sync/inventory/release/${releaseId}`, {
+                const response = await fetch(`/sync/release/${releaseId}`, {
                     method: 'POST'
                 });
 
                 if (response.ok) {
-                    syncBtn.textContent = 'Synced!';
-                    setTimeout(() => {
-                        syncBtn.textContent = 'Sync';
-                        syncBtn.disabled = false;
-                    }, 2000);
+                    // Reload the page to show updated data
+                    window.location.reload();
                 } else {
                     syncBtn.textContent = 'Error';
                     setTimeout(() => {
@@ -1100,46 +1053,19 @@
 
     // Inline Release Notes - auto-save with debounce
     const releaseNotesInline = document.getElementById('release-notes-inline');
-    const notesSaveIndicator = document.getElementById('notes-save-indicator');
     let notesDebounceTimer = null;
-
-    function showNotesSaving() {
-        notesSaveIndicator.textContent = 'Saving...';
-        notesSaveIndicator.className = 'notes-save-indicator saving';
-    }
-
-    function showNotesSaved() {
-        notesSaveIndicator.textContent = 'Saved';
-        notesSaveIndicator.className = 'notes-save-indicator saved';
-        setTimeout(() => {
-            notesSaveIndicator.textContent = '';
-            notesSaveIndicator.className = 'notes-save-indicator';
-        }, 2000);
-    }
-
-    function showNotesError() {
-        notesSaveIndicator.textContent = 'Error';
-        notesSaveIndicator.className = 'notes-save-indicator error';
-    }
 
     async function saveReleaseNotes() {
         const notes = releaseNotesInline.value.trim();
-        showNotesSaving();
 
         try {
-            const response = await fetch(`/releases/${releaseId}/notes`, {
+            await fetch(`/releases/${releaseId}/notes`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes: notes || null })
             });
-
-            if (response.ok) {
-                showNotesSaved();
-            } else {
-                showNotesError();
-            }
         } catch (err) {
-            showNotesError();
+            console.error('Failed to save notes:', err);
         }
     }
 
@@ -1181,7 +1107,6 @@
 
         const trackId = currentTrackNotesBtn.dataset.trackId;
         const notes = trackNotesTextarea.value.trim();
-        showSaving();
 
         try {
             const response = await fetch(`/releases/${releaseId}/tracks/${trackId}`, {
@@ -1191,7 +1116,6 @@
             });
 
             if (response.ok) {
-                showSaved();
                 closeTrackNotesModal();
                 // Update the button display
                 currentTrackNotesBtn.dataset.trackNotes = notes;
@@ -1205,11 +1129,9 @@
                     currentTrackNotesBtn.classList.remove('track-notes-indicator');
                     currentTrackNotesBtn.classList.add('track-notes-add');
                 }
-            } else {
-                showError('Failed to save notes');
             }
         } catch (err) {
-            showError('Network error');
+            console.error('Failed to save notes:', err);
         }
     });
 
@@ -1292,12 +1214,9 @@
                 });
 
                 closeColumnSettingsModal();
-                showSaved();
-            } else {
-                showError('Failed to save settings');
             }
         } catch (err) {
-            showError('Network error');
+            console.error('Failed to save settings:', err);
         }
     });
 

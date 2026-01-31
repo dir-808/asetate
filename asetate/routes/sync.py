@@ -333,6 +333,48 @@ def start_inventory_sync():
     return jsonify({"status": "started", "message": "Inventory sync started"})
 
 
+@bp.route("/release/<int:release_id>", methods=["POST"])
+@login_required
+@limiter.limit("30 per minute")
+def sync_single_release(release_id: int):
+    """Sync a single release from Discogs collection.
+
+    Re-fetches the release data from Discogs and updates local database.
+    Preserves user-entered DJ metadata (BPM, key, energy, notes, tags).
+    """
+    user_id = current_user.id
+
+    # Check for valid credentials
+    if not current_user.has_discogs_credentials:
+        return jsonify({"error": "Discogs credentials not configured"}), 400
+
+    # Verify release belongs to user
+    release = Release.query.filter_by(id=release_id, user_id=user_id).first()
+    if not release:
+        return jsonify({"error": "Release not found"}), 404
+
+    if not release.discogs_id:
+        return jsonify({"error": "Release has no Discogs ID"}), 400
+
+    try:
+        service = SyncService.from_user(current_user)
+        service.sync_single_release(release)
+        db.session.commit()
+
+        return jsonify({
+            "status": "synced",
+            "message": "Release updated from Discogs",
+        })
+
+    except DiscogsAuthError as e:
+        return jsonify({"error": f"Authentication failed: {e}"}), 401
+    except DiscogsRateLimitError as e:
+        return jsonify({"error": f"Rate limited. Retry after {e.retry_after}s"}), 429
+    except Exception as e:
+        current_app.logger.error(f"Release sync error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @bp.route("/inventory/release/<int:release_id>", methods=["POST"])
 @login_required
 @limiter.limit("30 per minute")

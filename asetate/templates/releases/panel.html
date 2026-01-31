@@ -8,7 +8,6 @@
     </a>
 
     <header class="panel-header">
-        <span class="save-indicator" id="panel-save-indicator"></span>
         <div class="panel-cover">
             {% if release.cover_art_url %}
             <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
@@ -203,19 +202,14 @@
     stroke: var(--primary);
 }
 
-/* Save indicator in header */
-.panel-header .save-indicator {
-    position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    font-size: 0.7rem;
-}
-
-/* Track row - dimmed for non-playable, orange box for playable */
+/* Track row - stable layout with no reflow */
 .panel-track-row {
     padding: var(--space-sm) var(--space-md);
     border-bottom: 1px solid var(--border);
-    transition: opacity 0.15s, background-color 0.15s, box-shadow 0.15s;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    transition: opacity 0.15s, background-color 0.15s;
+    box-sizing: border-box;
 }
 
 .panel-track-row:last-child {
@@ -231,10 +225,25 @@
     opacity: 0.7;
 }
 
-/* Playable tracks get a faint orange box */
+/* Playable tracks get a faint orange box - stable borders */
 .panel-track-row:not(.track-dimmed) {
-    box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.3);
+    border-left-color: rgba(249, 115, 22, 0.4);
+    border-right-color: rgba(249, 115, 22, 0.4);
     background-color: rgba(249, 115, 22, 0.03);
+}
+
+/* First playable track in a group gets top border */
+.panel-track-row:not(.track-dimmed):first-child,
+.panel-track-row.track-dimmed + .panel-track-row:not(.track-dimmed) {
+    border-top: 2px solid rgba(249, 115, 22, 0.4);
+    margin-top: -1px;
+    padding-top: calc(var(--space-sm) - 1px);
+}
+
+/* Last playable track in a group gets bottom border */
+.panel-track-row:not(.track-dimmed):last-child,
+.panel-track-row:not(.track-dimmed):has(+ .panel-track-row.track-dimmed) {
+    border-bottom: 2px solid rgba(249, 115, 22, 0.4);
 }
 
 .panel-track-row:not(.track-dimmed):hover {
@@ -500,15 +509,15 @@
     flex-shrink: 0;
 }
 
-/* Notes textarea - full width, same as tracklist */
+/* Notes textarea - full width with orange border */
 .panel-notes-textarea {
     flex-shrink: 0;
-    width: 100%;
+    width: calc(100% - var(--space-md) * 2);
     min-height: 50px;
     max-height: 80px;
-    padding: var(--space-sm) var(--space-md);
-    border: none;
-    border-bottom: 1px solid var(--border);
+    margin: var(--space-sm) var(--space-md);
+    padding: var(--space-sm);
+    border: 2px solid rgba(249, 115, 22, 0.4);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
@@ -520,6 +529,7 @@
 
 .panel-notes-textarea:focus {
     outline: none;
+    border-color: var(--primary);
     background: var(--bg-elevated);
 }
 
@@ -672,32 +682,9 @@
 <script>
 (function() {
     const releaseId = {{ release.id }};
-    const saveIndicator = document.getElementById('panel-save-indicator');
-    let saveTimeout = null;
     let allTags = [];
 
-    function showSaving() {
-        saveIndicator.textContent = 'Saving...';
-        saveIndicator.className = 'save-indicator saving';
-    }
-
-    function showSaved() {
-        saveIndicator.textContent = 'Saved';
-        saveIndicator.className = 'save-indicator saved';
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            saveIndicator.textContent = '';
-            saveIndicator.className = 'save-indicator';
-        }, 2000);
-    }
-
-    function showError() {
-        saveIndicator.textContent = 'Error';
-        saveIndicator.className = 'save-indicator error';
-    }
-
     async function updateTrack(trackId, field, value) {
-        showSaving();
         const data = {};
         data[field] = value;
 
@@ -709,7 +696,6 @@
             });
 
             if (response.ok) {
-                showSaved();
                 if (field === 'is_playable') {
                     const row = document.querySelector(`.panel-track-row[data-track-id="${trackId}"]`);
                     row.classList.toggle('track-dimmed', !value);
@@ -718,11 +704,9 @@
                 if (field === 'bpm') {
                     updatePanelStats();
                 }
-            } else {
-                showError();
             }
         } catch (err) {
-            showError();
+            console.error('Failed to update track:', err);
         }
     }
 
@@ -791,52 +775,64 @@
     });
 
     // Energy bar click and drag handler - supports dragging outside the bar
-    let energyDragState = {
-        isDragging: false,
-        currentBar: null,
-        currentTrackId: null
-    };
+    // Use global state to handle drag across multiple panel loads
+    if (!window._panelEnergyDrag) {
+        window._panelEnergyDrag = {
+            isDragging: false,
+            currentBar: null,
+            currentTrackId: null,
+            currentReleaseId: null,
+            updateTrackFn: null
+        };
 
-    function setEnergyLevel(bar, level) {
-        bar.setAttribute('data-value', level);
+        // Document-level listeners - only add once
+        document.addEventListener('mousemove', (e) => {
+            const state = window._panelEnergyDrag;
+            if (state.isDragging && state.currentBar) {
+                const rect = state.currentBar.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const segmentWidth = rect.width / 5;
+                let level = Math.ceil(x / segmentWidth);
+                level = Math.max(1, Math.min(5, level));
+                state.currentBar.setAttribute('data-value', level);
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            const state = window._panelEnergyDrag;
+            if (state.isDragging && state.currentTrackId && state.currentBar && state.updateTrackFn) {
+                const level = parseInt(state.currentBar.getAttribute('data-value'));
+                state.updateTrackFn(state.currentTrackId, 'energy', level);
+            }
+            state.isDragging = false;
+            state.currentBar = null;
+            state.currentTrackId = null;
+            state.currentReleaseId = null;
+        });
     }
 
-    function getEnergyLevelFromEvent(bar, e) {
-        const rect = bar.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const segmentWidth = rect.width / 5;
-        let level = Math.ceil(x / segmentWidth);
-        return Math.max(1, Math.min(5, level));
-    }
+    // Update the global state with current updateTrack function
+    window._panelEnergyDrag.updateTrackFn = updateTrack;
 
+    // Attach mousedown to energy bars
     document.querySelectorAll('.energy-bar-panel').forEach(bar => {
         bar.addEventListener('mousedown', (e) => {
-            energyDragState.isDragging = true;
-            energyDragState.currentBar = bar;
+            const state = window._panelEnergyDrag;
+            state.isDragging = true;
+            state.currentBar = bar;
+            state.currentReleaseId = releaseId;
             const row = bar.closest('.panel-track-row');
-            energyDragState.currentTrackId = row.dataset.trackId;
-            const level = getEnergyLevelFromEvent(bar, e);
-            setEnergyLevel(bar, level);
+            state.currentTrackId = row.dataset.trackId;
+
+            // Calculate and set initial level
+            const rect = bar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const segmentWidth = rect.width / 5;
+            let level = Math.ceil(x / segmentWidth);
+            level = Math.max(1, Math.min(5, level));
+            bar.setAttribute('data-value', level);
             e.preventDefault();
         });
-    });
-
-    // Document-level listeners for drag tracking
-    document.addEventListener('mousemove', (e) => {
-        if (energyDragState.isDragging && energyDragState.currentBar) {
-            const level = getEnergyLevelFromEvent(energyDragState.currentBar, e);
-            setEnergyLevel(energyDragState.currentBar, level);
-        }
-    });
-
-    document.addEventListener('mouseup', (e) => {
-        if (energyDragState.isDragging && energyDragState.currentTrackId && energyDragState.currentBar) {
-            const level = parseInt(energyDragState.currentBar.getAttribute('data-value'));
-            updateTrack(energyDragState.currentTrackId, 'energy', level);
-        }
-        energyDragState.isDragging = false;
-        energyDragState.currentBar = null;
-        energyDragState.currentTrackId = null;
     });
 
     // Track Notes Modal
@@ -865,7 +861,6 @@
         if (!currentNotesTrackId) return;
 
         const notes = notesTextarea.value.trim();
-        showSaving();
 
         try {
             const response = await fetch(`/releases/${releaseId}/tracks/${currentNotesTrackId}`, {
@@ -875,7 +870,6 @@
             });
 
             if (response.ok) {
-                showSaved();
                 notesModal.style.display = 'none';
                 // Update button
                 const btn = document.querySelector(`.panel-notes-btn[data-track-id="${currentNotesTrackId}"]`);
@@ -889,11 +883,9 @@
                         btn.classList.remove('has-notes');
                     }
                 }
-            } else {
-                showError();
             }
         } catch (err) {
-            showError();
+            console.error('Failed to save notes:', err);
         }
     });
 
@@ -1012,22 +1004,15 @@
 
     async function saveReleaseNotes() {
         const notes = releaseNotesTextarea.value.trim();
-        showSaving();
 
         try {
-            const response = await fetch(`/releases/${releaseId}/notes`, {
+            await fetch(`/releases/${releaseId}/notes`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes: notes || null })
             });
-
-            if (response.ok) {
-                showSaved();
-            } else {
-                showError();
-            }
         } catch (err) {
-            showError();
+            console.error('Failed to save notes:', err);
         }
     }
 
@@ -1162,18 +1147,14 @@
             syncBtn.textContent = 'Syncing...';
 
             try {
-                const response = await fetch(`/sync/inventory/release/${releaseId}`, {
+                const response = await fetch(`/sync/release/${releaseId}`, {
                     method: 'POST'
                 });
 
                 if (response.ok) {
-                    syncBtn.textContent = 'Synced!';
-                    setTimeout(() => {
-                        syncBtn.textContent = 'Sync';
-                        syncBtn.disabled = false;
-                    }, 2000);
+                    // Reload the panel to show updated data
+                    window.location.reload();
                 } else {
-                    const data = await response.json();
                     syncBtn.textContent = 'Error';
                     setTimeout(() => {
                         syncBtn.textContent = 'Sync';
