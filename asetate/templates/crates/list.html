@@ -15,12 +15,12 @@
     {% if crate_tree %}
     <div class="crates-tree">
         {% macro render_crate(node, depth=0) %}
-        <div class="crate-item" style="--depth: {{ depth }}">
-            <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="crate-link">
-                <span class="crate-icon" {% if node.crate.color_hex %}style="background-color: {{ node.crate.color_hex }}20; color: {{ node.crate.color_hex }}"{% endif %}>
+        <div class="crate-item" style="--depth: {{ depth }}; {% if node.crate.color_hex %}--crate-color: {{ node.crate.color_hex }}{% endif %}">
+            <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="crate-link {% if node.crate.color_hex %}has-color{% endif %}">
+                <span class="crate-icon" {% if node.crate.color_hex %}style="background-color: {{ node.crate.color_hex }}30; color: {{ node.crate.color_hex }}"{% endif %}>
                     {{ node.crate.display_icon }}
                 </span>
-                <span class="crate-name">{{ node.crate.name }}</span>
+                <span class="crate-name" {% if node.crate.color_hex %}style="color: {{ node.crate.color_hex }}"{% endif %}>{{ node.crate.name }}</span>
                 <span class="crate-counts">
                     {% if node.release_count > 0 %}
                     <span class="count-badge">{{ node.release_count }} releases</span>
@@ -103,8 +103,11 @@
                     {% for color in crate_colors %}
                     <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}" title="{{ color.name }}"></button>
                     {% endfor %}
-                    <div class="color-custom">
-                        <input type="color" id="custom-color" value="#337EA9" title="Custom color">
+                    <div class="color-custom" title="Custom color">
+                        <label class="color-custom-label" for="custom-color">
+                            <span class="color-custom-icon">🎨</span>
+                            <input type="color" id="custom-color" value="#337EA9">
+                        </label>
                     </div>
                 </div>
                 <input type="hidden" id="crate-color" name="color" value="">
@@ -124,14 +127,35 @@
 </div>
 
 <style>
+/* Crate list with prominent colors */
+.crate-link {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.crate-link.has-color {
+    border-left-color: var(--crate-color);
+    background-color: color-mix(in srgb, var(--crate-color) 5%, transparent);
+}
+
+.crate-link:hover {
+    background-color: var(--bg-hover);
+}
+
+.crate-link.has-color:hover {
+    background-color: color-mix(in srgb, var(--crate-color) 10%, transparent);
+}
+
 .crate-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-sm);
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 .icon-picker-container {
@@ -235,23 +259,34 @@
     align-items: center;
 }
 
-.color-custom input[type="color"] {
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 50%;
+.color-custom-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
     cursor: pointer;
-    padding: 0;
-    background: none;
-}
-
-.color-custom input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-}
-
-.color-custom input[type="color"]::-webkit-color-swatch {
     border: 2px solid var(--color-border);
     border-radius: 50%;
+    transition: border-color 0.15s, transform 0.15s;
+}
+
+.color-custom-label:hover {
+    border-color: var(--color-text);
+    transform: scale(1.1);
+}
+
+.color-custom-icon {
+    font-size: 0.9rem;
+}
+
+.color-custom input[type="color"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
 }
 </style>
 {% endblock %}

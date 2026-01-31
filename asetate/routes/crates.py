@@ -123,6 +123,19 @@ def view_crate(crate_id: int):
         breadcrumbs.insert(0, current)
         current = current.parent
 
+    # Get all crates for parent selection (excluding self and descendants)
+    def get_descendants(c):
+        result = {c.id}
+        for child in c.children:
+            result |= get_descendants(child)
+        return result
+
+    excluded_ids = get_descendants(crate)
+    available_parents = Crate.query.filter(
+        Crate.user_id == current_user.id,
+        ~Crate.id.in_(excluded_ids)
+    ).order_by(Crate.name).all()
+
     return render_template(
         "crates/detail.html",
         crate=crate,
@@ -130,6 +143,9 @@ def view_crate(crate_id: int):
         direct_tracks=direct_tracks,
         children=children,
         breadcrumbs=breadcrumbs,
+        crate_colors=CRATE_COLORS,
+        crate_icons=CRATE_ICONS,
+        available_parents=available_parents,
     )
 
 
@@ -167,6 +183,25 @@ def update_crate(crate_id: int):
 
     if "color" in data:
         crate.color = data["color"] or None
+
+    if "parent_id" in data:
+        new_parent_id = data["parent_id"]
+        if new_parent_id is not None:
+            # Validate parent exists and belongs to user
+            parent = Crate.query.filter_by(id=new_parent_id, user_id=current_user.id).first()
+            if not parent:
+                return jsonify({"error": "Parent crate not found"}), 404
+            # Prevent setting self or descendants as parent
+            def is_descendant(c, target_id):
+                if c.id == target_id:
+                    return True
+                for child in c.children:
+                    if is_descendant(child, target_id):
+                        return True
+                return False
+            if is_descendant(crate, new_parent_id):
+                return jsonify({"error": "Cannot set a descendant as parent"}), 400
+        crate.parent_id = new_parent_id
 
     db.session.commit()
 
@@ -302,6 +337,8 @@ def api_list_crates():
                     "full_path": c.full_path,
                     "parent_id": c.parent_id,
                     "depth": c.depth,
+                    "icon": c.display_icon,
+                    "color_hex": c.color_hex,
                 }
                 for c in crates
             ]

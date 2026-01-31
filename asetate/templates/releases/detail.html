@@ -103,15 +103,17 @@
                             >
                         </td>
                         <td class="col-energy">
-                            <input
-                                type="number"
-                                class="track-input track-energy"
-                                value="{{ track.energy or '' }}"
-                                placeholder="—"
-                                min="1"
-                                max="10"
-                                data-field="energy"
-                            >
+                            <div class="energy-slider-container">
+                                <input
+                                    type="range"
+                                    class="track-energy-slider"
+                                    value="{{ track.energy or 0 }}"
+                                    min="0"
+                                    max="5"
+                                    data-field="energy"
+                                >
+                                <span class="energy-value">{{ track.energy if track.energy else '—' }}</span>
+                            </div>
                         </td>
                         <td class="col-tags">
                             <div class="track-tags" data-track-id="{{ track.id }}">
@@ -286,6 +288,23 @@
         }
     });
 
+    // Energy slider handling
+    document.querySelectorAll('.track-energy-slider').forEach(slider => {
+        const valueDisplay = slider.nextElementSibling;
+
+        slider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            valueDisplay.textContent = value === 0 ? '—' : value;
+        });
+
+        slider.addEventListener('change', (e) => {
+            const row = slider.closest('tr');
+            const trackId = row.dataset.trackId;
+            const value = parseInt(e.target.value);
+            updateTrack(trackId, 'energy', value === 0 ? null : value);
+        });
+    });
+
     // Keyboard navigation between cells
     document.querySelectorAll('.track-input').forEach(input => {
         input.addEventListener('keydown', (e) => {
@@ -333,9 +352,13 @@
     function updateReleaseCratesDisplay() {
         const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
         if (inCrates.length > 0) {
-            releaseCratesContainer.innerHTML = inCrates.map(c =>
-                `<span class="crate-badge">${c.full_path}</span>`
-            ).join('');
+            releaseCratesContainer.innerHTML = inCrates.map(c => {
+                const colorStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40; color: ${c.color_hex}` : '';
+                return `<a href="/crates/${c.id}" class="crate-badge" style="${colorStyle}">
+                    <span class="crate-badge-icon">${c.icon}</span>
+                    <span class="crate-badge-name">${c.name}</span>
+                </a>`;
+            }).join('');
         } else {
             releaseCratesContainer.innerHTML = '<span class="text-muted">Not in any crate</span>';
         }
