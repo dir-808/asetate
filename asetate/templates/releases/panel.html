@@ -1,0 +1,285 @@
+{# Side panel partial for release details - loaded via AJAX #}
+<div class="panel-release" data-release-id="{{ release.id }}">
+    <header class="panel-header">
+        <div class="panel-cover">
+            {% if release.cover_art_url %}
+            <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
+            {% else %}
+            <div class="cover-placeholder-panel">
+                <span>No Cover</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="panel-info">
+            <h2>{{ release.display_title }}</h2>
+            <p class="panel-artist">{{ release.display_artist }}</p>
+            <div class="panel-meta">
+                {% if release.label %}<span>{{ release.label }}</span>{% endif %}
+                {% if release.year %}<span>{{ release.year }}</span>{% endif %}
+            </div>
+            {% set avg_bpm = release.get_average_bpm() %}
+            <div class="panel-stats">
+                <span>{{ stats.total }} tracks</span>
+                <span class="stat-divider">•</span>
+                <span class="text-success">{{ stats.playable }} playable</span>
+                {% if avg_bpm.value %}
+                <span class="stat-divider">•</span>
+                <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}">{{ avg_bpm.display }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="panel-actions">
+        <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Discogs</a>
+        <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate</button>
+        <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to export cue">Cue</button>
+        <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="btn btn-secondary btn-sm">Full Page</a>
+    </div>
+
+    <div class="panel-crates" id="panel-release-crates">
+        <!-- Crates will be loaded via JS -->
+    </div>
+
+    <!-- Release Notes -->
+    {% if release.notes %}
+    <div class="panel-notes">
+        <h4>Notes</h4>
+        <p>{{ release.notes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Tracks Section -->
+    <section class="panel-tracks">
+        <div class="panel-tracks-header">
+            <h3>Tracklist</h3>
+            <span class="save-indicator" id="panel-save-indicator"></span>
+        </div>
+
+        {% if tracks %}
+        <div class="panel-tracks-list">
+            {% for track in tracks %}
+            <div class="panel-track-row {% if track.is_playable %}track-playable{% endif %}"
+                 data-track-id="{{ track.id }}">
+                <div class="panel-track-main">
+                    <span class="panel-track-pos">{{ track.display_position }}</span>
+                    <div class="panel-track-info">
+                        <span class="panel-track-title">{{ track.title }}</span>
+                        <span class="panel-track-duration">{{ track.display_duration }}</span>
+                    </div>
+                    <label class="toggle toggle-sm">
+                        <input type="checkbox" class="panel-track-playable"
+                               {% if track.is_playable %}checked{% endif %}
+                               data-field="is_playable">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="panel-track-meta">
+                    <input type="number" class="panel-input panel-bpm"
+                           value="{{ track.bpm or '' }}" placeholder="BPM"
+                           min="20" max="300" data-field="bpm">
+                    <input type="text" class="panel-input panel-key"
+                           value="{{ track.camelot or track.musical_key or '' }}"
+                           placeholder="Key" data-field="camelot" list="panel-camelot-keys">
+                    <div class="panel-energy-wrap">
+                        <input type="range" class="panel-energy-slider"
+                               value="{{ track.energy or 0 }}" min="0" max="5" data-field="energy">
+                        <span class="panel-energy-val">{{ track.energy if track.energy else '—' }}</span>
+                    </div>
+                </div>
+                {% if track.tags %}
+                <div class="panel-track-tags">
+                    {% for tag in track.tags %}
+                    <span class="tag-badge-sm" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <datalist id="panel-camelot-keys">
+            <option value="1A"><option value="1B">
+            <option value="2A"><option value="2B">
+            <option value="3A"><option value="3B">
+            <option value="4A"><option value="4B">
+            <option value="5A"><option value="5B">
+            <option value="6A"><option value="6B">
+            <option value="7A"><option value="7B">
+            <option value="8A"><option value="8B">
+            <option value="9A"><option value="9B">
+            <option value="10A"><option value="10B">
+            <option value="11A"><option value="11B">
+            <option value="12A"><option value="12B">
+        </datalist>
+        {% else %}
+        <p class="text-muted">No tracks found.</p>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+(function() {
+    const releaseId = {{ release.id }};
+    const saveIndicator = document.getElementById('panel-save-indicator');
+    let saveTimeout = null;
+
+    function showSaving() {
+        saveIndicator.textContent = 'Saving...';
+        saveIndicator.className = 'save-indicator saving';
+    }
+
+    function showSaved() {
+        saveIndicator.textContent = 'Saved';
+        saveIndicator.className = 'save-indicator saved';
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveIndicator.textContent = '';
+            saveIndicator.className = 'save-indicator';
+        }, 2000);
+    }
+
+    function showError() {
+        saveIndicator.textContent = 'Error';
+        saveIndicator.className = 'save-indicator error';
+    }
+
+    async function updateTrack(trackId, field, value) {
+        showSaving();
+        const data = {};
+        data[field] = value;
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/tracks/${trackId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                showSaved();
+                if (field === 'is_playable') {
+                    const row = document.querySelector(`.panel-track-row[data-track-id="${trackId}"]`);
+                    row.classList.toggle('track-playable', value);
+                }
+            } else {
+                showError();
+            }
+        } catch (err) {
+            showError();
+        }
+    }
+
+    // Debounced input handler
+    let debounceTimers = {};
+
+    document.querySelectorAll('.panel-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+            const row = input.closest('.panel-track-row');
+            const trackId = row.dataset.trackId;
+            const field = input.dataset.field;
+
+            clearTimeout(debounceTimers[trackId + field]);
+            debounceTimers[trackId + field] = setTimeout(() => {
+                let value = input.value;
+                if (value === '') value = null;
+                updateTrack(trackId, field, value);
+            }, 500);
+        });
+    });
+
+    // Checkbox handler
+    document.querySelectorAll('.panel-track-playable').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const row = cb.closest('.panel-track-row');
+            const trackId = row.dataset.trackId;
+            updateTrack(trackId, 'is_playable', cb.checked);
+        });
+    });
+
+    // Energy slider
+    document.querySelectorAll('.panel-energy-slider').forEach(slider => {
+        const valDisplay = slider.nextElementSibling;
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            valDisplay.textContent = val === 0 ? '—' : val;
+        });
+        slider.addEventListener('change', (e) => {
+            const row = slider.closest('.panel-track-row');
+            const trackId = row.dataset.trackId;
+            const val = parseInt(e.target.value);
+            updateTrack(trackId, 'energy', val === 0 ? null : val);
+        });
+    });
+
+    // Load crates for this release
+    async function loadCrates() {
+        try {
+            const [cratesRes, releaseRes] = await Promise.all([
+                fetch('/crates/api/list'),
+                fetch(`/crates/api/for-release/${releaseId}`)
+            ]);
+            const cratesData = await cratesRes.json();
+            const releaseData = await releaseRes.json();
+
+            const allCrates = cratesData.crates;
+            const releaseCrateIds = releaseData.crate_ids;
+            const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
+
+            const container = document.getElementById('panel-release-crates');
+            if (inCrates.length > 0) {
+                container.innerHTML = inCrates.map(c => {
+                    const colorStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40; color: ${c.color_hex}` : '';
+                    return `<a href="/crates/${c.id}" class="crate-badge" style="${colorStyle}">
+                        <span class="crate-badge-icon">${c.icon}</span>
+                        <span class="crate-badge-name">${c.name}</span>
+                    </a>`;
+                }).join('');
+            } else {
+                container.innerHTML = '<span class="text-muted">Not in any crate</span>';
+            }
+        } catch (err) {
+            console.error('Failed to load crates:', err);
+        }
+    }
+    loadCrates();
+
+    // Add to Cue
+    const addCueBtn = document.getElementById('panel-btn-add-to-cue');
+    if (addCueBtn) {
+        addCueBtn.addEventListener('click', () => {
+            const trackRows = document.querySelectorAll('.panel-track-row');
+            const tracks = [];
+            trackRows.forEach(row => {
+                const trackId = parseInt(row.dataset.trackId);
+                const title = row.querySelector('.panel-track-title')?.textContent || '';
+                const position = row.querySelector('.panel-track-pos')?.textContent || '';
+                tracks.push({
+                    track_id: trackId,
+                    release_id: releaseId,
+                    artist: '{{ release.display_artist | e }}',
+                    title: `${position} ${title}`.trim(),
+                });
+            });
+
+            let exportCue = JSON.parse(localStorage.getItem('asetate_export_cue') || '[]');
+            let addedCount = 0;
+            tracks.forEach(track => {
+                if (!exportCue.some(q => q.track_id === track.track_id)) {
+                    exportCue.push(track);
+                    addedCount++;
+                }
+            });
+            localStorage.setItem('asetate_export_cue', JSON.stringify(exportCue));
+
+            if (addedCount > 0) {
+                addCueBtn.textContent = `+${addedCount}`;
+                setTimeout(() => { addCueBtn.textContent = 'Cue'; }, 1500);
+            } else {
+                addCueBtn.textContent = 'In cue';
+                setTimeout(() => { addCueBtn.textContent = 'Cue'; }, 1500);
+            }
+        });
+    }
+})();
+</script>

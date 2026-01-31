@@ -133,6 +133,34 @@ def view_release(release_id: int):
             "playable": playable_count,
             "has_bpm": has_bpm,
         },
+        visible_fields=current_user.visible_track_fields,
+    )
+
+
+@bp.route("/<int:release_id>/panel")
+@login_required
+def release_panel(release_id: int):
+    """Get release details as a partial HTML for side panel loading."""
+    # Ensure release belongs to current user
+    release = Release.query.filter_by(
+        id=release_id,
+        user_id=current_user.id
+    ).first_or_404()
+    tracks = release.tracks.order_by(Track.position).all()
+
+    # Calculate release stats
+    playable_count = sum(1 for t in tracks if t.is_playable)
+    has_bpm = sum(1 for t in tracks if t.bpm is not None)
+
+    return render_template(
+        "releases/panel.html",
+        release=release,
+        tracks=tracks,
+        stats={
+            "total": len(tracks),
+            "playable": playable_count,
+            "has_bpm": has_bpm,
+        },
     )
 
 
@@ -262,3 +290,50 @@ def update_release_notes(release_id: int):
     db.session.commit()
 
     return jsonify({"status": "ok", "notes": release.notes})
+
+
+@bp.route("/settings/visible-fields", methods=["GET"])
+@login_required
+def get_visible_fields():
+    """Get the user's visible field settings for the tracks table."""
+    return jsonify({
+        "visible_fields": current_user.visible_track_fields,
+        "available_fields": [
+            {"id": "position", "label": "Side"},
+            {"id": "title", "label": "Title"},
+            {"id": "duration", "label": "Length"},
+            {"id": "bpm", "label": "BPM"},
+            {"id": "key", "label": "Key"},
+            {"id": "energy", "label": "Energy"},
+            {"id": "tags", "label": "Tags"},
+            {"id": "playable", "label": "Playable"},
+        ]
+    })
+
+
+@bp.route("/settings/visible-fields", methods=["PATCH"])
+@login_required
+def update_visible_fields():
+    """Update the user's visible field settings for the tracks table."""
+    data = request.get_json()
+    if data is None or "visible_fields" not in data:
+        return jsonify({"error": "visible_fields is required"}), 400
+
+    fields = data["visible_fields"]
+    if not isinstance(fields, list):
+        return jsonify({"error": "visible_fields must be a list"}), 400
+
+    # Validate fields
+    valid_fields = {"position", "title", "duration", "bpm", "key", "energy", "tags", "playable"}
+    fields = [f for f in fields if f in valid_fields]
+
+    # Ensure title and playable are always visible (required)
+    if "title" not in fields:
+        fields.insert(0, "title")
+    if "playable" not in fields:
+        fields.append("playable")
+
+    current_user.set_visible_track_fields(fields)
+    db.session.commit()
+
+    return jsonify({"status": "ok", "visible_fields": fields})

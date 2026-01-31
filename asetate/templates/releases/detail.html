@@ -72,10 +72,13 @@
         </div>
     </section>
 
-    <section class="tracks-section">
+    <section class="tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
         <div class="tracks-header">
             <h2>Tracklist</h2>
-            <span class="save-indicator" id="save-indicator"></span>
+            <div class="tracks-header-actions">
+                <span class="save-indicator" id="save-indicator"></span>
+                <button class="btn btn-secondary btn-sm" id="btn-column-settings" title="Column visibility">Columns</button>
+            </div>
         </div>
 
         {% if tracks %}
@@ -83,13 +86,13 @@
             <table class="tracks-table">
                 <thead>
                     <tr>
-                        <th class="col-pos">Side</th>
+                        <th class="col-pos {% if 'position' not in visible_fields %}hidden{% endif %}">Side</th>
                         <th class="col-title">Title</th>
-                        <th class="col-duration">Length</th>
-                        <th class="col-bpm">BPM</th>
-                        <th class="col-key">Key</th>
-                        <th class="col-energy">Energy</th>
-                        <th class="col-tags">Tags</th>
+                        <th class="col-duration {% if 'duration' not in visible_fields %}hidden{% endif %}">Length</th>
+                        <th class="col-bpm {% if 'bpm' not in visible_fields %}hidden{% endif %}">BPM</th>
+                        <th class="col-key {% if 'key' not in visible_fields %}hidden{% endif %}">Key</th>
+                        <th class="col-energy {% if 'energy' not in visible_fields %}hidden{% endif %}">Energy</th>
+                        <th class="col-tags {% if 'tags' not in visible_fields %}hidden{% endif %}">Tags</th>
                         <th class="col-playable">Playable</th>
                     </tr>
                 </thead>
@@ -97,7 +100,7 @@
                     {% for track in tracks %}
                     <tr class="track-row {% if track.is_playable %}track-playable{% endif %}"
                         data-track-id="{{ track.id }}">
-                        <td class="col-pos">{{ track.display_position }}</td>
+                        <td class="col-pos {% if 'position' not in visible_fields %}hidden{% endif %}">{{ track.display_position }}</td>
                         <td class="col-title">
                             <span class="track-title">{{ track.title }}</span>
                             <span class="track-notes-btn {% if track.notes %}track-notes-indicator{% else %}track-notes-add{% endif %}"
@@ -108,8 +111,8 @@
                                 {% if track.notes %}Notes{% else %}+{% endif %}
                             </span>
                         </td>
-                        <td class="col-duration">{{ track.display_duration }}</td>
-                        <td class="col-bpm">
+                        <td class="col-duration {% if 'duration' not in visible_fields %}hidden{% endif %}">{{ track.display_duration }}</td>
+                        <td class="col-bpm {% if 'bpm' not in visible_fields %}hidden{% endif %}">
                             <input
                                 type="number"
                                 class="track-input track-bpm"
@@ -120,7 +123,7 @@
                                 data-field="bpm"
                             >
                         </td>
-                        <td class="col-key">
+                        <td class="col-key {% if 'key' not in visible_fields %}hidden{% endif %}">
                             <input
                                 type="text"
                                 class="track-input track-key"
@@ -130,7 +133,7 @@
                                 list="camelot-keys"
                             >
                         </td>
-                        <td class="col-energy">
+                        <td class="col-energy {% if 'energy' not in visible_fields %}hidden{% endif %}">
                             <div class="energy-slider-container">
                                 <input
                                     type="range"
@@ -143,7 +146,7 @@
                                 <span class="energy-value">{{ track.energy if track.energy else '—' }}</span>
                             </div>
                         </td>
-                        <td class="col-tags">
+                        <td class="col-tags {% if 'tags' not in visible_fields %}hidden{% endif %}">
                             <div class="track-tags" data-track-id="{{ track.id }}">
                                 {% for tag in track.tags %}
                                 <span class="tag-badge" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">
@@ -249,7 +252,86 @@
     </div>
 </div>
 
+<!-- Column Settings Modal -->
+<div class="modal" id="column-settings-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-content-sm">
+        <div class="modal-header">
+            <h2>Visible Columns</h2>
+            <button class="modal-close" id="column-settings-close">&times;</button>
+        </div>
+        <div class="column-settings-list" id="column-settings-list">
+            <label class="column-setting">
+                <input type="checkbox" data-field="position" checked>
+                <span>Side</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="title" checked disabled>
+                <span>Title (always shown)</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="duration" checked>
+                <span>Length</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="bpm" checked>
+                <span>BPM</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="key" checked>
+                <span>Key</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="energy" checked>
+                <span>Energy</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="tags" checked>
+                <span>Tags</span>
+            </label>
+            <label class="column-setting">
+                <input type="checkbox" data-field="playable" checked disabled>
+                <span>Playable (always shown)</span>
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="column-settings-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="column-settings-save">Save</button>
+        </div>
+    </div>
+</div>
+
 <style>
+/* Column settings */
+.tracks-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.column-settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.column-setting {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) 0;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.column-setting input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.column-setting input:disabled + span {
+    color: var(--text-muted);
+}
 /* Release Notes Section */
 .release-notes-section {
     background: var(--bg-surface);
@@ -879,6 +961,89 @@
         if (e.key === 'Escape') {
             if (releaseNotesModal.classList.contains('open')) closeReleaseNotesModal();
             if (trackNotesModal.classList.contains('open')) closeTrackNotesModal();
+        }
+    });
+
+    // Column settings
+    const columnSettingsModal = document.getElementById('column-settings-modal');
+    const columnSettingsList = document.getElementById('column-settings-list');
+
+    // Get current visible fields from data attribute
+    const tracksSection = document.querySelector('.tracks-section');
+    let visibleFields = tracksSection.dataset.visibleFields.split(',').filter(f => f);
+
+    // Initialize checkboxes based on current visibility
+    function initColumnSettings() {
+        columnSettingsList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            const field = cb.dataset.field;
+            if (!cb.disabled) {
+                cb.checked = visibleFields.includes(field);
+            }
+        });
+    }
+
+    // Toggle column visibility
+    function setColumnVisible(field, visible) {
+        const colCells = document.querySelectorAll(`.col-${field}`);
+        colCells.forEach(cell => {
+            cell.classList.toggle('hidden', !visible);
+        });
+    }
+
+    // Open column settings modal
+    document.getElementById('btn-column-settings').addEventListener('click', () => {
+        initColumnSettings();
+        columnSettingsModal.classList.add('open');
+    });
+
+    // Close modal handlers
+    function closeColumnSettingsModal() {
+        columnSettingsModal.classList.remove('open');
+    }
+
+    document.getElementById('column-settings-close').addEventListener('click', closeColumnSettingsModal);
+    document.getElementById('column-settings-cancel').addEventListener('click', closeColumnSettingsModal);
+    columnSettingsModal.querySelector('.modal-backdrop').addEventListener('click', closeColumnSettingsModal);
+
+    // Save column settings
+    document.getElementById('column-settings-save').addEventListener('click', async () => {
+        const newVisibleFields = [];
+        columnSettingsList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            if (cb.checked) {
+                newVisibleFields.push(cb.dataset.field);
+            }
+        });
+
+        try {
+            const response = await fetch('/releases/settings/visible-fields', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ visible_fields: newVisibleFields })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                visibleFields = result.visible_fields;
+
+                // Update column visibility
+                ['position', 'duration', 'bpm', 'key', 'energy', 'tags'].forEach(field => {
+                    setColumnVisible(field, visibleFields.includes(field));
+                });
+
+                closeColumnSettingsModal();
+                showSaved();
+            } else {
+                showError('Failed to save settings');
+            }
+        } catch (err) {
+            showError('Network error');
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && columnSettingsModal.classList.contains('open')) {
+            closeColumnSettingsModal();
         }
     });
 })();

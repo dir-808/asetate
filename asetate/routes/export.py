@@ -158,6 +158,12 @@ def track_to_dict(track: Track, columns: list[str], include_ids: bool = False) -
         data["track_id"] = track.id
         data["release_id"] = release.id
 
+    # Get all crates this track is in (direct + via release)
+    def get_all_crates():
+        crates = set(track.crates)
+        crates.update(release.crates)
+        return sorted(crates, key=lambda c: c.name)
+
     column_map = {
         "artist": lambda: release.display_artist,
         "release_title": lambda: release.display_title,
@@ -172,7 +178,9 @@ def track_to_dict(track: Track, columns: list[str], include_ids: bool = False) -
         "duration": lambda: track.display_duration,
         "notes": lambda: track.notes or "",
         "tags": lambda: ", ".join(t.name for t in track.tags),
-        "crates": lambda: ", ".join(c.name for c in track.crates),
+        "crates": lambda: ", ".join(c.name for c in get_all_crates()),
+        "crate_icons": lambda: " ".join(c.display_icon for c in get_all_crates()),
+        "crate_colors": lambda: ", ".join(c.color_name for c in get_all_crates() if c.color_name),
         "release_url": lambda: release.discogs_uri or f"https://www.discogs.com/release/{release.discogs_id}",
         "discogs_id": lambda: str(release.discogs_id),
         # Inventory fields (seller mode)
