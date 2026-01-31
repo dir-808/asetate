@@ -354,3 +354,36 @@ def save_seller_settings():
 
     flash("Seller settings saved.", "success")
     return redirect(url_for("auth.settings"))
+
+
+@bp.route("/settings/backup", methods=["POST"])
+@login_required
+def save_backup_settings():
+    """Save auto-backup settings."""
+    auto_backup_enabled = request.form.get("auto_backup_enabled") == "on"
+    backup_path = request.form.get("backup_path", "").strip()
+
+    current_user.update_backup_settings(
+        auto_backup_enabled=auto_backup_enabled,
+        backup_path=backup_path or None,
+    )
+    db.session.commit()
+
+    flash("Backup settings saved.", "success")
+    return redirect(url_for("auth.settings"))
+
+
+@bp.route("/settings/key", methods=["POST"])
+@login_required
+def save_key_settings():
+    """Save key notation settings."""
+    key_notation = request.form.get("key_notation", "camelot")
+
+    if key_notation not in ("camelot", "standard", "open_key"):
+        key_notation = "camelot"
+
+    current_user.update_key_settings(key_notation=key_notation)
+    db.session.commit()
+
+    flash("Key notation settings saved.", "success")
+    return redirect(url_for("auth.settings"))
