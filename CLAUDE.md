@@ -27,48 +27,40 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 ## CSS Architecture
 
-> ⚠️ **MANDATORY**: When making ANY CSS changes, ALWAYS check if the component exists in style.css first. If it does, modify it there - NEVER duplicate styles in templates. This ensures visual consistency across detail page, sidebar panel, and all other views.
+> ⚠️ **ALWAYS put CSS in `static/css/style.css`** - never in template `<style>` blocks. This ensures consistency, easier maintenance, and better caching.
 
 ### File Structure
-- **`static/css/style.css`** - Single source of truth for all CSS
-- Templates may have `<style>` blocks for **page-specific layout only** (never for shared components)
+- **`static/css/style.css`** - Single source of truth for ALL CSS
+- Templates should have **no** `<style>` blocks (legacy ones are being migrated)
 
-### Shared Components (in style.css)
-These components are used across multiple pages. **Always modify in style.css, not in templates:**
+### Organization in style.css
+style.css is organized into sections:
+- **NAVIGATION** - Nav bar styles
+- **BUTTONS** - All button variants
+- **FORMS** - Inputs, selects, textareas
+- **COLLECTION PAGE** - Grid, cards, filters
+- **RELEASE DETAIL PAGE** - Track table, header layout
+- **SIDE PANEL** - Panel positioning, content
+- **SHARED COMPONENTS** - Components used across multiple pages
 
-| Component | Classes | Used In |
-|-----------|---------|---------|
-| **Energy Bar** | `.energy-bar`, `.energy-bar--sm` | detail.html, panel.html |
-| **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` | detail.html, panel.html |
-| **Action Groups** | `.action-group`, `.action-group--discogs` | detail.html, panel.html |
-| **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper` | detail.html, panel.html |
-| **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` | detail.html, panel.html |
-| **Side Panel** | `.release-panel`, `.panel-header-bar`, `.panel-content` | list.html |
+When adding new styles, find the appropriate section or create a new one.
 
 ### Naming Conventions
 - **Base class**: `.component` (e.g., `.energy-bar`)
 - **Size variants**: `.component--sm`, `.component--lg`
 - **State variants**: `.component.active`, `.component.selected`
-- **Page-specific overrides**: Keep in template, use unique class
 
-### When to Put Styles in Templates
-- Layout specific to ONE page (e.g., `.collection-layout`)
-- Positioning/sizing overrides (e.g., `.release-notes-simple { width: 400px; }`)
-- Always add comment: `/* NOTE: base styles in style.css */`
+### Key Shared Components
+These are used across multiple pages - changes apply everywhere:
 
-### When to Put Styles in style.css
-- Any component used in 2+ places
-- All visual patterns (colors, borders, hover states)
-- All shared behaviors (playable highlighting, energy bar colors)
-
-### Checklist for CSS Changes
-Before modifying any CSS:
-1. **Search style.css** for the class name - does it exist there?
-2. **If yes** → modify in style.css (changes apply everywhere automatically)
-3. **If no** → is this component used in multiple templates?
-   - **Yes** → add to style.css "SHARED COMPONENTS" section
-   - **No** → add to template's `<style>` block with `/* NOTE: page-specific */` comment
-4. **Never** copy-paste styles between templates
+| Component | Classes |
+|-----------|---------|
+| **Energy Bar** | `.energy-bar`, `.energy-bar--sm` |
+| **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` |
+| **Action Groups** | `.action-group`, `.action-group--discogs` |
+| **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper` |
+| **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` |
+| **Side Panel** | `.release-panel`, `.panel-header-bar`, `.panel-content` |
 
 ---
 
