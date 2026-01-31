@@ -97,12 +97,12 @@
                     </div>
                     <div class="panel-field panel-field-energy">
                         <label>NRG</label>
-                        <div class="energy-bar-compact" data-field="energy" data-value="{{ track.energy or 3 }}">
-                            <span class="energy-dot" data-level="1"></span>
-                            <span class="energy-dot" data-level="2"></span>
-                            <span class="energy-dot" data-level="3"></span>
-                            <span class="energy-dot" data-level="4"></span>
-                            <span class="energy-dot" data-level="5"></span>
+                        <div class="energy-bar-panel" data-field="energy" data-value="{{ track.energy or 3 }}">
+                            <div class="energy-segment" data-level="1"></div>
+                            <div class="energy-segment" data-level="2"></div>
+                            <div class="energy-segment" data-level="3"></div>
+                            <div class="energy-segment" data-level="4"></div>
+                            <div class="energy-segment" data-level="5"></div>
                         </div>
                     </div>
                 </div>
@@ -191,27 +191,34 @@
     padding-top: var(--space-xl);
 }
 
-/* Track row - dimmed for non-playable */
+/* Track row - dimmed for non-playable, orange box for playable */
 .panel-track-row {
     padding: var(--space-sm) var(--space-md);
     border-bottom: 1px solid var(--border);
-    transition: opacity 0.15s, background-color 0.15s;
+    transition: opacity 0.15s, background-color 0.15s, box-shadow 0.15s;
 }
 
 .panel-track-row:last-child {
     border-bottom: none;
 }
 
+/* Non-playable tracks are dimmed */
 .panel-track-row.track-dimmed {
     opacity: 0.5;
 }
 
 .panel-track-row.track-dimmed:hover {
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
-.panel-track-row:hover {
-    background-color: var(--bg-surface);
+/* Playable tracks get a faint orange box */
+.panel-track-row:not(.track-dimmed) {
+    box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.3);
+    background-color: rgba(249, 115, 22, 0.03);
+}
+
+.panel-track-row:not(.track-dimmed):hover {
+    background-color: rgba(249, 115, 22, 0.08);
 }
 
 /* Track main row */
@@ -299,36 +306,36 @@
     outline: none;
 }
 
-/* Compact energy bar - small dots */
-.energy-bar-compact {
+/* Energy bar for panel - matches release page style */
+.energy-bar-panel {
     display: flex;
-    gap: 3px;
+    gap: 2px;
+    height: 14px;
     cursor: pointer;
 }
 
-.energy-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+.energy-bar-panel .energy-segment {
+    width: 10px;
     background-color: var(--border);
+    border-radius: 2px;
     transition: background-color 0.15s, transform 0.1s;
 }
 
-.energy-dot:hover {
-    transform: scale(1.2);
+.energy-bar-panel .energy-segment:hover {
+    transform: scaleY(1.15);
 }
 
-.energy-bar-compact[data-value="1"] .energy-dot[data-level="1"] { background-color: var(--success); }
-.energy-bar-compact[data-value="2"] .energy-dot[data-level="1"],
-.energy-bar-compact[data-value="2"] .energy-dot[data-level="2"] { background-color: #84cc16; }
-.energy-bar-compact[data-value="3"] .energy-dot[data-level="1"],
-.energy-bar-compact[data-value="3"] .energy-dot[data-level="2"],
-.energy-bar-compact[data-value="3"] .energy-dot[data-level="3"] { background-color: var(--warning); }
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="1"],
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="2"],
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="3"],
-.energy-bar-compact[data-value="4"] .energy-dot[data-level="4"] { background-color: var(--primary); }
-.energy-bar-compact[data-value="5"] .energy-dot { background-color: var(--error); }
+.energy-bar-panel[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
+.energy-bar-panel[data-value="2"] .energy-segment[data-level="1"],
+.energy-bar-panel[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
+.energy-bar-panel[data-value="3"] .energy-segment[data-level="1"],
+.energy-bar-panel[data-value="3"] .energy-segment[data-level="2"],
+.energy-bar-panel[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="1"],
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="2"],
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="3"],
+.energy-bar-panel[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
+.energy-bar-panel[data-value="5"] .energy-segment { background-color: var(--error); }
 
 /* Track extras row - notes and tags */
 .panel-track-extras {
@@ -600,20 +607,25 @@
         });
     });
 
-    // Checkbox handler
+    // Checkbox handler - immediate visual update
     document.querySelectorAll('.panel-track-playable').forEach(cb => {
         cb.addEventListener('change', (e) => {
             const row = cb.closest('.panel-track-row');
             const trackId = row.dataset.trackId;
-            updateTrack(trackId, 'is_playable', cb.checked);
+            const isPlayable = cb.checked;
+
+            // Immediate visual update before API call
+            row.classList.toggle('track-dimmed', !isPlayable);
+
+            updateTrack(trackId, 'is_playable', isPlayable);
         });
     });
 
     // Energy bar click handler
-    document.querySelectorAll('.energy-bar-compact').forEach(bar => {
-        bar.querySelectorAll('.energy-dot').forEach(dot => {
-            dot.addEventListener('click', (e) => {
-                const level = parseInt(dot.dataset.level);
+    document.querySelectorAll('.energy-bar-panel').forEach(bar => {
+        bar.querySelectorAll('.energy-segment').forEach(segment => {
+            segment.addEventListener('click', (e) => {
+                const level = parseInt(segment.dataset.level);
                 const row = bar.closest('.panel-track-row');
                 const trackId = row.dataset.trackId;
 
@@ -706,8 +718,13 @@
             });
             const result = await response.json();
             if (response.ok) {
-                // Refresh tags list to include new tag
-                loadAllTags();
+                // Add new tag to allTags immediately if it doesn't exist
+                if (!allTags.some(t => t.id === result.tag.id)) {
+                    allTags.push(result.tag);
+                    // Update datalist
+                    const datalist = document.getElementById('panel-all-tags');
+                    datalist.innerHTML = allTags.map(t => `<option value="${t.name}">`).join('');
+                }
                 return result.tag;
             }
             return null;

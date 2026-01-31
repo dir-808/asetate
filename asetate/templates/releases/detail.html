@@ -71,16 +71,10 @@
         <div class="release-notes-panel">
             <div class="release-notes-header">
                 <h3>Notes</h3>
-                <button class="btn btn-secondary btn-sm" id="btn-edit-release-notes">
-                    {% if release.notes %}Edit{% else %}Add{% endif %}
-                </button>
+                <span class="notes-save-indicator" id="notes-save-indicator"></span>
             </div>
             <div class="release-notes-content" id="release-notes-content">
-                {% if release.notes %}
-                <p>{{ release.notes }}</p>
-                {% else %}
-                <p class="text-muted">No notes yet.</p>
-                {% endif %}
+                <textarea id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
             </div>
         </div>
     </header>
@@ -224,24 +218,6 @@
     </div>
 </div>
 
-<!-- Release Notes Modal -->
-<div class="modal" id="release-notes-modal">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Release Notes</h2>
-            <button class="modal-close" id="release-notes-modal-close">&times;</button>
-        </div>
-        <div class="form-group">
-            <textarea id="release-notes-textarea" rows="6" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
-        </div>
-        <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" id="release-notes-cancel">Cancel</button>
-            <button type="button" class="btn btn-primary" id="release-notes-save">Save</button>
-        </div>
-    </div>
-</div>
-
 <!-- Track Notes Modal -->
 <div class="modal" id="track-notes-modal">
     <div class="modal-backdrop"></div>
@@ -352,7 +328,7 @@
 
 /* Release Notes Panel (right side of header) */
 .release-notes-panel {
-    width: 250px;
+    width: 350px;
     background: var(--bg-surface);
     border: 2px solid var(--border);
     padding: var(--space-md);
@@ -376,16 +352,39 @@
     color: var(--text-secondary);
 }
 
-.release-notes-content {
-    max-height: 180px;
-    overflow-y: auto;
+.notes-save-indicator {
+    font-size: 0.7rem;
 }
 
-.release-notes-content p {
-    margin: 0;
-    white-space: pre-wrap;
+.notes-save-indicator.saving { color: var(--warning); }
+.notes-save-indicator.saved { color: var(--success); }
+.notes-save-indicator.error { color: var(--error); }
+
+.release-notes-content {
+    max-height: none;
+}
+
+#release-notes-inline {
+    width: 100%;
+    min-height: 120px;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: inherit;
     font-size: 0.85rem;
     line-height: 1.5;
+    resize: vertical;
+}
+
+#release-notes-inline:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+#release-notes-inline::placeholder {
+    color: var(--text-muted);
 }
 
 /* Notes modal textarea */
@@ -860,6 +859,13 @@
             });
             const result = await response.json();
             if (response.ok) {
+                // Add new tag to allTags if it doesn't exist
+                if (!allTags.some(t => t.id === result.tag.id)) {
+                    allTags.push(result.tag);
+                    // Update datalist
+                    const datalist = document.getElementById('all-tags-list');
+                    datalist.innerHTML = allTags.map(t => `<option value="${t.name}">`).join('');
+                }
                 return result.tag;
             } else {
                 alert(result.error || 'Failed to add tag');
@@ -907,6 +913,13 @@
                 submitTag();
             } else if (e.key === 'Escape') {
                 wrapper.remove();
+            }
+        });
+
+        // Handle datalist selection (click on dropdown option)
+        input.addEventListener('change', () => {
+            if (input.value.trim()) {
+                submitTag();
             }
         });
 
@@ -999,28 +1012,33 @@
         });
     }
 
-    // Release Notes Modal
-    const releaseNotesModal = document.getElementById('release-notes-modal');
-    const releaseNotesTextarea = document.getElementById('release-notes-textarea');
-    const releaseNotesContent = document.getElementById('release-notes-content');
+    // Inline Release Notes - auto-save with debounce
+    const releaseNotesInline = document.getElementById('release-notes-inline');
+    const notesSaveIndicator = document.getElementById('notes-save-indicator');
+    let notesDebounceTimer = null;
 
-    function openReleaseNotesModal() {
-        releaseNotesModal.classList.add('open');
-        releaseNotesTextarea.focus();
+    function showNotesSaving() {
+        notesSaveIndicator.textContent = 'Saving...';
+        notesSaveIndicator.className = 'notes-save-indicator saving';
     }
 
-    function closeReleaseNotesModal() {
-        releaseNotesModal.classList.remove('open');
+    function showNotesSaved() {
+        notesSaveIndicator.textContent = 'Saved';
+        notesSaveIndicator.className = 'notes-save-indicator saved';
+        setTimeout(() => {
+            notesSaveIndicator.textContent = '';
+            notesSaveIndicator.className = 'notes-save-indicator';
+        }, 2000);
     }
 
-    document.getElementById('btn-edit-release-notes').addEventListener('click', openReleaseNotesModal);
-    document.getElementById('release-notes-modal-close').addEventListener('click', closeReleaseNotesModal);
-    document.getElementById('release-notes-cancel').addEventListener('click', closeReleaseNotesModal);
-    releaseNotesModal.querySelector('.modal-backdrop').addEventListener('click', closeReleaseNotesModal);
+    function showNotesError() {
+        notesSaveIndicator.textContent = 'Error';
+        notesSaveIndicator.className = 'notes-save-indicator error';
+    }
 
-    document.getElementById('release-notes-save').addEventListener('click', async () => {
-        const notes = releaseNotesTextarea.value.trim();
-        showSaving();
+    async function saveReleaseNotes() {
+        const notes = releaseNotesInline.value.trim();
+        showNotesSaving();
 
         try {
             const response = await fetch(`/releases/${releaseId}/notes`, {
@@ -1030,22 +1048,23 @@
             });
 
             if (response.ok) {
-                showSaved();
-                closeReleaseNotesModal();
-                // Update the display
-                if (notes) {
-                    releaseNotesContent.innerHTML = `<p>${notes.replace(/\n/g, '<br>')}</p>`;
-                    document.getElementById('btn-edit-release-notes').textContent = 'Edit';
-                } else {
-                    releaseNotesContent.innerHTML = '<p class="text-muted">No notes yet. Click "Add" to add notes about this release.</p>';
-                    document.getElementById('btn-edit-release-notes').textContent = 'Add';
-                }
+                showNotesSaved();
             } else {
-                showError('Failed to save notes');
+                showNotesError();
             }
         } catch (err) {
-            showError('Network error');
+            showNotesError();
         }
+    }
+
+    releaseNotesInline.addEventListener('input', () => {
+        clearTimeout(notesDebounceTimer);
+        notesDebounceTimer = setTimeout(saveReleaseNotes, 800);
+    });
+
+    releaseNotesInline.addEventListener('blur', () => {
+        clearTimeout(notesDebounceTimer);
+        saveReleaseNotes();
     });
 
     // Track Notes Modal
@@ -1113,10 +1132,9 @@
         btn.addEventListener('click', () => openTrackNotesModal(btn));
     });
 
-    // Close notes modals on Escape
+    // Close track notes modal on Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (releaseNotesModal.classList.contains('open')) closeReleaseNotesModal();
             if (trackNotesModal.classList.contains('open')) closeTrackNotesModal();
         }
     });
