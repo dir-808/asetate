@@ -97,7 +97,30 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Cards: 2px border, grid layout for covers + info
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
-- Panels slide in from right, push content with `margin-right` transition
+
+#### Sidebar Panel (Master-Detail Pattern)
+The sidebar panel pushes content rather than overlaying. Key implementation details:
+
+**Grid items must NOT resize when panel opens:**
+```css
+/* BAD: items stretch to fill, causing resize on panel open */
+grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+
+/* GOOD: items have fixed max-width, only reflow (wrap) on panel open */
+grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+```
+
+**Panel animation approach:**
+- Panel slides with `transform: translateX()` (GPU-accelerated, no layout reflow)
+- Main content uses `margin-right` transition to make room
+- Items reflow (fewer per row) but don't individually resize
+
+**State management:**
+- URL reflects selection (`?r=releaseId`) for browser back/forward
+- Clear old panel content before loading new (prevent stale data/buttons)
+- Use `panelContent.querySelector()` not `document.getElementById()` to find elements in freshly loaded AJAX content
+
+Reference: [Every Layout - Sidebar](https://every-layout.dev/layouts/sidebar/)
 
 #### Inputs & Forms
 - Minimal styling - transparent background until hover/focus
@@ -150,12 +173,48 @@ Use CSS variables consistently:
 9. **Click Sounds**: Optional subtle UI sounds for that hardware feedback feel
 10. **Keyboard Shortcuts**: Power-user shortcuts displayed in a hardware-manual style
 
+### Animation & Performance
+
+**Only animate `transform` and `opacity`** - these are GPU-accelerated and don't trigger layout reflow.
+
+```css
+/* BAD: triggers layout reflow every frame */
+.panel { transition: margin-left 0.3s; }
+.element { transition: width 0.3s, height 0.3s; }
+
+/* GOOD: GPU-accelerated, no reflow */
+.panel { transition: transform 0.3s; }
+.element { transition: opacity 0.15s; }
+```
+
+**Avoid animating:** `width`, `height`, `margin`, `padding`, `top/left/right/bottom`, `font-size`, `border-width`
+
+**Use `will-change` sparingly** for elements you know will animate:
+```css
+.release-panel { will-change: transform; }
+```
+
+**Transitions:** Keep to 0.15s for micro-interactions, 0.3s max for larger movements.
+
+Reference: [MDN - CSS/JS Animation Performance](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance)
+
 ### Anti-Patterns (Avoid These)
+
+**Visual:**
 - Rounded corners (MPC is angular/rectangular)
 - Gradients or shadows for decoration
 - Thin/light fonts
 - Animations longer than 0.3s
+
+**Interaction:**
 - Confirmation dialogs for reversible actions
-- Loading spinners (prefer skeleton states)
+- Loading spinners (prefer skeleton states or instant feedback)
 - Tooltips for essential information
 - Nested dropdowns or complex menus
+
+**Technical:**
+- Animating layout properties (`width`, `height`, `margin`, `padding`)
+- Using `1fr` in grids where items shouldn't resize
+- Adding/removing borders dynamically (change colors instead)
+- `document.getElementById()` for elements in AJAX-loaded content
+- Multiple elements with same ID (breaks getElementById reliability)

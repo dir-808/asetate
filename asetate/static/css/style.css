@@ -709,10 +709,10 @@ input::placeholder, textarea::placeholder {
     border-color: var(--primary);
 }
 
-/* Release grid */
+/* Release grid - fixed max-width so items reflow but don't resize when panel opens */
 .releases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
     gap: var(--space-md);
 }
 
@@ -1428,10 +1428,10 @@ input::placeholder, textarea::placeholder {
 .sub-crate-name { font-weight: 500; }
 .sub-crate-count { font-size: 0.75rem; color: var(--text-muted); }
 
-/* Crate releases grid */
+/* Crate releases grid - fixed max-width so items reflow but don't resize */
 .crate-releases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 260px));
     gap: var(--space-md);
 }
 
@@ -2244,7 +2244,7 @@ input::placeholder, textarea::placeholder {
     }
 
     .releases-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(130px, 160px));
     }
 
     .collection-toolbar {
