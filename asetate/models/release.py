@@ -96,7 +96,7 @@ class Release(db.Model):
     def discogs_edit_url(self) -> str | None:
         """URL to edit this release on Discogs."""
         if self.discogs_id:
-            return f"https://www.discogs.com/release/{self.discogs_id}/edit"
+            return f"https://www.discogs.com/release/edit/{self.discogs_id}"
         return None
 
     @property

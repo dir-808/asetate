@@ -322,6 +322,24 @@ def remove_track_from_crate(crate_id: int, track_id: int):
     return jsonify({"status": "removed"})
 
 
+@bp.route("/api/<int:crate_id>")
+@login_required
+def api_get_crate(crate_id: int):
+    """Get a single crate's details for editing."""
+    crate = Crate.query.filter_by(id=crate_id, user_id=current_user.id).first_or_404()
+    return jsonify({
+        "crate": {
+            "id": crate.id,
+            "name": crate.name,
+            "description": crate.description,
+            "icon": crate.icon,
+            "color": crate.color,
+            "color_hex": crate.color_hex,
+            "parent_id": crate.parent_id,
+        }
+    })
+
+
 @bp.route("/api/list")
 @login_required
 def api_list_crates():

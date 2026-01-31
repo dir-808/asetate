@@ -5,9 +5,37 @@ from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from asetate import db
-from asetate.models import Release, Track
+from asetate.models import Release, Track, Crate
 
 bp = Blueprint("releases", __name__)
+
+
+def get_release_crate_data(release_ids, user_id):
+    """Get crate icons and IDs for a list of releases."""
+    if not release_ids:
+        return {}
+
+    # Query crates for these releases
+    from asetate.models.crate import crate_releases
+    crate_data = db.session.query(
+        crate_releases.c.release_id,
+        Crate.id,
+        Crate.icon,
+        Crate.name
+    ).join(Crate).filter(
+        crate_releases.c.release_id.in_(release_ids),
+        Crate.user_id == user_id
+    ).all()
+
+    # Group by release
+    release_crates = {}
+    for release_id, crate_id, icon, name in crate_data:
+        if release_id not in release_crates:
+            release_crates[release_id] = {"icons": [], "ids": []}
+        release_crates[release_id]["icons"].append(icon or "📁")
+        release_crates[release_id]["ids"].append(crate_id)
+
+    return release_crates
 
 
 @bp.route("/")
@@ -19,6 +47,7 @@ def list_releases():
     per_page = request.args.get("per_page", 24, type=int)
     search = request.args.get("q", "").strip()
     filter_type = request.args.get("filter", "")
+    crate_filter = request.args.get("crate", "")
 
     # Build base query - filter by user and exclude removed releases
     query = Release.query.filter(
@@ -34,6 +63,17 @@ def list_releases():
                 Release.title.ilike(search_term),
                 Release.artist.ilike(search_term),
                 Release.label.ilike(search_term),
+            )
+        )
+
+    # Apply crate filter
+    if crate_filter:
+        from asetate.models.crate import crate_releases
+        query = query.filter(
+            Release.id.in_(
+                db.session.query(crate_releases.c.release_id).filter(
+                    crate_releases.c.crate_id == int(crate_filter)
+                )
             )
         )
 
@@ -72,6 +112,16 @@ def list_releases():
     # Paginate
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
+    # Get crate data for these releases
+    release_ids = [r.id for r in pagination.items]
+    crate_data = get_release_crate_data(release_ids, current_user.id)
+
+    # Add crate info to releases
+    for release in pagination.items:
+        release_info = crate_data.get(release.id, {"icons": [], "ids": []})
+        release.crate_icons = release_info["icons"]
+        release.crate_ids = release_info["ids"]
+
     # Get stats for the header (user-scoped)
     total_releases = Release.query.filter(
         Release.user_id == current_user.id,
@@ -95,12 +145,17 @@ def list_releases():
         .count()
     )
 
+    # Get all crates for the filter dropdown
+    available_crates = Crate.query.filter_by(user_id=current_user.id).order_by(Crate.name).all()
+
     return render_template(
         "releases/list.html",
         releases=pagination.items,
         pagination=pagination,
         search=search,
         filter_type=filter_type,
+        crate_filter=crate_filter,
+        available_crates=available_crates,
         stats={
             "releases": total_releases,
             "tracks": total_tracks,
