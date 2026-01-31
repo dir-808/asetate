@@ -394,7 +394,69 @@ input::placeholder, textarea::placeholder {
     letter-spacing: 0.1em;
 }
 
-/* Toggle switch */
+/* ============================================
+   Toggle Switch - MPC2000 style
+   Chunky rectangular button with LED indicator
+   ============================================ */
+
+/* MPC-style toggle button (preferred) */
+.toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.toggle-btn:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+}
+
+/* Active/on state */
+.toggle-btn.active {
+    border-color: var(--success);
+    color: var(--text-primary);
+}
+
+/* LED indicator inside toggle button */
+.toggle-btn .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 50%; /* LED dots are round - mimics hardware */
+    transition: background-color 0.15s ease;
+}
+
+.toggle-btn.active .led {
+    background: var(--success);
+}
+
+/* Pressed effect */
+.toggle-btn:active {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Toggle button with hidden checkbox - active via :has() */
+.toggle-btn:has(input:checked) {
+    border-color: var(--success);
+    color: var(--text-primary);
+}
+
+.toggle-btn:has(input:checked) .led {
+    background: var(--success);
+}
+
+/* Legacy iOS-style toggle (keep for playable column) */
 .toggle {
     position: relative;
     display: inline-block;
@@ -2222,6 +2284,194 @@ input::placeholder, textarea::placeholder {
 .discogs-not-connected {
     text-align: center;
     padding: var(--space-lg) 0;
+}
+
+/* Settings Forms - Token form, backup form, etc. */
+.token-form {
+    max-width: 400px;
+}
+
+.token-form .form-group {
+    margin-bottom: var(--space-md);
+}
+
+.token-form label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+}
+
+/* LCD-style form inputs */
+.token-form .form-control,
+.settings-page .form-control {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    /* LCD-like inset shadow for recessed screen effect */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.token-form .form-control:focus,
+.settings-page .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.token-form small {
+    display: block;
+    margin-top: var(--space-xs);
+}
+
+/* Backup actions */
+.backup-actions {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.import-form {
+    display: inline-block;
+}
+
+/* Seller settings checkboxes */
+.seller-settings-form .form-check {
+    margin-bottom: var(--space-md);
+}
+
+.form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+}
+
+.form-check-input {
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.form-check-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.form-check-label .text-muted {
+    font-size: 0.85rem;
+}
+
+/* Key notation radio options */
+.key-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Seller status indicator */
+.seller-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.seller-enabled {
+    background-color: rgba(74, 222, 128, 0.1);
+    border: 1px solid var(--success);
+}
+
+.seller-disabled {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+}
+
+.seller-options-enabled {
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--success);
+}
+
+/* Auto-backup section */
+.auto-backup-section {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+}
+
+.auto-backup-section h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-sm);
+}
+
+.auto-backup-form .form-group {
+    margin-top: var(--space-md);
+}
+
+.auto-backup-form label[for="backup_path"] {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+}
+
+.auto-backup-form small {
+    display: block;
+    margin-top: var(--space-xs);
+}
+
+/* Toggle setting row - label with toggle on right */
+.toggle-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    cursor: pointer;
+    max-width: 500px;
+}
+
+.toggle-setting-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toggle-setting-text .text-muted {
+    font-size: 0.85rem;
+}
+
+/* Details/summary for collapsible sections */
+.settings-section details summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.settings-section details summary:hover {
+    color: var(--text-secondary);
+}
+
+.settings-section details[open] summary {
+    margin-bottom: var(--space-md);
 }
 
 /* ============================================
