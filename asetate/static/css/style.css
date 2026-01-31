@@ -92,6 +92,7 @@ a:hover {
 
 /* ============================================
    NAVIGATION - Hardware control panel style
+   MPC2000-inspired toolbar with LED indicators
    ============================================ */
 
 .nav {
@@ -100,18 +101,10 @@ a:hover {
     justify-content: space-between;
     padding: var(--space-md) var(--space-xl);
     background-color: var(--bg-surface);
+    /* Functional depth: light top edge, dark bottom edge (like hardware panel seam) */
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     border-bottom: 2px solid var(--border);
-    position: relative;
-}
-
-.nav::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--primary-dim), transparent);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .nav-brand a {
@@ -125,24 +118,47 @@ a:hover {
 
 .nav-links {
     display: flex;
-    gap: var(--space-lg);
+    gap: var(--space-sm);
 }
 
+/* Chunky rectangular nav buttons */
 .nav-links a {
+    position: relative;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px solid transparent;
-    transition: all 0.15s ease;
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .nav-links a:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+
+/* Active nav link with LED indicator */
+.nav-links a.active {
     color: var(--primary);
-    border-color: var(--primary-dim);
+    border-color: var(--primary);
+}
+
+/* LED indicator dot for active state */
+.nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 50%; /* Only rounded element allowed - mimics actual LED */
 }
 
 .nav-user {
@@ -156,14 +172,23 @@ a:hover {
     gap: var(--space-sm);
     text-decoration: none;
     color: var(--text-secondary);
-    font-size: 0.85rem;
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px solid var(--border);
-    transition: all 0.15s ease;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid var(--border);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .user-link:hover {
     color: var(--text-primary);
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+
+.user-link.active {
+    color: var(--primary);
     border-color: var(--primary);
 }
 
