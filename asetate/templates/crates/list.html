@@ -3,55 +3,77 @@
 {% block title %}Crates - Asetate{% endblock %}
 
 {% block content %}
-<div class="crates-page">
-    <header class="crates-header">
-        <div>
-            <h1>Crates</h1>
-            <p class="text-secondary">{{ total_crates }} crate{% if total_crates != 1 %}s{% endif %}</p>
-        </div>
-        <button class="btn btn-primary" id="btn-new-crate">New Crate</button>
-    </header>
+<div class="crates-page-layout">
+    <div class="crates-main" id="crates-main">
+        <header class="crates-header">
+            <div>
+                <h1>Crates</h1>
+                <p class="text-secondary">{{ total_crates }} crate{% if total_crates != 1 %}s{% endif %}</p>
+            </div>
+            <button class="btn btn-primary" id="btn-new-crate">New Crate</button>
+        </header>
 
-    {% if crate_tree %}
-    <div class="crates-tree">
-        {% macro render_crate(node, depth=0) %}
-        <div class="crate-item" style="--depth: {{ depth }}; {% if node.crate.color_hex %}--crate-color: {{ node.crate.color_hex }}{% endif %}">
-            <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="crate-link {% if node.crate.color_hex %}has-color{% endif %}">
-                <span class="crate-icon" {% if node.crate.color_hex %}style="background-color: {{ node.crate.color_hex }}30; color: {{ node.crate.color_hex }}"{% endif %}>
-                    {{ node.crate.display_icon }}
-                </span>
-                <span class="crate-name" {% if node.crate.color_hex %}style="color: {{ node.crate.color_hex }}"{% endif %}>{{ node.crate.name }}</span>
-                <span class="crate-counts">
-                    {% if node.release_count > 0 %}
-                    <span class="count-badge">{{ node.release_count }} releases</span>
-                    {% endif %}
-                    {% if node.track_count > 0 %}
-                    <span class="count-badge">{{ node.track_count }} tracks</span>
-                    {% endif %}
-                </span>
-            </a>
-            <button class="crate-action btn-icon" data-crate-id="{{ node.crate.id }}" data-crate-name="{{ node.crate.name }}" title="Add sub-crate">+</button>
-        </div>
-        {% if node.children %}
-        <div class="crate-children">
-            {% for child in node.children %}
-            {{ render_crate(child, depth + 1) }}
+        {% if crate_tree %}
+        <div class="crates-grid">
+            {% macro render_crate(node, depth=0) %}
+            <div class="crate-card"
+                 data-crate-id="{{ node.crate.id }}"
+                 data-depth="{{ depth }}"
+                 style="{% if node.crate.color_hex %}--crate-color: {{ node.crate.color_hex }}{% endif %}"
+                 tabindex="0">
+                <div class="crate-card-main">
+                    <span class="crate-icon-lg" {% if node.crate.color_hex %}style="background-color: {{ node.crate.color_hex }}20"{% endif %}>
+                        {{ node.crate.display_icon }}
+                    </span>
+                    <div class="crate-card-info">
+                        <span class="crate-card-name">{{ node.crate.name }}</span>
+                        {% if node.crate.description %}
+                        <span class="crate-card-desc">{{ node.crate.description[:40] }}{% if node.crate.description|length > 40 %}...{% endif %}</span>
+                        {% endif %}
+                        <div class="crate-card-stats">
+                            <span>{{ node.release_count }} releases</span>
+                            <span>{{ node.track_count }} tracks</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="crate-card-actions">
+                    <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="btn btn-secondary btn-sm" title="View crate">Open</a>
+                    <button class="btn btn-secondary btn-sm crate-edit-btn" data-crate-id="{{ node.crate.id }}" title="Edit crate">Edit</button>
+                    <button class="btn-icon crate-subcrate-btn" data-crate-id="{{ node.crate.id }}" data-crate-name="{{ node.crate.name }}" title="Add sub-crate">+</button>
+                </div>
+            </div>
+            {% if node.children %}
+            <div class="crate-children" style="--depth: {{ depth + 1 }}">
+                {% for child in node.children %}
+                {{ render_crate(child, depth + 1) }}
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endmacro %}
+
+            {% for node in crate_tree %}
+            {{ render_crate(node) }}
             {% endfor %}
         </div>
+        {% else %}
+        <div class="empty-state">
+            <h2>No crates yet</h2>
+            <p>Create crates to organize your releases and tracks by genre, mood, or however you like.</p>
+            <button class="btn btn-primary" id="btn-new-crate-empty">Create Your First Crate</button>
+        </div>
         {% endif %}
-        {% endmacro %}
+    </div>
 
-        {% for node in crate_tree %}
-        {{ render_crate(node) }}
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <h2>No crates yet</h2>
-        <p>Create crates to organize your releases and tracks by genre, mood, or however you like.</p>
-        <button class="btn btn-primary" id="btn-new-crate-empty">Create Your First Crate</button>
-    </div>
-    {% endif %}
+    <!-- Crate Edit Sidebar -->
+    <aside class="crate-panel" id="crate-panel">
+        <div class="crate-panel-header">
+            <h3>Edit Crate</h3>
+            <button class="panel-close" id="crate-panel-close">&times;</button>
+        </div>
+        <div class="crate-panel-content" id="crate-panel-content">
+            <!-- Content loaded via JS -->
+        </div>
+    </aside>
 </div>
 
 <!-- New Crate Modal -->
@@ -81,13 +103,12 @@
                         <input type="text"
                                id="crate-icon-input"
                                class="icon-text-input"
-                               placeholder="Type or paste any emoji"
+                               placeholder="Type or paste emoji"
                                maxlength="4">
                         <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Clear</button>
                     </div>
                     <div class="icon-suggestions" id="icon-suggestions">
-                        <span class="suggestions-label">Suggestions:</span>
-                        {% for icon in crate_icons[:20] %}
+                        {% for icon in crate_icons[:16] %}
                         <button type="button" class="icon-suggestion" data-icon="{{ icon }}">{{ icon }}</button>
                         {% endfor %}
                     </div>
@@ -99,7 +120,7 @@
             <div class="form-group">
                 <label>Color</label>
                 <div class="color-picker" id="color-picker">
-                    <button type="button" class="color-option selected" data-color="" style="background: #e0e0e0" title="None"></button>
+                    <button type="button" class="color-option selected" data-color="" style="background: var(--border)" title="None"></button>
                     {% for color in crate_colors %}
                     <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}" title="{{ color.name }}"></button>
                     {% endfor %}
@@ -127,37 +148,157 @@
 </div>
 
 <style>
-/* Crate list with prominent colors */
-.crate-link {
+/* Crates page layout with sidebar */
+.crates-page-layout {
+    display: flex;
+    gap: var(--space-lg);
+}
+
+.crates-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.crates-main.panel-open {
+    margin-right: 400px;
+}
+
+/* Crate grid layout */
+.crates-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+/* Crate card */
+.crate-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: var(--space-sm) var(--space-md);
+    background: var(--bg-surface);
+    border: 2px solid var(--border);
     border-radius: var(--radius-sm);
-    border-left: 3px solid transparent;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition: border-color 0.15s, background-color 0.15s;
+    cursor: default;
 }
 
-.crate-link.has-color {
+.crate-card:hover {
+    border-color: var(--text-muted);
+}
+
+.crate-card[style*="--crate-color"] {
+    border-left-width: 4px;
     border-left-color: var(--crate-color);
-    background-color: color-mix(in srgb, var(--crate-color) 5%, transparent);
 }
 
-.crate-link:hover {
-    background-color: var(--bg-hover);
+.crate-card-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+    min-width: 0;
 }
 
-.crate-link.has-color:hover {
-    background-color: color-mix(in srgb, var(--crate-color) 10%, transparent);
-}
-
-.crate-icon {
-    display: inline-flex;
+.crate-icon-lg {
+    width: 42px;
+    height: 42px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    font-size: 1.3rem;
     border-radius: var(--radius-sm);
-    font-size: 1.1rem;
+    background: var(--bg-elevated);
+    flex-shrink: 0;
 }
 
+.crate-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.crate-card-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crate-card-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crate-card-stats {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.crate-card-actions {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+/* Sub-crate indentation */
+.crate-children {
+    margin-left: calc(var(--depth, 1) * 24px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    border-left: 2px solid var(--border);
+    padding-left: var(--space-sm);
+}
+
+/* Crate edit sidebar */
+.crate-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    height: 100vh;
+    background: var(--bg-surface);
+    border-left: 2px solid var(--border);
+    z-index: 100;
+    transition: right 0.25s ease;
+    overflow-y: auto;
+}
+
+.crate-panel.open {
+    right: 0;
+}
+
+.crate-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+}
+
+.crate-panel-header h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.crate-panel-content {
+    padding: var(--space-md);
+}
+
+/* Icon/color picker compact */
 .icon-picker-container {
     margin-top: var(--space-xs);
 }
@@ -170,63 +311,51 @@
 }
 
 .icon-preview {
-    width: 40px;
-    height: 40px;
-    border: 2px solid var(--color-border);
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
     border-radius: var(--radius-sm);
-    background: var(--color-bg-secondary);
+    background: var(--bg-elevated);
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: border-color 0.15s;
-}
-
-.icon-preview:hover {
-    border-color: var(--color-primary);
 }
 
 .icon-text-input {
     flex: 1;
-    max-width: 150px;
-    padding: var(--space-sm);
-    border: 1px solid var(--color-border);
+    max-width: 100px;
+    padding: var(--space-xs);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    font-size: 1.1rem;
+    font-size: 1rem;
     text-align: center;
+    background: var(--bg-input);
+    color: var(--text-primary);
 }
 
 .icon-suggestions {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-}
-
-.suggestions-label {
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    margin-right: var(--space-xs);
+    gap: 3px;
 }
 
 .icon-suggestion {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: var(--color-bg-secondary);
+    border-radius: var(--radius-xs);
+    background: var(--bg-elevated);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
 }
 
 .icon-suggestion:hover {
-    border-color: var(--color-border);
-    transform: scale(1.1);
+    border-color: var(--border);
 }
 
 .color-picker {
@@ -237,12 +366,11 @@
 }
 
 .color-option {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border: 2px solid transparent;
     border-radius: 50%;
     cursor: pointer;
-    transition: transform 0.15s, border-color 0.15s;
 }
 
 .color-option:hover {
@@ -250,13 +378,7 @@
 }
 
 .color-option.selected {
-    border-color: var(--color-text);
-    box-shadow: 0 0 0 2px var(--color-bg);
-}
-
-.color-custom {
-    display: flex;
-    align-items: center;
+    border-color: var(--text-primary);
 }
 
 .color-custom-label {
@@ -264,21 +386,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     cursor: pointer;
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--border);
     border-radius: 50%;
-    transition: border-color 0.15s, transform 0.15s;
-}
-
-.color-custom-label:hover {
-    border-color: var(--color-text);
-    transform: scale(1.1);
 }
 
 .color-custom-icon {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
 }
 
 .color-custom input[type="color"] {
@@ -287,6 +403,57 @@
     height: 100%;
     opacity: 0;
     cursor: pointer;
+}
+
+/* Panel form styling */
+.panel-form-group {
+    margin-bottom: var(--space-md);
+}
+
+.panel-form-group label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.panel-form-group input[type="text"] {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.panel-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+}
+
+.panel-actions .btn {
+    flex: 1;
+}
+
+.panel-danger-zone {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--error);
+}
+
+.panel-danger-zone h4 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--error);
+    margin-bottom: var(--space-sm);
 }
 </style>
 {% endblock %}
@@ -306,12 +473,9 @@
     const iconPreview = document.getElementById('icon-preview');
     const iconTextInput = document.getElementById('crate-icon-input');
     const clearIconBtn = document.getElementById('clear-icon');
-
-    // Helper to check if a string contains emoji
-    function containsEmoji(str) {
-        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-        return emojiRegex.test(str);
-    }
+    const cratePanel = document.getElementById('crate-panel');
+    const cratePanelContent = document.getElementById('crate-panel-content');
+    const cratesMain = document.getElementById('crates-main');
 
     // Extract first emoji from string
     function extractFirstEmoji(str) {
@@ -333,20 +497,15 @@
         }
     }
 
-    // Icon text input handler
     iconTextInput.addEventListener('input', updateIconFromInput);
-    iconTextInput.addEventListener('paste', () => {
-        setTimeout(updateIconFromInput, 0);
-    });
+    iconTextInput.addEventListener('paste', () => setTimeout(updateIconFromInput, 0));
 
-    // Clear icon button
     clearIconBtn.addEventListener('click', () => {
         iconInput.value = '';
         iconPreview.textContent = '📁';
         iconTextInput.value = '';
     });
 
-    // Icon suggestions
     document.querySelectorAll('.icon-suggestion').forEach(btn => {
         btn.addEventListener('click', () => {
             const icon = btn.dataset.icon;
@@ -356,7 +515,6 @@
         });
     });
 
-    // Color picker
     document.querySelectorAll('.color-option').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
@@ -365,7 +523,6 @@
         });
     });
 
-    // Custom color picker
     const customColorInput = document.getElementById('custom-color');
     customColorInput.addEventListener('input', () => {
         document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
@@ -390,23 +547,17 @@
     function closeModal() {
         modal.classList.remove('open');
         form.reset();
-        // Reset icon picker
         iconInput.value = '';
         iconPreview.textContent = '📁';
         iconTextInput.value = '';
-        // Reset color selection
-        document.querySelectorAll('.color-option').forEach((b, i) => {
-            b.classList.toggle('selected', i === 0);
-        });
+        document.querySelectorAll('.color-option').forEach((b, i) => b.classList.toggle('selected', i === 0));
         colorInput.value = '';
     }
 
-    // Open modal buttons
     document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
     document.getElementById('btn-new-crate-empty')?.addEventListener('click', () => openModal());
 
-    // Sub-crate buttons
-    document.querySelectorAll('.crate-action').forEach(btn => {
+    document.querySelectorAll('.crate-subcrate-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -414,19 +565,17 @@
         });
     });
 
-    // Close modal
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('btn-cancel').addEventListener('click', closeModal);
     document.querySelector('.modal-backdrop').addEventListener('click', closeModal);
 
-    // Close on escape
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('open')) {
-            closeModal();
+        if (e.key === 'Escape') {
+            if (modal.classList.contains('open')) closeModal();
+            if (cratePanel.classList.contains('open')) closePanel();
         }
     });
 
-    // Form submission
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -448,7 +597,6 @@
             const result = await response.json();
 
             if (response.ok) {
-                // Redirect to new crate or reload page
                 window.location.href = '/crates/' + result.crate.id;
             } else {
                 alert(result.error || 'Failed to create crate');
@@ -456,6 +604,154 @@
         } catch (err) {
             alert('Error creating crate: ' + err.message);
         }
+    });
+
+    // Crate edit panel
+    function openPanel(crateId) {
+        cratePanel.classList.add('open');
+        cratesMain.classList.add('panel-open');
+        loadCrateForEdit(crateId);
+    }
+
+    function closePanel() {
+        cratePanel.classList.remove('open');
+        cratesMain.classList.remove('panel-open');
+    }
+
+    document.getElementById('crate-panel-close').addEventListener('click', closePanel);
+
+    async function loadCrateForEdit(crateId) {
+        try {
+            const response = await fetch(`/crates/api/${crateId}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                renderPanelForm(data.crate);
+            } else {
+                cratePanelContent.innerHTML = '<p class="text-muted">Failed to load crate</p>';
+            }
+        } catch (err) {
+            cratePanelContent.innerHTML = '<p class="text-muted">Error loading crate</p>';
+        }
+    }
+
+    function renderPanelForm(crate) {
+        cratePanelContent.innerHTML = `
+            <form id="panel-edit-form">
+                <div class="panel-form-group">
+                    <label>Name</label>
+                    <input type="text" id="panel-name" value="${crate.name || ''}" required>
+                </div>
+                <div class="panel-form-group">
+                    <label>Description</label>
+                    <input type="text" id="panel-description" value="${crate.description || ''}" placeholder="Optional description">
+                </div>
+                <div class="panel-form-group">
+                    <label>Icon</label>
+                    <div class="icon-input-row">
+                        <button type="button" class="icon-preview" id="panel-icon-preview">${crate.icon || '📁'}</button>
+                        <input type="text" id="panel-icon-input" class="icon-text-input" value="${crate.icon || ''}" placeholder="Emoji" maxlength="4">
+                    </div>
+                </div>
+                <div class="panel-form-group">
+                    <label>Color</label>
+                    <div class="color-picker" id="panel-color-picker">
+                        <button type="button" class="color-option ${!crate.color_hex ? 'selected' : ''}" data-color="" style="background: var(--border)"></button>
+                        {% for color in crate_colors %}
+                        <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}"></button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" id="panel-color" value="${crate.color || ''}">
+                </div>
+                <div class="panel-actions">
+                    <button type="button" class="btn btn-secondary" id="panel-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+            <div class="panel-danger-zone">
+                <h4>Danger Zone</h4>
+                <button class="btn btn-secondary" id="panel-delete" style="color: var(--error)">Delete Crate</button>
+            </div>
+        `;
+
+        // Setup panel form handlers
+        const panelForm = document.getElementById('panel-edit-form');
+        const panelIconPreview = document.getElementById('panel-icon-preview');
+        const panelIconInput = document.getElementById('panel-icon-input');
+        const panelColorInput = document.getElementById('panel-color');
+
+        panelIconInput.addEventListener('input', () => {
+            const emoji = extractFirstEmoji(panelIconInput.value);
+            if (emoji) {
+                panelIconPreview.textContent = emoji;
+                panelIconInput.value = emoji;
+            }
+        });
+
+        document.querySelectorAll('#panel-color-picker .color-option').forEach(btn => {
+            if (btn.dataset.color === (crate.color || '')) {
+                btn.classList.add('selected');
+            }
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#panel-color-picker .color-option').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                panelColorInput.value = btn.dataset.color;
+            });
+        });
+
+        document.getElementById('panel-cancel').addEventListener('click', closePanel);
+
+        panelForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const updateData = {
+                name: document.getElementById('panel-name').value.trim(),
+                description: document.getElementById('panel-description').value.trim(),
+                icon: panelIconInput.value || null,
+                color: panelColorInput.value || null,
+            };
+
+            try {
+                const response = await fetch(`/crates/${crate.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || 'Failed to update crate');
+                }
+            } catch (err) {
+                alert('Error updating crate');
+            }
+        });
+
+        document.getElementById('panel-delete').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete this crate? This cannot be undone.')) return;
+
+            try {
+                const response = await fetch(`/crates/${crate.id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || 'Failed to delete crate');
+                }
+            } catch (err) {
+                alert('Error deleting crate');
+            }
+        });
+    }
+
+    // Edit button click handlers
+    document.querySelectorAll('.crate-edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openPanel(btn.dataset.crateId);
+        });
     });
 })();
 </script>

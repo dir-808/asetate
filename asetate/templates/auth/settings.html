@@ -141,6 +141,35 @@
             </form>
         </div>
 
+        <!-- Auto-backup settings -->
+        <div class="auto-backup-section" style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border);">
+            <h3 style="font-size: 0.9rem; margin-bottom: var(--space-sm);">Auto-Backup</h3>
+            <form action="{{ url_for('auth.save_backup_settings') }}" method="POST" class="auto-backup-form">
+                <div class="form-check">
+                    <input type="checkbox"
+                           id="auto_backup_enabled"
+                           name="auto_backup_enabled"
+                           class="form-check-input"
+                           {% if current_user.auto_backup_enabled %}checked{% endif %}>
+                    <label for="auto_backup_enabled" class="form-check-label">
+                        <strong>Enable automatic backups</strong>
+                        <span class="text-muted">Automatically save a backup after each sync</span>
+                    </label>
+                </div>
+                <div class="form-group auto-backup-path" {% if not current_user.auto_backup_enabled %}style="display: none;"{% endif %}>
+                    <label for="backup_path">Backup folder path</label>
+                    <input type="text"
+                           id="backup_path"
+                           name="backup_path"
+                           class="form-control"
+                           value="{{ current_user.backup_path or '' }}"
+                           placeholder="/path/to/backups or ~/Dropbox/Asetate">
+                    <small class="text-muted">Leave empty to use the default location</small>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);">Save Backup Settings</button>
+            </form>
+        </div>
+
         <details style="margin-top: var(--space-lg);">
             <summary class="text-muted" style="cursor: pointer;">What's included in the backup?</summary>
             <ul class="text-muted" style="margin-top: var(--space-sm); padding-left: var(--space-lg);">
@@ -153,58 +182,100 @@
                 <strong>Not included:</strong> Collection data (releases, tracks) - these are re-synced from Discogs.
             </p>
         </details>
+    </section>
 
-        <p class="text-muted" style="margin-top: var(--space-md); font-size: 0.85rem;">
-            <strong>Tip:</strong> Save your backup to a cloud-synced folder (Dropbox, Google Drive, etc.)
-            for automatic offsite backup.
+    <!-- Key Notation Settings -->
+    <section class="settings-section card">
+        <h2>Key Notation</h2>
+        <p class="text-muted" style="margin-bottom: var(--space-md);">
+            Choose how musical keys are displayed throughout the app.
         </p>
+
+        <form action="{{ url_for('auth.save_key_settings') }}" method="POST" class="key-settings-form">
+            <div class="form-group">
+                <label><strong>Primary key display</strong></label>
+                <div class="key-options">
+                    <label class="radio-label">
+                        <input type="radio" name="key_notation" value="camelot"
+                               {% if current_user.key_notation == 'camelot' or not current_user.key_notation %}checked{% endif %}>
+                        <span>Camelot (8A, 11B)</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="key_notation" value="standard"
+                               {% if current_user.key_notation == 'standard' %}checked{% endif %}>
+                        <span>Standard (Am, F#m)</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="key_notation" value="open_key"
+                               {% if current_user.key_notation == 'open_key' %}checked{% endif %}>
+                        <span>Open Key (6m, 2d)</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm">Save Key Settings</button>
+        </form>
     </section>
 
     <!-- Seller Settings -->
     <section class="settings-section card">
-        <h2>Seller Settings</h2>
+        <h2>Seller Mode</h2>
         <p class="text-muted" style="margin-bottom: var(--space-md);">
-            Enable additional features for Discogs sellers.
+            Additional features for Discogs sellers (inventory management, pricing, etc.)
         </p>
 
-        <form action="{{ url_for('auth.save_seller_settings') }}" method="POST" class="seller-settings-form">
-            <div class="form-check">
-                <input type="checkbox"
-                       id="seller_mode"
-                       name="seller_mode"
-                       class="form-check-input"
-                       {% if current_user.is_seller_mode %}checked{% endif %}>
-                <label for="seller_mode" class="form-check-label">
-                    <strong>Enable Seller Mode</strong>
-                    <span class="text-muted">Show additional options for sellers</span>
-                </label>
+        <div class="seller-toggle-section">
+            {% if current_user.is_seller_mode %}
+            <div class="seller-status seller-enabled">
+                <span class="status-indicator status-completed"></span>
+                <span><strong>Seller Mode is enabled</strong></span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-disable-seller">Disable</button>
             </div>
-
-            <div class="form-check seller-option" id="inventory-url-option" {% if not current_user.is_seller_mode %}style="display: none;"{% endif %}>
-                <input type="checkbox"
-                       id="include_inventory_url"
-                       name="include_inventory_url"
-                       class="form-check-input"
-                       {% if current_user.include_inventory_url %}checked{% endif %}>
-                <label for="include_inventory_url" class="form-check-label">
-                    <strong>Include Inventory URL in Exports</strong>
-                    <span class="text-muted">Add your listing URL to CSV exports (useful for linking labels to your shop)</span>
-                </label>
+            <div class="seller-options-enabled">
+                <form action="{{ url_for('auth.save_seller_settings') }}" method="POST" class="seller-settings-form">
+                    <input type="hidden" name="seller_mode" value="on">
+                    <div class="form-check">
+                        <input type="checkbox"
+                               id="include_inventory_url"
+                               name="include_inventory_url"
+                               class="form-check-input"
+                               {% if current_user.include_inventory_url %}checked{% endif %}>
+                        <label for="include_inventory_url" class="form-check-label">
+                            <strong>Include Inventory URL in Exports</strong>
+                            <span class="text-muted">Add your listing URL to CSV exports</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox"
+                               id="include_drafts"
+                               name="include_drafts"
+                               class="form-check-input"
+                               {% if current_user.include_drafts %}checked{% endif %}>
+                        <label for="include_drafts" class="form-check-label">
+                            <strong>Include Draft Listings</strong>
+                            <span class="text-muted">Sync draft listings from Discogs inventory</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm" style="margin-top: var(--space-md);">Save Options</button>
+                </form>
             </div>
-
-            <div class="form-check seller-option" id="include-drafts-option" {% if not current_user.is_seller_mode %}style="display: none;"{% endif %}>
-                <input type="checkbox"
-                       id="include_drafts"
-                       name="include_drafts"
-                       class="form-check-input"
-                       {% if current_user.include_drafts %}checked{% endif %}>
-                <label for="include_drafts" class="form-check-label">
-                    <strong>Include Draft Listings</strong>
-                    <span class="text-muted">Sync draft listings from Discogs inventory (not just items marked "For Sale")</span>
-                </label>
+            {% else %}
+            <div class="seller-status seller-disabled">
+                <span class="status-indicator status-paused"></span>
+                <span>Seller Mode is disabled</span>
             </div>
+            <button type="button" class="btn btn-primary" id="btn-enable-seller">Enable Seller Mode</button>
+            <p class="text-muted" style="margin-top: var(--space-sm); font-size: 0.85rem;">
+                Enabling seller mode adds inventory fields, pricing columns in exports, and seller-specific filters.
+            </p>
+            {% endif %}
+        </div>
 
-            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-md);">Save Seller Settings</button>
+        <!-- Hidden forms for enable/disable -->
+        <form id="enable-seller-form" action="{{ url_for('auth.save_seller_settings') }}" method="POST" style="display: none;">
+            <input type="hidden" name="seller_mode" value="on">
+        </form>
+        <form id="disable-seller-form" action="{{ url_for('auth.save_seller_settings') }}" method="POST" style="display: none;">
+            <input type="hidden" name="seller_mode" value="">
         </form>
     </section>
 
@@ -278,20 +349,96 @@
     padding-left: var(--space-md);
     border-left: 2px solid var(--color-border);
 }
+
+/* Key notation options */
+.key-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+}
+.radio-label input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Seller status */
+.seller-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-md);
+}
+.seller-enabled {
+    background-color: rgba(74, 222, 128, 0.1);
+    border: 1px solid var(--success);
+}
+.seller-disabled {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+}
+.seller-options-enabled {
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--success);
+}
+
+/* Auto-backup section */
+.auto-backup-form .form-group {
+    margin-top: var(--space-md);
+}
+.auto-backup-form .form-control {
+    width: 100%;
+    max-width: 400px;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function() {
-    const sellerModeCheckbox = document.getElementById('seller_mode');
-    const sellerOptions = document.querySelectorAll('.seller-option');
+    // Auto-backup toggle
+    const autoBackupCheckbox = document.getElementById('auto_backup_enabled');
+    const autoBackupPath = document.querySelector('.auto-backup-path');
+    if (autoBackupCheckbox && autoBackupPath) {
+        autoBackupCheckbox.addEventListener('change', function() {
+            autoBackupPath.style.display = this.checked ? 'block' : 'none';
+        });
+    }
 
-    if (sellerModeCheckbox && sellerOptions.length) {
-        sellerModeCheckbox.addEventListener('change', function() {
-            sellerOptions.forEach(option => {
-                option.style.display = this.checked ? 'flex' : 'none';
-            });
+    // Seller mode enable/disable
+    const enableBtn = document.getElementById('btn-enable-seller');
+    const disableBtn = document.getElementById('btn-disable-seller');
+    const enableForm = document.getElementById('enable-seller-form');
+    const disableForm = document.getElementById('disable-seller-form');
+
+    if (enableBtn && enableForm) {
+        enableBtn.addEventListener('click', () => {
+            if (confirm('Enable Seller Mode?\n\nThis will add inventory fields and seller-specific export options.')) {
+                enableForm.submit();
+            }
+        });
+    }
+
+    if (disableBtn && disableForm) {
+        disableBtn.addEventListener('click', () => {
+            if (confirm('Disable Seller Mode?\n\nSeller-specific columns and filters will be hidden (your data will be preserved).')) {
+                disableForm.submit();
+            }
         });
     }
 })();

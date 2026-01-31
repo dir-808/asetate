@@ -34,7 +34,11 @@
         <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Discogs</a>
         <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate</button>
         <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to export cue">Cue</button>
-        <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="btn btn-secondary btn-sm">Full Page</a>
+        <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="btn btn-secondary btn-sm panel-fullpage-btn" title="Open full page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+        </a>
     </div>
 
     <div class="panel-crates" id="panel-release-crates">
@@ -67,25 +71,52 @@
                         <span class="panel-track-title">{{ track.title }}</span>
                         <span class="panel-track-duration">{{ track.display_duration }}</span>
                     </div>
-                    <label class="toggle toggle-sm">
-                        <input type="checkbox" class="panel-track-playable"
-                               {% if track.is_playable %}checked{% endif %}
-                               data-field="is_playable">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="panel-track-meta">
-                    <input type="number" class="panel-input panel-bpm"
-                           value="{{ track.bpm or '' }}" placeholder="BPM"
-                           min="20" max="300" data-field="bpm">
-                    <input type="text" class="panel-input panel-key"
-                           value="{{ track.camelot or track.musical_key or '' }}"
-                           placeholder="Key" data-field="camelot" list="panel-camelot-keys">
-                    <div class="panel-energy-wrap">
-                        <input type="range" class="panel-energy-slider"
-                               value="{{ track.energy or 0 }}" min="0" max="5" data-field="energy">
-                        <span class="panel-energy-val">{{ track.energy if track.energy else '—' }}</span>
+                    <div class="panel-playable-toggle">
+                        <label class="toggle toggle-sm" title="Mark as playable">
+                            <input type="checkbox" class="panel-track-playable"
+                                   {% if track.is_playable %}checked{% endif %}
+                                   data-field="is_playable">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="panel-playable-label">Play</span>
                     </div>
+                </div>
+                <div class="panel-track-fields">
+                    <div class="panel-field">
+                        <label>BPM</label>
+                        <input type="number" class="panel-input panel-bpm"
+                               value="{{ track.bpm or '' }}" placeholder="—"
+                               min="20" max="300" data-field="bpm">
+                    </div>
+                    <div class="panel-field">
+                        <label>Key</label>
+                        <input type="text" class="panel-input panel-key"
+                               value="{{ track.camelot or track.musical_key or '' }}"
+                               placeholder="—" data-field="camelot" list="panel-camelot-keys">
+                    </div>
+                    <div class="panel-field panel-field-energy">
+                        <label>Energy</label>
+                        <div class="energy-bar" data-field="energy" data-value="{{ track.energy or 3 }}">
+                            <div class="energy-segment" data-level="1"></div>
+                            <div class="energy-segment" data-level="2"></div>
+                            <div class="energy-segment" data-level="3"></div>
+                            <div class="energy-segment" data-level="4"></div>
+                            <div class="energy-segment" data-level="5"></div>
+                        </div>
+                    </div>
+                </div>
+                {% if track.notes %}
+                <div class="panel-track-notes-display">
+                    <span class="panel-track-notes-icon" title="Track notes">📝</span>
+                    <span class="panel-track-notes-text">{{ track.notes[:50] }}{% if track.notes|length > 50 %}...{% endif %}</span>
+                </div>
+                {% endif %}
+                <div class="panel-track-notes-row">
+                    <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
+                            data-track-notes="{{ track.notes or '' }}"
+                            title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
+                        {% if track.notes %}Edit Notes{% else %}+ Notes{% endif %}
+                    </button>
                 </div>
                 {% if track.tags %}
                 <div class="panel-track-tags">
@@ -117,6 +148,217 @@
         {% endif %}
     </section>
 </div>
+
+<!-- Track Notes Modal (inline for panel) -->
+<div class="panel-notes-modal" id="panel-track-notes-modal" style="display: none;">
+    <div class="panel-notes-modal-content">
+        <div class="panel-notes-modal-header">
+            <h4>Track Notes</h4>
+            <button class="modal-close" id="panel-notes-modal-close">&times;</button>
+        </div>
+        <textarea id="panel-track-notes-textarea" rows="4" placeholder="Add notes about this track..."></textarea>
+        <div class="panel-notes-modal-actions">
+            <button class="btn btn-secondary btn-sm" id="panel-notes-cancel">Cancel</button>
+            <button class="btn btn-primary btn-sm" id="panel-notes-save">Save</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Panel improvements */
+.panel-playable-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.panel-playable-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.panel-track-row.track-playable .panel-playable-label {
+    color: var(--success);
+}
+
+.panel-track-fields {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-xs);
+    padding-left: calc(30px + var(--space-sm));
+}
+
+.panel-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.panel-field label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.panel-field-energy {
+    flex: 1;
+}
+
+/* Segmented Energy Bar */
+.energy-bar {
+    display: flex;
+    gap: 2px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.energy-segment {
+    flex: 1;
+    background-color: var(--border);
+    border-radius: 2px;
+    transition: background-color 0.15s, transform 0.1s;
+    min-width: 16px;
+}
+
+.energy-segment:hover {
+    transform: scaleY(1.1);
+}
+
+.energy-segment.active {
+    background-color: var(--primary);
+}
+
+.energy-bar[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
+.energy-bar[data-value="2"] .energy-segment[data-level="1"],
+.energy-bar[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
+.energy-bar[data-value="3"] .energy-segment[data-level="1"],
+.energy-bar[data-value="3"] .energy-segment[data-level="2"],
+.energy-bar[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
+.energy-bar[data-value="4"] .energy-segment[data-level="1"],
+.energy-bar[data-value="4"] .energy-segment[data-level="2"],
+.energy-bar[data-value="4"] .energy-segment[data-level="3"],
+.energy-bar[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
+.energy-bar[data-value="5"] .energy-segment { background-color: var(--error); }
+
+/* Track notes in panel */
+.panel-track-notes-row {
+    margin-top: var(--space-xs);
+    padding-left: calc(30px + var(--space-sm));
+}
+
+.panel-notes-btn {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    transition: all 0.15s;
+}
+
+.panel-notes-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.panel-notes-btn.has-notes {
+    border-style: solid;
+    border-color: var(--warning);
+    color: var(--warning);
+    background-color: rgba(251, 191, 36, 0.1);
+}
+
+.panel-track-notes-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: var(--space-xs);
+    padding-left: calc(30px + var(--space-sm));
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.panel-track-notes-icon {
+    font-size: 0.75rem;
+}
+
+.panel-track-notes-text {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Notes modal within panel */
+.panel-notes-modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 450px;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-notes-modal-content {
+    background-color: var(--bg-surface);
+    border: 2px solid var(--border);
+    padding: var(--space-md);
+    width: 90%;
+    max-width: 350px;
+}
+
+.panel-notes-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.panel-notes-modal-header h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+#panel-track-notes-textarea {
+    width: 100%;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    resize: vertical;
+}
+
+.panel-notes-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+}
+
+/* Full page button as expansion icon */
+.panel-fullpage-btn {
+    padding: var(--space-xs);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-fullpage-btn svg {
+    width: 14px;
+    height: 14px;
+}
+</style>
 
 <script>
 (function() {
@@ -161,12 +403,48 @@
                 if (field === 'is_playable') {
                     const row = document.querySelector(`.panel-track-row[data-track-id="${trackId}"]`);
                     row.classList.toggle('track-playable', value);
+                    // Update stats display
+                    updatePanelStats();
+                }
+                if (field === 'bpm') {
+                    updatePanelStats();
                 }
             } else {
                 showError();
             }
         } catch (err) {
             showError();
+        }
+    }
+
+    // Update stats after changes
+    function updatePanelStats() {
+        const rows = document.querySelectorAll('.panel-track-row');
+        let playableCount = 0;
+        let totalBpm = 0;
+        let bpmCount = 0;
+
+        rows.forEach(row => {
+            if (row.classList.contains('track-playable')) {
+                playableCount++;
+                const bpmInput = row.querySelector('.panel-bpm');
+                if (bpmInput && bpmInput.value) {
+                    totalBpm += parseInt(bpmInput.value);
+                    bpmCount++;
+                }
+            }
+        });
+
+        // Update playable count
+        const statsEl = document.querySelector('.panel-stats .text-success');
+        if (statsEl) {
+            statsEl.textContent = `${playableCount} playable`;
+        }
+
+        // Update avg BPM
+        const avgBpmEl = document.querySelector('.panel-stats .avg-bpm');
+        if (avgBpmEl && bpmCount > 0) {
+            avgBpmEl.textContent = Math.round(totalBpm / bpmCount);
         }
     }
 
@@ -197,19 +475,75 @@
         });
     });
 
-    // Energy slider
-    document.querySelectorAll('.panel-energy-slider').forEach(slider => {
-        const valDisplay = slider.nextElementSibling;
-        slider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            valDisplay.textContent = val === 0 ? '—' : val;
+    // Energy bar click handler
+    document.querySelectorAll('.energy-bar').forEach(bar => {
+        bar.querySelectorAll('.energy-segment').forEach(segment => {
+            segment.addEventListener('click', (e) => {
+                const level = parseInt(segment.dataset.level);
+                const row = bar.closest('.panel-track-row');
+                const trackId = row.dataset.trackId;
+
+                bar.setAttribute('data-value', level);
+                updateTrack(trackId, 'energy', level);
+            });
         });
-        slider.addEventListener('change', (e) => {
-            const row = slider.closest('.panel-track-row');
-            const trackId = row.dataset.trackId;
-            const val = parseInt(e.target.value);
-            updateTrack(trackId, 'energy', val === 0 ? null : val);
+    });
+
+    // Track Notes Modal
+    const notesModal = document.getElementById('panel-track-notes-modal');
+    const notesTextarea = document.getElementById('panel-track-notes-textarea');
+    let currentNotesBtn = null;
+
+    document.querySelectorAll('.panel-notes-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentNotesBtn = btn;
+            notesTextarea.value = btn.dataset.trackNotes || '';
+            notesModal.style.display = 'flex';
+            notesTextarea.focus();
         });
+    });
+
+    document.getElementById('panel-notes-modal-close')?.addEventListener('click', () => {
+        notesModal.style.display = 'none';
+    });
+
+    document.getElementById('panel-notes-cancel')?.addEventListener('click', () => {
+        notesModal.style.display = 'none';
+    });
+
+    document.getElementById('panel-notes-save')?.addEventListener('click', async () => {
+        if (!currentNotesBtn) return;
+
+        const row = currentNotesBtn.closest('.panel-track-row');
+        const trackId = row.dataset.trackId;
+        const notes = notesTextarea.value.trim();
+
+        showSaving();
+
+        try {
+            const response = await fetch(`/releases/${releaseId}/tracks/${trackId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: notes || null })
+            });
+
+            if (response.ok) {
+                showSaved();
+                notesModal.style.display = 'none';
+                currentNotesBtn.dataset.trackNotes = notes;
+                if (notes) {
+                    currentNotesBtn.textContent = 'Edit Notes';
+                    currentNotesBtn.classList.add('has-notes');
+                } else {
+                    currentNotesBtn.textContent = '+ Notes';
+                    currentNotesBtn.classList.remove('has-notes');
+                }
+            } else {
+                showError();
+            }
+        } catch (err) {
+            showError();
+        }
     });
 
     // Load crates for this release
@@ -229,14 +563,13 @@
             const container = document.getElementById('panel-release-crates');
             if (inCrates.length > 0) {
                 container.innerHTML = inCrates.map(c => {
-                    const colorStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40; color: ${c.color_hex}` : '';
-                    return `<a href="/crates/${c.id}" class="crate-badge" style="${colorStyle}">
-                        <span class="crate-badge-icon">${c.icon}</span>
+                    return `<a href="/crates/${c.id}" class="crate-badge-panel">
+                        <span class="crate-badge-icon">${c.icon || '📁'}</span>
                         <span class="crate-badge-name">${c.name}</span>
                     </a>`;
                 }).join('');
             } else {
-                container.innerHTML = '<span class="text-muted">Not in any crate</span>';
+                container.innerHTML = '<span class="text-muted" style="font-size: 0.75rem;">Not in any crate</span>';
             }
         } catch (err) {
             console.error('Failed to load crates:', err);

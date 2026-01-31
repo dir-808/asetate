@@ -24,15 +24,15 @@
                 {% if release.year %}<span>{{ release.year }}</span>{% endif %}
             </div>
             {% set avg_bpm = release.get_average_bpm() %}
-            <div class="release-stats">
-                <span>{{ stats.total }} tracks</span>
+            <div class="release-stats" id="release-stats">
+                <span id="stat-total">{{ stats.total }} tracks</span>
                 <span class="stat-divider">•</span>
-                <span class="text-success">{{ stats.playable }} playable</span>
+                <span class="text-success" id="stat-playable">{{ stats.playable }} playable</span>
                 <span class="stat-divider">•</span>
-                <span>{{ stats.has_bpm }} with BPM</span>
+                <span id="stat-bpm">{{ stats.has_bpm }} with BPM</span>
                 {% if avg_bpm.value %}
-                <span class="stat-divider">•</span>
-                <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" title="Average BPM of playable tracks{% if avg_bpm.is_varied %} (BPM range varies significantly){% endif %}">
+                <span class="stat-divider avg-bpm-divider">•</span>
+                <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" id="stat-avg-bpm" title="Average BPM of playable tracks{% if avg_bpm.is_varied %} (BPM range varies significantly){% endif %}">
                     Avg: {{ avg_bpm.display }}
                 </span>
                 {% endif %}
@@ -53,24 +53,23 @@
                 <!-- Crates will be loaded via JS -->
             </div>
         </div>
+        <!-- Release Notes (right side) -->
+        <div class="release-notes-panel">
+            <div class="release-notes-header">
+                <h3>Notes</h3>
+                <button class="btn btn-secondary btn-sm" id="btn-edit-release-notes">
+                    {% if release.notes %}Edit{% else %}Add{% endif %}
+                </button>
+            </div>
+            <div class="release-notes-content" id="release-notes-content">
+                {% if release.notes %}
+                <p>{{ release.notes }}</p>
+                {% else %}
+                <p class="text-muted">No notes yet.</p>
+                {% endif %}
+            </div>
+        </div>
     </header>
-
-    <!-- Release Notes Section -->
-    <section class="release-notes-section">
-        <div class="release-notes-header">
-            <h3>Release Notes</h3>
-            <button class="btn btn-secondary btn-sm" id="btn-edit-release-notes">
-                {% if release.notes %}Edit{% else %}Add{% endif %}
-            </button>
-        </div>
-        <div class="release-notes-content" id="release-notes-content">
-            {% if release.notes %}
-            <p>{{ release.notes }}</p>
-            {% else %}
-            <p class="text-muted">No notes yet. Click "Add" to add notes about this release.</p>
-            {% endif %}
-        </div>
-    </section>
 
     <section class="tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
         <div class="tracks-header">
@@ -134,16 +133,12 @@
                             >
                         </td>
                         <td class="col-energy {% if 'energy' not in visible_fields %}hidden{% endif %}">
-                            <div class="energy-slider-container">
-                                <input
-                                    type="range"
-                                    class="track-energy-slider"
-                                    value="{{ track.energy or 0 }}"
-                                    min="0"
-                                    max="5"
-                                    data-field="energy"
-                                >
-                                <span class="energy-value">{{ track.energy if track.energy else '—' }}</span>
+                            <div class="energy-bar-table" data-field="energy" data-value="{{ track.energy or 3 }}">
+                                <div class="energy-segment" data-level="1"></div>
+                                <div class="energy-segment" data-level="2"></div>
+                                <div class="energy-segment" data-level="3"></div>
+                                <div class="energy-segment" data-level="4"></div>
+                                <div class="energy-segment" data-level="5"></div>
                             </div>
                         </td>
                         <td class="col-tags {% if 'tags' not in visible_fields %}hidden{% endif %}">
@@ -332,12 +327,22 @@
 .column-setting input:disabled + span {
     color: var(--text-muted);
 }
-/* Release Notes Section */
-.release-notes-section {
+
+/* Release header with notes panel on right */
+.release-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-xl);
+    align-items: start;
+}
+
+/* Release Notes Panel (right side of header) */
+.release-notes-panel {
+    width: 250px;
     background: var(--bg-surface);
-    border-radius: var(--radius-md);
-    padding: var(--space-md) var(--space-lg);
-    margin-bottom: var(--space-xl);
+    border: 2px solid var(--border);
+    padding: var(--space-md);
+    height: fit-content;
 }
 
 .release-notes-header {
@@ -345,16 +350,28 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
 }
 
 .release-notes-header h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+}
+
+.release-notes-content {
+    max-height: 180px;
+    overflow-y: auto;
 }
 
 .release-notes-content p {
     margin: 0;
     white-space: pre-wrap;
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
 /* Notes modal textarea */
@@ -406,6 +423,49 @@
 .track-notes-add:hover {
     border-color: var(--text-muted);
     color: var(--text-secondary);
+}
+
+/* Segmented Energy Bar for table */
+.energy-bar-table {
+    display: flex;
+    gap: 2px;
+    height: 18px;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.energy-bar-table .energy-segment {
+    width: 14px;
+    background-color: var(--border);
+    border-radius: 2px;
+    transition: background-color 0.15s, transform 0.1s;
+}
+
+.energy-bar-table .energy-segment:hover {
+    transform: scaleY(1.15);
+}
+
+.energy-bar-table[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
+.energy-bar-table[data-value="2"] .energy-segment[data-level="1"],
+.energy-bar-table[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
+.energy-bar-table[data-value="3"] .energy-segment[data-level="1"],
+.energy-bar-table[data-value="3"] .energy-segment[data-level="2"],
+.energy-bar-table[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
+.energy-bar-table[data-value="4"] .energy-segment[data-level="1"],
+.energy-bar-table[data-value="4"] .energy-segment[data-level="2"],
+.energy-bar-table[data-value="4"] .energy-segment[data-level="3"],
+.energy-bar-table[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
+.energy-bar-table[data-value="5"] .energy-segment { background-color: var(--error); }
+
+/* Responsive: stack notes below on smaller screens */
+@media (max-width: 1100px) {
+    .release-header {
+        grid-template-columns: auto 1fr;
+    }
+    .release-notes-panel {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
 }
 </style>
 {% endblock %}
@@ -463,6 +523,12 @@
                     } else {
                         row.classList.remove('track-playable');
                     }
+                    updateStats();
+                }
+
+                // Update stats when BPM changes
+                if (field === 'bpm') {
+                    updateStats();
                 }
             } else {
                 showError(result.error);
@@ -513,22 +579,70 @@
         }
     });
 
-    // Energy slider handling
-    document.querySelectorAll('.track-energy-slider').forEach(slider => {
-        const valueDisplay = slider.nextElementSibling;
+    // Energy bar click handling
+    document.querySelectorAll('.energy-bar-table').forEach(bar => {
+        bar.querySelectorAll('.energy-segment').forEach(segment => {
+            segment.addEventListener('click', (e) => {
+                const level = parseInt(segment.dataset.level);
+                const row = bar.closest('tr');
+                const trackId = row.dataset.trackId;
 
-        slider.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            valueDisplay.textContent = value === 0 ? '—' : value;
-        });
-
-        slider.addEventListener('change', (e) => {
-            const row = slider.closest('tr');
-            const trackId = row.dataset.trackId;
-            const value = parseInt(e.target.value);
-            updateTrack(trackId, 'energy', value === 0 ? null : value);
+                bar.setAttribute('data-value', level);
+                updateTrack(trackId, 'energy', level);
+            });
         });
     });
+
+    // Live stats update function
+    function updateStats() {
+        const rows = document.querySelectorAll('.track-row');
+        let playableCount = 0;
+        let bpmCount = 0;
+        let totalBpm = 0;
+
+        rows.forEach(row => {
+            const isPlayable = row.classList.contains('track-playable');
+            const bpmInput = row.querySelector('.track-bpm');
+            const bpm = bpmInput ? parseInt(bpmInput.value) : null;
+
+            if (isPlayable) {
+                playableCount++;
+                if (bpm && !isNaN(bpm)) {
+                    totalBpm += bpm;
+                    bpmCount++;
+                }
+            }
+
+            if (bpm && !isNaN(bpm)) {
+                // Count tracks with BPM regardless of playable status
+            }
+        });
+
+        // Update stats display
+        const statPlayable = document.getElementById('stat-playable');
+        if (statPlayable) statPlayable.textContent = `${playableCount} playable`;
+
+        const bpmInputs = document.querySelectorAll('.track-bpm');
+        let tracksWithBpm = 0;
+        bpmInputs.forEach(input => {
+            if (input.value && !isNaN(parseInt(input.value))) tracksWithBpm++;
+        });
+        const statBpm = document.getElementById('stat-bpm');
+        if (statBpm) statBpm.textContent = `${tracksWithBpm} with BPM`;
+
+        // Update average BPM
+        const statAvgBpm = document.getElementById('stat-avg-bpm');
+        const avgBpmDivider = document.querySelector('.avg-bpm-divider');
+        if (bpmCount > 0) {
+            const avgBpm = Math.round(totalBpm / bpmCount);
+            if (statAvgBpm) statAvgBpm.textContent = `Avg: ${avgBpm}`;
+            if (avgBpmDivider) avgBpmDivider.style.display = '';
+            if (statAvgBpm) statAvgBpm.style.display = '';
+        } else {
+            if (avgBpmDivider) avgBpmDivider.style.display = 'none';
+            if (statAvgBpm) statAvgBpm.style.display = 'none';
+        }
+    }
 
     // Keyboard navigation between cells
     document.querySelectorAll('.track-input').forEach(input => {

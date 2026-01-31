@@ -30,34 +30,57 @@
                 {% if filter_type %}
                 <input type="hidden" name="filter" value="{{ filter_type }}">
                 {% endif %}
+                {% if crate_filter %}
+                <input type="hidden" name="crate" value="{{ crate_filter }}">
+                {% endif %}
             </form>
 
             <div class="filter-buttons">
-                <a href="{{ url_for('releases.list_releases', q=search) }}"
+                <a href="{{ url_for('releases.list_releases', q=search, crate=crate_filter) }}"
                    class="filter-btn {% if not filter_type %}active{% endif %}">
                     All
                 </a>
-                <a href="{{ url_for('releases.list_releases', q=search, filter='playable') }}"
+                <a href="{{ url_for('releases.list_releases', q=search, filter='playable', crate=crate_filter) }}"
                    class="filter-btn {% if filter_type == 'playable' %}active{% endif %}">
                     Has Playable
                 </a>
-                <a href="{{ url_for('releases.list_releases', q=search, filter='needs_metadata') }}"
+                <a href="{{ url_for('releases.list_releases', q=search, filter='needs_metadata', crate=crate_filter) }}"
                    class="filter-btn {% if filter_type == 'needs_metadata' %}active{% endif %}">
                     Needs BPM/Key
                 </a>
+                <div class="crate-filter-dropdown">
+                    <select id="crate-filter-select" class="filter-select" onchange="filterByCrate(this.value)">
+                        <option value="">All Crates</option>
+                        {% for crate in available_crates %}
+                        <option value="{{ crate.id }}" {% if crate_filter == crate.id|string %}selected{% endif %}>
+                            {{ crate.icon or '📁' }} {{ crate.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
 
         {% if releases %}
         <div class="releases-grid">
             {% for release in releases %}
-            <div class="release-card" data-release-id="{{ release.id }}" tabindex="0">
+            <div class="release-card" data-release-id="{{ release.id }}" data-crate-ids="{{ release.crate_ids|default([])|join(',') }}" tabindex="0">
                 <div class="release-cover">
                     {% if release.cover_art_url %}
                     <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}" loading="lazy">
                     {% else %}
                     <div class="cover-placeholder">
                         <span>No Cover</span>
+                    </div>
+                    {% endif %}
+                    {% if release.crate_icons %}
+                    <div class="release-crate-icons">
+                        {% for icon in release.crate_icons[:3] %}
+                        <span class="release-crate-icon">{{ icon }}</span>
+                        {% endfor %}
+                        {% if release.crate_icons|length > 3 %}
+                        <span class="release-crate-more">+{{ release.crate_icons|length - 3 }}</span>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
@@ -128,7 +151,102 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Crate icons on release cards */
+.release-crate-icons {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    display: flex;
+    gap: 2px;
+}
+
+.release-crate-icon {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.release-crate-more {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    color: var(--text-muted);
+}
+
+.release-cover {
+    position: relative;
+}
+
+/* Crate filter dropdown */
+.crate-filter-dropdown {
+    display: inline-block;
+}
+
+.filter-select {
+    padding: var(--space-xs) var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.filter-select option {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+/* Crate badge in panel (without color) */
+.crate-badge-panel {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.75rem;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.crate-badge-panel:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+</style>
 <script>
+// Crate filter function
+function filterByCrate(crateId) {
+    const url = new URL(window.location);
+    if (crateId) {
+        url.searchParams.set('crate', crateId);
+    } else {
+        url.searchParams.delete('crate');
+    }
+    window.location.href = url.toString();
+}
+
 (function() {
     const panel = document.getElementById('release-panel');
     const panelContent = document.getElementById('panel-content');

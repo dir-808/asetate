@@ -129,6 +129,25 @@
                 <button class="btn btn-secondary btn-block" id="btn-clear-filters">Clear Filters</button>
             </div>
 
+            <!-- Export Grouping -->
+            <div class="export-section card">
+                <h3>Export Format</h3>
+                <div class="filter-group">
+                    <label class="radio-label">
+                        <input type="radio" name="export-grouping" value="tracks" checked>
+                        <span>Individual tracks</span>
+                    </label>
+                    <p class="text-muted radio-hint">One row per playable track</p>
+                </div>
+                <div class="filter-group">
+                    <label class="radio-label">
+                        <input type="radio" name="export-grouping" value="releases">
+                        <span>Group by release</span>
+                    </label>
+                    <p class="text-muted radio-hint">One row per release with playable track info combined</p>
+                </div>
+            </div>
+
             <!-- Columns -->
             <div class="export-section card">
                 <h3>Columns</h3>
