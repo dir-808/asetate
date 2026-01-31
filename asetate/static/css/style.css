@@ -1035,25 +1035,37 @@ input::placeholder, textarea::placeholder {
     background-color: var(--bg-elevated);
 }
 
-/* Track rows have consistent grey borders by default */
+/* Track rows - no border collapse to maintain consistent line thickness */
 .track-row {
-    border: 1px solid var(--border);
-    margin-top: -1px; /* Collapse adjacent borders */
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
 .track-row:first-child {
-    margin-top: 0;
+    border-top: 1px solid var(--border);
 }
 
-/* Playable tracks get orange borders (same thickness) */
+/* Playable tracks get orange left/right borders, grey top/bottom for consistent separation */
 .track-row.track-playable {
     background-color: rgba(249, 115, 22, 0.03);
-    border-color: rgba(249, 115, 22, 0.4);
+    border-left-color: rgba(249, 115, 22, 0.4);
+    border-right-color: rgba(249, 115, 22, 0.4);
 }
 
-/* Adjacent playable tracks keep grey horizontal line between them */
-.track-row.track-playable + .track-row.track-playable {
-    border-top-color: var(--border);
+/* First playable track gets orange top border */
+.track-row.track-playable:first-child {
+    border-top-color: rgba(249, 115, 22, 0.4);
+}
+
+/* Playable track after a non-playable gets orange top border */
+.track-row:not(.track-playable) + .track-row.track-playable {
+    border-top: 1px solid rgba(249, 115, 22, 0.4);
+}
+
+/* Last playable track gets orange bottom border */
+.track-row.track-playable:last-child {
+    border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
 .track-row.track-playable:hover {

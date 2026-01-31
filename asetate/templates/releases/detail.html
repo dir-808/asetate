@@ -372,7 +372,13 @@
 .action-group {
     display: flex;
     gap: var(--space-xs);
+    align-items: stretch;
+}
+
+.action-group .btn {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
 }
 
 .action-group.discogs-actions {
@@ -382,6 +388,7 @@
 
 /* Crate dropdown wrapper - ensure same height as buttons */
 .crate-dropdown-wrapper {
+    position: relative;
     display: inline-flex;
     align-items: stretch;
 }
@@ -389,6 +396,7 @@
 .crate-dropdown-wrapper .btn {
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 /* Simple release notes - just a textarea */
