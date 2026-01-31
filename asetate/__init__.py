@@ -1,6 +1,6 @@
 """Asetate - A local-first DJ library manager for vinyl collectors."""
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -52,6 +52,21 @@ def create_app(config_name: str = "default") -> Flask:
         consumer_key = app.config.get("DISCOGS_CONSUMER_KEY")
         consumer_secret = app.config.get("DISCOGS_CONSUMER_SECRET")
         return {"oauth_mode": bool(consumer_key and consumer_secret)}
+
+    # Custom error handlers - return JSON for AJAX requests
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        """Return JSON error for rate limit exceeded."""
+        return jsonify(error="Rate limit exceeded. Please wait before trying again."), 429
+
+    @app.errorhandler(500)
+    def internal_error_handler(e):
+        """Return JSON for AJAX requests, HTML for page requests."""
+        from flask import request
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.best == "application/json":
+            return jsonify(error="Internal server error. Check server logs for details."), 500
+        # Default Flask error page for regular page loads
+        return "Internal Server Error", 500
 
     # Register blueprints
     from .routes import main, releases, crates, sync, export, tags, auth
