@@ -188,3 +188,22 @@ class User(UserMixin, db.Model):
         if include_drafts is not None:
             prefs["include_drafts"] = include_drafts
         self.preferences = prefs
+
+    # =========================================================================
+    # Field visibility settings
+    # =========================================================================
+
+    # Default visible fields for tracks table
+    DEFAULT_TRACK_FIELDS = ["position", "title", "duration", "bpm", "key", "energy", "tags", "playable"]
+
+    @property
+    def visible_track_fields(self) -> list[str]:
+        """Get list of visible fields for tracks table."""
+        prefs = self.preferences or {}
+        return prefs.get("visible_track_fields", self.DEFAULT_TRACK_FIELDS)
+
+    def set_visible_track_fields(self, fields: list[str]):
+        """Set which fields are visible in the tracks table."""
+        prefs = dict(self.preferences or {})
+        prefs["visible_track_fields"] = fields
+        self.preferences = prefs
