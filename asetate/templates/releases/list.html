@@ -342,10 +342,11 @@ function filterByCrate(crateId) {
                 const html = await response.text();
                 panelContent.innerHTML = html;
 
-                // Move expand button to header bar
+                // Move expand button to header bar (clear old one first)
                 const expandBtn = document.getElementById('panel-expand-btn');
                 const expandSlot = document.getElementById('panel-expand-slot');
                 if (expandBtn && expandSlot) {
+                    expandSlot.innerHTML = ''; // Clear old button
                     expandBtn.style.display = 'flex';
                     expandSlot.appendChild(expandBtn);
                 }

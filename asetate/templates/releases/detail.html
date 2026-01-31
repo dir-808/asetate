@@ -617,17 +617,61 @@
         }
     });
 
-    // Energy bar click handling
-    document.querySelectorAll('.energy-bar-table').forEach(bar => {
-        bar.querySelectorAll('.energy-segment').forEach(segment => {
-            segment.addEventListener('click', (e) => {
-                const level = parseInt(segment.dataset.level);
-                const row = bar.closest('tr');
-                const trackId = row.dataset.trackId;
+    // Energy bar click and drag handling - supports dragging outside the bar
+    // Use global state to handle drag
+    if (!window._detailEnergyDrag) {
+        window._detailEnergyDrag = {
+            isDragging: false,
+            currentBar: null,
+            currentTrackId: null,
+            updateTrackFn: null
+        };
 
-                bar.setAttribute('data-value', level);
-                updateTrack(trackId, 'energy', level);
-            });
+        // Document-level listeners - only add once
+        document.addEventListener('mousemove', (e) => {
+            const state = window._detailEnergyDrag;
+            if (state.isDragging && state.currentBar) {
+                const rect = state.currentBar.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const segmentWidth = rect.width / 5;
+                let level = Math.ceil(x / segmentWidth);
+                level = Math.max(1, Math.min(5, level));
+                state.currentBar.setAttribute('data-value', level);
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            const state = window._detailEnergyDrag;
+            if (state.isDragging && state.currentTrackId && state.currentBar && state.updateTrackFn) {
+                const level = parseInt(state.currentBar.getAttribute('data-value'));
+                state.updateTrackFn(state.currentTrackId, 'energy', level);
+            }
+            state.isDragging = false;
+            state.currentBar = null;
+            state.currentTrackId = null;
+        });
+    }
+
+    // Update global state with current updateTrack function
+    window._detailEnergyDrag.updateTrackFn = updateTrack;
+
+    // Attach mousedown to energy bars
+    document.querySelectorAll('.energy-bar-table').forEach(bar => {
+        bar.addEventListener('mousedown', (e) => {
+            const state = window._detailEnergyDrag;
+            state.isDragging = true;
+            state.currentBar = bar;
+            const row = bar.closest('tr');
+            state.currentTrackId = row.dataset.trackId;
+
+            // Calculate and set initial level
+            const rect = bar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const segmentWidth = rect.width / 5;
+            let level = Math.ceil(x / segmentWidth);
+            level = Math.max(1, Math.min(5, level));
+            bar.setAttribute('data-value', level);
+            e.preventDefault();
         });
     });
 
