@@ -207,3 +207,48 @@ class User(UserMixin, db.Model):
         prefs = dict(self.preferences or {})
         prefs["visible_track_fields"] = fields
         self.preferences = prefs
+
+    # =========================================================================
+    # Backup settings
+    # =========================================================================
+
+    @property
+    def auto_backup_enabled(self) -> bool:
+        """Check if auto-backup is enabled."""
+        prefs = self.preferences or {}
+        return prefs.get("auto_backup_enabled", False)
+
+    @property
+    def backup_path(self) -> str | None:
+        """Get the backup folder path."""
+        prefs = self.preferences or {}
+        return prefs.get("backup_path")
+
+    def update_backup_settings(
+        self,
+        auto_backup_enabled: bool = None,
+        backup_path: str = None,
+    ):
+        """Update backup-related preferences."""
+        prefs = dict(self.preferences or {})
+        if auto_backup_enabled is not None:
+            prefs["auto_backup_enabled"] = auto_backup_enabled
+        if backup_path is not None:
+            prefs["backup_path"] = backup_path
+        self.preferences = prefs
+
+    # =========================================================================
+    # Key notation settings
+    # =========================================================================
+
+    @property
+    def key_notation(self) -> str:
+        """Get the preferred key notation format (camelot, standard, open_key)."""
+        prefs = self.preferences or {}
+        return prefs.get("key_notation", "camelot")
+
+    def update_key_settings(self, key_notation: str):
+        """Update key notation preference."""
+        prefs = dict(self.preferences or {})
+        prefs["key_notation"] = key_notation
+        self.preferences = prefs
