@@ -70,9 +70,12 @@ def start_sync():
     oauth_token_secret = current_user.oauth_token_secret
     personal_token = current_user.personal_token
 
+    # Capture the actual app object (not the proxy) for use in background thread
+    app = current_app._get_current_object()
+
     # Start sync in background thread
     def run_sync():
-        with current_app.app_context():
+        with app.app_context():
             try:
                 service = SyncService(
                     user_id=user_id,
@@ -129,9 +132,12 @@ def resume_sync():
     oauth_token_secret = current_user.oauth_token_secret
     personal_token = current_user.personal_token
 
+    # Capture the actual app object (not the proxy) for use in background thread
+    app = current_app._get_current_object()
+
     # Start sync in background thread
     def run_sync():
-        with current_app.app_context():
+        with app.app_context():
             try:
                 service = SyncService(
                     user_id=user_id,
@@ -263,8 +269,11 @@ def start_inventory_sync():
     # Clear previous status
     _inventory_sync_status[user_id] = {"status": "running", "message": "Starting inventory sync..."}
 
+    # Capture the actual app object (not the proxy) for use in background thread
+    app = current_app._get_current_object()
+
     def run_inventory_sync():
-        with current_app.app_context():
+        with app.app_context():
             try:
                 _inventory_sync_status[user_id] = {
                     "status": "running",
@@ -311,7 +320,7 @@ def start_inventory_sync():
                     "message": f"Rate limited. Please wait {e.retry_after}s and try again.",
                 }
             except Exception as e:
-                current_app.logger.error(f"Inventory sync error: {e}")
+                app.logger.error(f"Inventory sync error: {e}")
                 _inventory_sync_status[user_id] = {
                     "status": "failed",
                     "message": f"Error: {str(e)}",
