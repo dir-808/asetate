@@ -82,16 +82,16 @@
         <div class="sync-actions">
             <button class="btn btn-primary" id="btn-sync"
                 {% if not sync_status.can_sync %}disabled{% endif %}>
-                <span class="btn-spinner" id="btn-sync-spinner"></span>
+                <span class="activity-led" id="btn-sync-spinner"></span>
                 <span class="btn-text" id="btn-sync-text">Pull from Discogs</span>
             </button>
             <button class="btn btn-secondary" id="btn-resume"
                 style="display: {% if sync_status.can_resume %}inline-flex{% else %}none{% endif %};">
-                <span class="btn-spinner"></span><span class="btn-text">Resume Sync</span>
+                <span class="activity-led"></span><span class="btn-text">Resume Sync</span>
             </button>
             <button class="btn btn-secondary" id="btn-cancel"
                 style="display: {% if sync_status.status == 'running' %}inline-flex{% else %}none{% endif %};">
-                <span class="btn-spinner"></span><span class="btn-text">Pause</span>
+                <span class="activity-led"></span><span class="btn-text">Pause</span>
             </button>
         </div>
     </div>
@@ -134,7 +134,7 @@
 
             <div class="sync-actions">
                 <button class="btn btn-primary" id="btn-inventory-sync">
-                    <span class="btn-spinner"></span><span class="btn-text">Sync Inventory</span>
+                    <span class="activity-led"></span><span class="btn-text">Sync Inventory</span>
                 </button>
             </div>
 

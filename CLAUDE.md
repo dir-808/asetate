@@ -112,19 +112,28 @@ Key principles:
 }
 ```
 
-**Sync Buttons (blinking LED for async operations):**
-Buttons that trigger async operations (sync, import, export) should include a `btn-spinner` LED that blinks during loading:
+**Activity LED (blinking indicator for long-running operations):**
+Use `.activity-led` for any button where the user waits for a process to complete. The LED is hidden by default and appears blinking when the button enters a loading state.
+
+**When to use:**
+- Sync operations (collection sync, inventory sync, release sync)
+- Import/export operations
+- Any async action that takes noticeable time
+
+**When NOT to use:**
+- Instant actions (Save, Cancel, Delete)
+- Navigation (handled by nav link `.led` pattern)
 
 ```html
 <button class="btn btn-secondary btn-sm" id="btn-sync">
-    <span class="btn-spinner"></span>
+    <span class="activity-led"></span>
     <span class="btn-text">Sync</span>
 </button>
 ```
 
 ```css
-/* LED spinner - hidden by default, shows when loading */
-.btn-spinner {
+/* Activity LED - hidden by default, shows blinking when loading */
+.activity-led {
     display: none;
     width: 8px;
     height: 8px;
@@ -134,7 +143,7 @@ Buttons that trigger async operations (sync, import, export) should include a `b
     animation: led-blink 0.6s ease-in-out infinite;
 }
 
-.btn.is-loading .btn-spinner {
+.btn.is-loading .activity-led {
     display: inline-block;
 }
 
@@ -144,21 +153,19 @@ Buttons that trigger async operations (sync, import, export) should include a `b
 }
 ```
 
-**JavaScript pattern for sync buttons:**
+**JavaScript pattern:**
 ```javascript
 const btn = document.getElementById('btn-sync');
 const btnText = btn.querySelector('.btn-text');
 
 // Start loading - LED appears and blinks
 btn.classList.add('is-loading');
-btnText.textContent = 'Syncing...';
+btnText.textContent = 'Processing...';
 
 // Stop loading - LED disappears
 btn.classList.remove('is-loading');
 btnText.textContent = 'Sync';
 ```
-
-**When to use blinking LED:** Only for operations that take time and need visual feedback (sync, import, export). Regular action buttons (Save, Cancel, Delete) don't need LEDs.
 
 #### Borders
 - **1px borders only** - consistent thickness throughout

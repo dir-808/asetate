@@ -843,8 +843,13 @@ input::placeholder, textarea::placeholder {
     color: var(--text-secondary);
 }
 
-/* Button loading state - MPC2000 style with blinking LED */
-.btn-spinner {
+/* Activity LED - MPC2000 style blinking indicator for long-running operations
+   Use for any button where user waits for a process to complete:
+   - Sync operations (collection sync, inventory sync, release sync)
+   - Import/export operations
+   - Any async action that takes noticeable time
+   The LED is hidden by default and appears blinking when .is-loading is added */
+.activity-led {
     display: none;
     width: 8px;
     height: 8px;
@@ -854,7 +859,7 @@ input::placeholder, textarea::placeholder {
     animation: led-blink 0.6s ease-in-out infinite;
 }
 
-.btn.is-loading .btn-spinner {
+.btn.is-loading .activity-led {
     display: inline-block;
 }
 
