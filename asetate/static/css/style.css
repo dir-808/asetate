@@ -943,6 +943,18 @@ input::placeholder, textarea::placeholder {
     font-size: 0.8rem;
     color: var(--text-secondary);
     margin-top: var(--space-sm);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.avg-bpm {
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.bpm-varied {
+    color: var(--warning);
+    font-style: italic;
 }
 
 .release-actions {
