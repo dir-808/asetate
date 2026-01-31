@@ -161,12 +161,21 @@
 
 .collection-page {
     flex: 1;
-    transition: padding-right 0.3s ease;
     min-width: 0;
 }
 
+/* Use margin instead of padding to avoid grid reflow during animation */
 body.panel-open .collection-page {
-    padding-right: 460px;
+    margin-right: 460px;
+}
+
+/* Prevent image resize during panel animation */
+.release-card {
+    contain: layout style;
+}
+
+.release-cover img {
+    will-change: auto;
 }
 
 .release-panel {
@@ -341,7 +350,9 @@ function filterByCrate(crateId) {
         try {
             const response = await fetch(`/releases/${releaseId}/panel`);
             if (response.ok) {
-                panelContent.innerHTML = await response.text();
+                const html = await response.text();
+                panelContent.innerHTML = html;
+
                 // Move expand button to header bar
                 const expandBtn = document.getElementById('panel-expand-btn');
                 const expandSlot = document.getElementById('panel-expand-slot');
@@ -349,6 +360,13 @@ function filterByCrate(crateId) {
                     expandBtn.style.display = 'flex';
                     expandSlot.appendChild(expandBtn);
                 }
+
+                // Execute scripts that were loaded with the panel
+                panelContent.querySelectorAll('script').forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = oldScript.textContent;
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
             } else {
                 panelContent.innerHTML = '<div class="panel-error">Failed to load release</div>';
             }
