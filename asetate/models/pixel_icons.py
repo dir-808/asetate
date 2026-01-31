@@ -1,213 +1,190 @@
 """Pixel icon manifest for crate icons.
 
-Uses 1-bit pixel icons from the Nikoichu icon pack (CC0 license).
-Download from: https://nikoichu.itch.io/pixel-icons
+Dynamically scans PNG files from static/icons/ directory and generates
+searchable keywords from filenames.
 
-Place PNG files in: asetate/static/icons/
-Icons are 16x16 pixels, black on transparent background.
+Filename format: Category_Keyword1_Keyword2_..._KeywordN.png
+Example: Alchemy_Element_Fire.png -> keywords: [alchemy, element, fire]
+
+Icons are from various pixel art packs (CC0/public domain).
 """
 
-# Icon manifest: each icon has a filename (without extension) and search keywords
-# Keywords are used for the searchable icon picker
-PIXEL_ICONS = [
-    # Music & Audio
-    {"name": "music", "keywords": ["music", "note", "audio", "sound", "song", "tune"]},
-    {"name": "music-alt", "keywords": ["music", "note", "audio", "sound", "song", "tune", "double"]},
-    {"name": "headphones", "keywords": ["headphones", "audio", "listen", "music", "dj", "monitor"]},
-    {"name": "speaker", "keywords": ["speaker", "audio", "sound", "volume", "loud", "bass"]},
-    {"name": "volume", "keywords": ["volume", "sound", "audio", "speaker", "loud"]},
-    {"name": "volume-mute", "keywords": ["mute", "silent", "quiet", "volume", "off"]},
-    {"name": "microphone", "keywords": ["microphone", "mic", "record", "voice", "vocal", "sing"]},
-    {"name": "radio", "keywords": ["radio", "broadcast", "fm", "am", "station", "tune"]},
+from functools import lru_cache
+from pathlib import Path
 
-    # Playback Controls
-    {"name": "play", "keywords": ["play", "start", "go", "begin", "run"]},
-    {"name": "pause", "keywords": ["pause", "stop", "wait", "hold"]},
-    {"name": "stop", "keywords": ["stop", "end", "halt", "finish"]},
-    {"name": "forward", "keywords": ["forward", "next", "skip", "fast"]},
-    {"name": "backward", "keywords": ["backward", "previous", "rewind", "back"]},
-    {"name": "repeat", "keywords": ["repeat", "loop", "again", "cycle"]},
-    {"name": "shuffle", "keywords": ["shuffle", "random", "mix", "scramble"]},
-
-    # Folders & Organization
-    {"name": "folder", "keywords": ["folder", "directory", "organize", "crate", "box", "container"]},
-    {"name": "folder-open", "keywords": ["folder", "open", "directory", "organize"]},
-    {"name": "folder-plus", "keywords": ["folder", "add", "new", "plus", "create"]},
-    {"name": "archive", "keywords": ["archive", "box", "storage", "crate", "container", "package"]},
-    {"name": "box", "keywords": ["box", "crate", "container", "package", "storage"]},
-    {"name": "inbox", "keywords": ["inbox", "tray", "receive", "incoming"]},
-
-    # Favorites & Ratings
-    {"name": "heart", "keywords": ["heart", "love", "favorite", "like", "fav"]},
-    {"name": "heart-empty", "keywords": ["heart", "love", "favorite", "like", "outline"]},
-    {"name": "star", "keywords": ["star", "favorite", "rating", "best", "top", "featured"]},
-    {"name": "star-empty", "keywords": ["star", "favorite", "rating", "outline"]},
-    {"name": "bookmark", "keywords": ["bookmark", "save", "mark", "flag", "remember"]},
-    {"name": "flag", "keywords": ["flag", "mark", "important", "attention", "notice"]},
-
-    # Energy & Mood
-    {"name": "fire", "keywords": ["fire", "hot", "flame", "trending", "popular", "heat", "burn", "energy"]},
-    {"name": "lightning", "keywords": ["lightning", "bolt", "electric", "energy", "power", "fast", "zap"]},
-    {"name": "sun", "keywords": ["sun", "day", "bright", "light", "summer", "warm", "sunny"]},
-    {"name": "moon", "keywords": ["moon", "night", "dark", "evening", "late", "chill"]},
-    {"name": "cloud", "keywords": ["cloud", "weather", "sky", "dreamy", "soft"]},
-    {"name": "rain", "keywords": ["rain", "weather", "water", "sad", "melancholy", "drops"]},
-    {"name": "snow", "keywords": ["snow", "winter", "cold", "ice", "frozen", "chill"]},
-    {"name": "wind", "keywords": ["wind", "air", "breeze", "flow", "movement"]},
-
-    # Nature & Vibes
-    {"name": "tree", "keywords": ["tree", "nature", "forest", "organic", "green", "wood"]},
-    {"name": "leaf", "keywords": ["leaf", "nature", "plant", "organic", "green", "eco"]},
-    {"name": "flower", "keywords": ["flower", "plant", "nature", "bloom", "spring", "pretty"]},
-    {"name": "mountain", "keywords": ["mountain", "peak", "climb", "high", "epic", "adventure"]},
-    {"name": "wave", "keywords": ["wave", "water", "ocean", "sea", "surf", "beach", "summer"]},
-    {"name": "drop", "keywords": ["drop", "water", "liquid", "rain", "tear", "wet"]},
-
-    # Objects & Items
-    {"name": "diamond", "keywords": ["diamond", "gem", "jewel", "precious", "rare", "valuable", "crystal"]},
-    {"name": "crown", "keywords": ["crown", "king", "queen", "royal", "best", "top", "vip"]},
-    {"name": "trophy", "keywords": ["trophy", "award", "winner", "champion", "prize", "best"]},
-    {"name": "medal", "keywords": ["medal", "award", "achievement", "winner", "prize"]},
-    {"name": "key", "keywords": ["key", "unlock", "access", "secret", "password", "open"]},
-    {"name": "lock", "keywords": ["lock", "secure", "private", "protected", "closed"]},
-    {"name": "gift", "keywords": ["gift", "present", "surprise", "special", "reward"]},
-    {"name": "coin", "keywords": ["coin", "money", "gold", "currency", "cash", "valuable"]},
-    {"name": "gem", "keywords": ["gem", "crystal", "jewel", "precious", "rare"]},
-
-    # Tags & Labels
-    {"name": "tag", "keywords": ["tag", "label", "price", "category", "mark"]},
-    {"name": "label", "keywords": ["label", "tag", "name", "title", "mark"]},
-    {"name": "ticket", "keywords": ["ticket", "pass", "entry", "event", "show", "concert"]},
-
-    # Time & Calendar
-    {"name": "clock", "keywords": ["clock", "time", "hour", "schedule", "watch"]},
-    {"name": "alarm", "keywords": ["alarm", "alert", "wake", "reminder", "time"]},
-    {"name": "calendar", "keywords": ["calendar", "date", "schedule", "event", "plan"]},
-    {"name": "hourglass", "keywords": ["hourglass", "time", "wait", "timer", "sand"]},
-
-    # Communication
-    {"name": "chat", "keywords": ["chat", "message", "talk", "conversation", "comment"]},
-    {"name": "mail", "keywords": ["mail", "email", "letter", "message", "send"]},
-    {"name": "bell", "keywords": ["bell", "notification", "alert", "ring", "alarm"]},
-
-    # Actions
-    {"name": "check", "keywords": ["check", "done", "complete", "yes", "ok", "approved"]},
-    {"name": "cross", "keywords": ["cross", "close", "delete", "remove", "no", "cancel"]},
-    {"name": "plus", "keywords": ["plus", "add", "new", "create", "more"]},
-    {"name": "minus", "keywords": ["minus", "remove", "less", "subtract"]},
-    {"name": "search", "keywords": ["search", "find", "look", "magnify", "zoom"]},
-    {"name": "filter", "keywords": ["filter", "sort", "organize", "refine"]},
-
-    # Arrows & Navigation
-    {"name": "arrow-up", "keywords": ["arrow", "up", "rise", "increase", "upload"]},
-    {"name": "arrow-down", "keywords": ["arrow", "down", "fall", "decrease", "download"]},
-    {"name": "arrow-left", "keywords": ["arrow", "left", "back", "previous"]},
-    {"name": "arrow-right", "keywords": ["arrow", "right", "forward", "next"]},
-
-    # People & Characters
-    {"name": "user", "keywords": ["user", "person", "profile", "account", "human"]},
-    {"name": "users", "keywords": ["users", "people", "group", "team", "community"]},
-    {"name": "skull", "keywords": ["skull", "death", "dark", "danger", "halloween", "spooky", "hardcore"]},
-    {"name": "ghost", "keywords": ["ghost", "spooky", "halloween", "spirit", "haunted"]},
-    {"name": "robot", "keywords": ["robot", "bot", "machine", "ai", "tech", "electronic"]},
-    {"name": "alien", "keywords": ["alien", "space", "ufo", "extraterrestrial", "weird"]},
-
-    # Expressions & Emoji-style
-    {"name": "smile", "keywords": ["smile", "happy", "joy", "good", "positive", "face"]},
-    {"name": "sad", "keywords": ["sad", "unhappy", "frown", "negative", "face"]},
-    {"name": "wink", "keywords": ["wink", "playful", "fun", "cheeky", "face"]},
-    {"name": "cool", "keywords": ["cool", "sunglasses", "awesome", "chill", "face"]},
-    {"name": "angry", "keywords": ["angry", "mad", "rage", "upset", "face"]},
-    {"name": "love-eyes", "keywords": ["love", "heart", "eyes", "crush", "adore", "face"]},
-    {"name": "surprised", "keywords": ["surprised", "wow", "shock", "amazed", "face"]},
-    {"name": "thinking", "keywords": ["thinking", "hmm", "wonder", "ponder", "face"]},
-
-    # Symbols
-    {"name": "circle", "keywords": ["circle", "dot", "round", "shape"]},
-    {"name": "square", "keywords": ["square", "box", "shape", "block"]},
-    {"name": "triangle", "keywords": ["triangle", "shape", "point"]},
-    {"name": "hexagon", "keywords": ["hexagon", "shape", "six", "honeycomb"]},
-    {"name": "infinity", "keywords": ["infinity", "forever", "endless", "loop", "eternal"]},
-    {"name": "yin-yang", "keywords": ["yin", "yang", "balance", "harmony", "zen"]},
-
-    # Tech & Devices
-    {"name": "computer", "keywords": ["computer", "pc", "desktop", "monitor", "screen"]},
-    {"name": "laptop", "keywords": ["laptop", "computer", "portable", "notebook"]},
-    {"name": "phone", "keywords": ["phone", "mobile", "cell", "smartphone", "call"]},
-    {"name": "camera", "keywords": ["camera", "photo", "picture", "image", "snap"]},
-    {"name": "gamepad", "keywords": ["gamepad", "controller", "game", "play", "gaming"]},
-    {"name": "terminal", "keywords": ["terminal", "console", "command", "code", "cli"]},
-    {"name": "chip", "keywords": ["chip", "cpu", "processor", "tech", "electronic"]},
-
-    # Food & Drink
-    {"name": "coffee", "keywords": ["coffee", "drink", "cafe", "morning", "caffeine", "cup"]},
-    {"name": "beer", "keywords": ["beer", "drink", "alcohol", "pub", "bar", "party"]},
-    {"name": "wine", "keywords": ["wine", "drink", "glass", "alcohol", "fancy"]},
-    {"name": "pizza", "keywords": ["pizza", "food", "slice", "party", "snack"]},
-    {"name": "apple", "keywords": ["apple", "fruit", "food", "healthy", "red"]},
-
-    # Animals
-    {"name": "cat", "keywords": ["cat", "pet", "animal", "kitty", "meow"]},
-    {"name": "dog", "keywords": ["dog", "pet", "animal", "puppy", "woof"]},
-    {"name": "bird", "keywords": ["bird", "animal", "fly", "tweet", "chirp"]},
-    {"name": "fish", "keywords": ["fish", "animal", "water", "sea", "swim"]},
-    {"name": "bug", "keywords": ["bug", "insect", "beetle", "creature"]},
-    {"name": "spider", "keywords": ["spider", "web", "insect", "creepy", "halloween"]},
-    {"name": "bat", "keywords": ["bat", "animal", "night", "vampire", "halloween", "fly"]},
-
-    # Places & Buildings
-    {"name": "home", "keywords": ["home", "house", "building", "residence", "place"]},
-    {"name": "building", "keywords": ["building", "office", "city", "urban", "tower"]},
-    {"name": "factory", "keywords": ["factory", "industrial", "manufacture", "production"]},
-    {"name": "castle", "keywords": ["castle", "fortress", "medieval", "kingdom", "royal"]},
-    {"name": "church", "keywords": ["church", "religion", "building", "worship"]},
-
-    # Transport
-    {"name": "car", "keywords": ["car", "vehicle", "drive", "auto", "transport"]},
-    {"name": "plane", "keywords": ["plane", "airplane", "fly", "travel", "flight"]},
-    {"name": "rocket", "keywords": ["rocket", "space", "launch", "blast", "fast"]},
-    {"name": "ship", "keywords": ["ship", "boat", "sea", "sail", "ocean"]},
-    {"name": "bicycle", "keywords": ["bicycle", "bike", "cycle", "ride", "pedal"]},
-
-    # Gaming & RPG
-    {"name": "sword", "keywords": ["sword", "weapon", "fight", "battle", "rpg", "warrior"]},
-    {"name": "shield", "keywords": ["shield", "defense", "protect", "armor", "rpg"]},
-    {"name": "axe", "keywords": ["axe", "weapon", "chop", "viking", "warrior"]},
-    {"name": "bow", "keywords": ["bow", "arrow", "weapon", "archer", "hunt"]},
-    {"name": "wand", "keywords": ["wand", "magic", "wizard", "spell", "fantasy"]},
-    {"name": "potion", "keywords": ["potion", "magic", "drink", "elixir", "rpg", "health"]},
-    {"name": "scroll", "keywords": ["scroll", "paper", "magic", "spell", "ancient"]},
-    {"name": "chest", "keywords": ["chest", "treasure", "loot", "storage", "rpg", "gold"]},
-    {"name": "dice", "keywords": ["dice", "game", "random", "chance", "roll", "tabletop"]},
-
-    # Misc
-    {"name": "lightbulb", "keywords": ["lightbulb", "idea", "bright", "think", "creative", "light"]},
-    {"name": "wrench", "keywords": ["wrench", "tool", "fix", "repair", "settings"]},
-    {"name": "gear", "keywords": ["gear", "settings", "cog", "configure", "options"]},
-    {"name": "hammer", "keywords": ["hammer", "tool", "build", "construct", "work"]},
-    {"name": "paint", "keywords": ["paint", "art", "brush", "color", "creative"]},
-    {"name": "palette", "keywords": ["palette", "art", "color", "paint", "creative"]},
-    {"name": "book", "keywords": ["book", "read", "library", "knowledge", "learn"]},
-    {"name": "newspaper", "keywords": ["newspaper", "news", "article", "press", "media"]},
-    {"name": "globe", "keywords": ["globe", "world", "earth", "international", "global"]},
-    {"name": "map", "keywords": ["map", "location", "navigate", "travel", "direction"]},
-    {"name": "pin", "keywords": ["pin", "location", "marker", "map", "place"]},
-    {"name": "eye", "keywords": ["eye", "see", "view", "watch", "look", "vision"]},
-    {"name": "hand", "keywords": ["hand", "point", "finger", "gesture", "touch"]},
-    {"name": "thumbs-up", "keywords": ["thumbs", "up", "like", "good", "approve", "yes"]},
-    {"name": "thumbs-down", "keywords": ["thumbs", "down", "dislike", "bad", "reject", "no"]},
-    {"name": "peace", "keywords": ["peace", "victory", "two", "fingers", "sign"]},
-    {"name": "fist", "keywords": ["fist", "punch", "power", "fight", "strong"]},
-]
-
-# Quick lookup by icon name
-PIXEL_ICON_MAP = {icon["name"]: icon for icon in PIXEL_ICONS}
-
-# All icon names for validation
-PIXEL_ICON_NAMES = [icon["name"] for icon in PIXEL_ICONS]
+# Path to icons directory (relative to this file)
+ICONS_DIR = Path(__file__).parent.parent / "static" / "icons"
 
 # Default icon when none selected
-DEFAULT_ICON = "folder"
+DEFAULT_ICON = "Software_File_Folder_Directory_Explorer"
+
+# Common word expansions for better search
+KEYWORD_EXPANSIONS = {
+    "sw": ["southwest"],
+    "se": ["southeast"],
+    "nw": ["northwest"],
+    "ne": ["northeast"],
+    "n": ["north"],
+    "s": ["south"],
+    "e": ["east"],
+    "w": ["west"],
+    "ui": ["interface", "user interface"],
+    "rpg": ["game", "gaming", "role playing"],
+    "dj": ["music", "vinyl", "turntable"],
+    "fx": ["effects", "special effects"],
+    "hp": ["health", "hitpoints"],
+    "mp": ["mana", "magic points"],
+    "xp": ["experience"],
+    "ai": ["artificial intelligence"],
+    "pc": ["computer", "personal computer"],
+    "tv": ["television"],
+    "cd": ["compact disc", "disc"],
+    "dvd": ["disc", "video"],
+    "usb": ["drive", "storage"],
+    "hdd": ["hard drive", "storage"],
+    "ssd": ["solid state", "storage"],
+    "wifi": ["wireless", "internet", "network"],
+    "lan": ["network", "ethernet"],
+    "vpn": ["network", "secure"],
+    "pdf": ["document", "file"],
+    "jpg": ["image", "photo"],
+    "png": ["image", "picture"],
+    "gif": ["animation", "image"],
+    "mp3": ["audio", "music"],
+    "wav": ["audio", "sound"],
+    "avi": ["video", "movie"],
+    "zip": ["archive", "compressed"],
+    "exe": ["program", "application"],
+    "dll": ["library", "system"],
+    "ios": ["apple", "iphone", "mobile"],
+    "macos": ["apple", "mac", "computer"],
+    "ipados": ["apple", "ipad", "tablet"],
+    "ok": ["okay", "confirm", "yes"],
+}
+
+# Synonyms to add as extra keywords
+CATEGORY_SYNONYMS = {
+    "alchemy": ["magic", "potion", "mystical", "fantasy"],
+    "arrows": ["direction", "navigation", "pointer"],
+    "boardgames": ["game", "tabletop", "board"],
+    "controller": ["gamepad", "gaming", "button", "input"],
+    "cosmetics": ["beauty", "makeup", "fashion"],
+    "emoji": ["face", "emotion", "expression", "smiley"],
+    "food": ["eat", "drink", "meal", "snack"],
+    "hats": ["headwear", "fashion", "accessory"],
+    "map": ["location", "navigation", "place", "marker"],
+    "media": ["audio", "video", "music", "sound"],
+    "misc": ["miscellaneous", "other", "various"],
+    "platforms": ["brand", "logo", "social", "app"],
+    "rpg": ["game", "fantasy", "adventure", "item", "weapon"],
+    "software": ["app", "application", "program", "computer"],
+    "sports": ["athletics", "exercise", "fitness", "game"],
+    "tools": ["utility", "work", "equipment", "hardware"],
+    "travel": ["transport", "vehicle", "journey", "trip"],
+    "warfare": ["military", "weapon", "combat", "battle"],
+    "weather": ["climate", "sky", "nature", "forecast"],
+}
+
+
+def _parse_filename(filename: str) -> dict:
+    """Parse an icon filename into name and keywords.
+
+    Args:
+        filename: The PNG filename (e.g., "Alchemy_Element_Fire.png")
+
+    Returns:
+        Dict with 'name' (without extension) and 'keywords' list
+    """
+    # Remove .png extension
+    name = filename[:-4] if filename.endswith(".png") else filename
+
+    # Split on underscores
+    parts = name.split("_")
+
+    # Build keywords from parts (lowercase)
+    keywords = []
+    for part in parts:
+        lower_part = part.lower()
+        keywords.append(lower_part)
+
+        # Add expansions if available
+        if lower_part in KEYWORD_EXPANSIONS:
+            keywords.extend(KEYWORD_EXPANSIONS[lower_part])
+
+    # Add category synonyms
+    if parts and parts[0].lower() in CATEGORY_SYNONYMS:
+        keywords.extend(CATEGORY_SYNONYMS[parts[0].lower()])
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique_keywords = []
+    for kw in keywords:
+        if kw not in seen:
+            seen.add(kw)
+            unique_keywords.append(kw)
+
+    return {
+        "name": name,
+        "keywords": unique_keywords,
+    }
+
+
+@lru_cache(maxsize=1)
+def _scan_icons_directory() -> list[dict]:
+    """Scan the icons directory and build the icon manifest.
+
+    Returns:
+        List of icon dicts with 'name' and 'keywords'
+    """
+    icons = []
+
+    if not ICONS_DIR.exists():
+        return icons
+
+    for filepath in sorted(ICONS_DIR.glob("*.png")):
+        icon = _parse_filename(filepath.name)
+        icons.append(icon)
+
+    return icons
+
+
+def get_all_icons() -> list[dict]:
+    """Get all available icons.
+
+    Returns:
+        List of icon dicts with 'name' and 'keywords'
+    """
+    return _scan_icons_directory()
+
+
+# For backwards compatibility - lazy loaded
+@property
+def _pixel_icons():
+    return get_all_icons()
+
+
+# Module-level access (computed on first access)
+PIXEL_ICONS = None
+
+
+def _ensure_loaded():
+    """Ensure PIXEL_ICONS is loaded."""
+    global PIXEL_ICONS
+    if PIXEL_ICONS is None:
+        PIXEL_ICONS = get_all_icons()
+
+
+# Quick lookup by icon name (lazy loaded)
+_PIXEL_ICON_MAP = None
+
+
+def get_icon_map() -> dict:
+    """Get the icon name -> icon dict mapping."""
+    global _PIXEL_ICON_MAP
+    if _PIXEL_ICON_MAP is None:
+        _ensure_loaded()
+        _PIXEL_ICON_MAP = {icon["name"]: icon for icon in PIXEL_ICONS}
+    return _PIXEL_ICON_MAP
 
 
 def search_icons(query: str, limit: int = 50) -> list[dict]:
@@ -220,25 +197,40 @@ def search_icons(query: str, limit: int = 50) -> list[dict]:
     Returns:
         List of matching icon dictionaries
     """
+    _ensure_loaded()
+
     if not query:
         return PIXEL_ICONS[:limit]
 
     query = query.lower().strip()
+    query_parts = query.split()
     results = []
 
     for icon in PIXEL_ICONS:
-        # Check if query matches name
-        if query in icon["name"].lower():
-            results.append(icon)
-            continue
+        # Check if all query parts match somewhere
+        matches_all = True
+        for part in query_parts:
+            found = False
+            # Check name
+            if part in icon["name"].lower():
+                found = True
+            else:
+                # Check keywords
+                for keyword in icon["keywords"]:
+                    if part in keyword:
+                        found = True
+                        break
 
-        # Check if query matches any keyword
-        for keyword in icon["keywords"]:
-            if query in keyword.lower():
-                results.append(icon)
+            if not found:
+                matches_all = False
                 break
 
-    return results[:limit]
+        if matches_all:
+            results.append(icon)
+            if len(results) >= limit:
+                break
+
+    return results
 
 
 def get_icon_url(icon_name: str) -> str:
@@ -260,6 +252,50 @@ def is_valid_icon(icon_name: str) -> bool:
         icon_name: The icon name to validate
 
     Returns:
-        True if the icon exists in the manifest
+        True if the icon exists
     """
-    return icon_name in PIXEL_ICON_MAP
+    icon_map = get_icon_map()
+    return icon_name in icon_map
+
+
+def get_categories() -> list[str]:
+    """Get all unique icon categories.
+
+    Returns:
+        Sorted list of category names
+    """
+    _ensure_loaded()
+    categories = set()
+    for icon in PIXEL_ICONS:
+        # First part of name is category
+        parts = icon["name"].split("_")
+        if parts:
+            categories.add(parts[0])
+    return sorted(categories)
+
+
+def get_icons_by_category(category: str, limit: int = 100) -> list[dict]:
+    """Get icons filtered by category.
+
+    Args:
+        category: Category name (e.g., "Alchemy", "Software")
+        limit: Maximum results
+
+    Returns:
+        List of icons in that category
+    """
+    _ensure_loaded()
+    results = []
+    category_lower = category.lower()
+
+    for icon in PIXEL_ICONS:
+        if icon["name"].lower().startswith(category_lower + "_"):
+            results.append(icon)
+            if len(results) >= limit:
+                break
+
+    return results
+
+
+# Initialize on module load for backwards compatibility
+_ensure_loaded()

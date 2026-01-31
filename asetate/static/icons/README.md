@@ -1,58 +1,80 @@
 # Pixel Icons for Asetate
 
-This directory contains pixel icons used for crate icons throughout the application.
+This directory contains 1,476 pixel icons used for crate icons throughout the application.
 
-## Required Icon Pack
+## Icon Source
 
 **1-bit Pixel Icons by Nikoichu**
 - License: CC0 (Public Domain)
 - Download: https://nikoichu.itch.io/pixel-icons
 - Icons: 1,400+ 16x16 pixel icons
 
-## Installation
+## Categories
 
-1. Download the icon pack from [itch.io](https://nikoichu.itch.io/pixel-icons)
-2. Extract the downloaded archive
-3. Navigate to the `Sprites` or `Sprites-Cropped` folder
-4. Copy the PNG files you need into this directory (`asetate/static/icons/`)
+Icons are organized by category prefix:
 
-### Required Icons
+| Category | Count | Examples |
+|----------|-------|----------|
+| Software | 176 | Folders, files, UI elements |
+| Tools | 162 | Hammer, wrench, gear |
+| RPG | 132 | Weapons, potions, items |
+| Platforms | 127 | Brand logos, social media |
+| Travel | 109 | Vehicles, landmarks |
+| Boardgames | 108 | Cards, dice, tokens |
+| Controller | 90 | Gamepad buttons |
+| Map | 88 | Markers, flags, locations |
+| Media | 84 | Play, pause, audio controls |
+| Alchemy | 56 | Elements, zodiac, potions |
+| Hats | 48 | Headwear styles |
+| Sports | 44 | Balls, equipment |
+| Food | 43 | Drinks, meals, snacks |
+| Arrows | 43 | Directions, pointers |
+| Misc | 40 | Various icons |
+| Warfare | 38 | Weapons, military |
+| Cosmetics | 34 | Beauty, makeup |
+| Weather | 30 | Sun, rain, clouds |
+| Emoji | 24 | Face expressions |
 
-The application expects the following icon files (at minimum):
+## Icon Naming Convention
 
-**Essential:**
-- `folder.png` (default icon)
-- `music.png`
-- `heart.png`
-- `star.png`
-- `fire.png`
+Icons follow this naming pattern:
+```
+Category_Keyword1_Keyword2_..._KeywordN.png
+```
 
-**Recommended (for full icon picker):**
-See the icon manifest in `asetate/models/pixel_icons.py` for the complete list of expected icons.
+Examples:
+- `Alchemy_Element_Fire.png`
+- `Software_File_Folder_Directory_Explorer.png`
+- `RPG_Item_Weapon_Sword_Knight.png`
 
-## Icon Naming
+## Auto-Discovery
 
-Icons should be named in lowercase with hyphens for multi-word names:
-- `music.png`
-- `folder-open.png`
-- `arrow-up.png`
+Icons are automatically discovered by scanning this directory. The filename is parsed to generate searchable keywords:
+
+1. The filename (without `.png`) becomes the icon name
+2. Each underscore-separated word becomes a keyword
+3. Category synonyms are added automatically (e.g., "RPG" adds "game", "fantasy")
+4. Common abbreviations are expanded (e.g., "UI" adds "interface")
+
+No manual icon manifest is required - just add PNG files and they become searchable.
 
 ## Icon Format
 
-- Size: 16x16 pixels (will be scaled up with `image-rendering: pixelated`)
+- Size: 16x16 pixels (scaled up with `image-rendering: pixelated`)
 - Format: PNG with transparency
-- Color: Black pixels on transparent background (icons are inverted via CSS)
+- Color: Black pixels on transparent background (inverted via CSS)
 
 ## Adding Custom Icons
 
 1. Create a 16x16 pixel PNG with black pixels on transparent background
-2. Add the file to this directory
-3. Add an entry to `PIXEL_ICONS` in `asetate/models/pixel_icons.py` with name and keywords
+2. Name it following the convention: `Category_Keywords.png`
+3. Add it to this directory
+4. The icon is automatically available in the picker
 
-Example:
-```python
-{"name": "my-icon", "keywords": ["custom", "my", "icon"]},
-```
+## Default Icon
+
+The default icon (when none selected) is:
+`Software_File_Folder_Directory_Explorer.png`
 
 ## License
 
