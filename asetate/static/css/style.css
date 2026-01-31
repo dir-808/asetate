@@ -4734,11 +4734,10 @@ body.panel-open .collection-page {
     opacity: 0.7;
 }
 
-/* Playable tracks (not dimmed) get orange borders */
+/* Playable tracks (not dimmed) get orange left/right borders */
 .panel-track-row:not(.track-dimmed) {
     border-left-color: rgba(249, 115, 22, 0.4);
     border-right-color: rgba(249, 115, 22, 0.4);
-    border-bottom-color: rgba(249, 115, 22, 0.4);
     background-color: rgba(249, 115, 22, 0.03);
 }
 
@@ -4749,6 +4748,11 @@ body.panel-open .collection-page {
 
 /* Non-playable followed by playable: orange bottom = top edge of playable section */
 .panel-track-row.track-dimmed:has(+ .panel-track-row:not(.track-dimmed)) {
+    border-bottom-color: rgba(249, 115, 22, 0.4);
+}
+
+/* Last playable in group gets orange bottom border */
+.panel-track-row:not(.track-dimmed):not(:has(+ .panel-track-row:not(.track-dimmed))) {
     border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
