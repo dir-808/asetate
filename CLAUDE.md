@@ -27,6 +27,8 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 ## CSS Architecture
 
+> ⚠️ **MANDATORY**: When making ANY CSS changes, ALWAYS check if the component exists in style.css first. If it does, modify it there - NEVER duplicate styles in templates. This ensures visual consistency across detail page, sidebar panel, and all other views.
+
 ### File Structure
 - **`static/css/style.css`** - Single source of truth for all CSS
 - Templates may have `<style>` blocks for **page-specific layout only** (never for shared components)
@@ -58,6 +60,15 @@ These components are used across multiple pages. **Always modify in style.css, n
 - Any component used in 2+ places
 - All visual patterns (colors, borders, hover states)
 - All shared behaviors (playable highlighting, energy bar colors)
+
+### Checklist for CSS Changes
+Before modifying any CSS:
+1. **Search style.css** for the class name - does it exist there?
+2. **If yes** → modify in style.css (changes apply everywhere automatically)
+3. **If no** → is this component used in multiple templates?
+   - **Yes** → add to style.css "SHARED COMPONENTS" section
+   - **No** → add to template's `<style>` block with `/* NOTE: page-specific */` comment
+4. **Never** copy-paste styles between templates
 
 ---
 
