@@ -52,38 +52,32 @@
                 {% endif %}
             </div>
             <div class="release-actions">
-                <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                    View on Discogs
-                </a>
-                {% if release.discogs_edit_url %}
-                <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                    Suggest Edit
-                </a>
-                {% endif %}
-                <div class="crate-dropdown-wrapper">
-                    <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Crate ▾</button>
-                    <div class="crate-dropdown" id="crate-dropdown" style="display: none;">
-                        <div class="crate-dropdown-list" id="crate-dropdown-list">
-                            <!-- Crates loaded via JS -->
+                <div class="action-group discogs-actions">
+                    <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View</a>
+                    {% if release.discogs_edit_url %}
+                    <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Edit</a>
+                    {% endif %}
+                    <button class="btn btn-secondary btn-sm" id="btn-sync-release" title="Sync from Discogs">Sync</button>
+                </div>
+                <div class="action-group asetate-actions">
+                    <div class="crate-dropdown-wrapper">
+                        <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Crate ▾</button>
+                        <div class="crate-dropdown" id="crate-dropdown" style="display: none;">
+                            <div class="crate-dropdown-list" id="crate-dropdown-list">
+                                <!-- Crates loaded via JS -->
+                            </div>
                         </div>
                     </div>
+                    <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to print cue">Print cue</button>
                 </div>
-                <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to print cue">Add to print cue</button>
             </div>
             <div class="release-crates" id="release-crates">
                 <!-- Crates will be loaded via JS -->
             </div>
         </div>
         <!-- Release Notes (right side) -->
-        <div class="release-notes-panel">
-            <div class="release-notes-header">
-                <h3>Notes</h3>
-                <span class="notes-save-indicator" id="notes-save-indicator"></span>
-            </div>
-            <div class="release-notes-content" id="release-notes-content">
-                <textarea id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
-            </div>
-        </div>
+        <textarea class="release-notes-simple" id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
+        <span class="notes-save-indicator" id="notes-save-indicator"></span>
     </header>
 
     <section class="tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
@@ -369,72 +363,69 @@
     align-items: start;
 }
 
-/* Release Notes Panel (right side of header) - same height as cover */
-.release-notes-panel {
-    width: 350px;
-    height: 250px;
-    background: var(--bg-surface);
-    border: 2px solid var(--border);
-    padding: var(--space-md);
+/* Action groups - Discogs vs Asetate */
+.release-actions {
     display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-}
-
-.release-notes-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-md);
     margin-bottom: var(--space-sm);
-    padding-bottom: var(--space-xs);
-    border-bottom: 1px solid var(--border);
 }
 
-.release-notes-header h3 {
-    margin: 0;
+.action-group {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.action-group.discogs-actions {
+    padding-right: var(--space-md);
+    border-right: 1px solid var(--border);
+}
+
+/* Crate dropdown wrapper - ensure same height as buttons */
+.crate-dropdown-wrapper {
+    display: inline-flex;
+    align-items: stretch;
+}
+
+.crate-dropdown-wrapper .btn {
+    display: flex;
+    align-items: center;
+}
+
+/* Simple release notes - just a textarea */
+.release-notes-simple {
+    width: 400px;
+    height: 250px;
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: inherit;
     font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-secondary);
+    line-height: 1.5;
+    resize: none;
+}
+
+.release-notes-simple:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.release-notes-simple::placeholder {
+    color: var(--text-muted);
 }
 
 .notes-save-indicator {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
     font-size: 0.7rem;
 }
 
 .notes-save-indicator.saving { color: var(--warning); }
 .notes-save-indicator.saved { color: var(--success); }
 .notes-save-indicator.error { color: var(--error); }
-
-.release-notes-content {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-}
-
-#release-notes-inline {
-    width: 100%;
-    flex: 1;
-    padding: var(--space-sm);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-input);
-    resize: none;
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    resize: vertical;
-}
-
-#release-notes-inline:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-#release-notes-inline::placeholder {
-    color: var(--text-muted);
-}
 
 /* Notes modal textarea */
 #release-notes-textarea,
@@ -869,6 +860,41 @@
 
     // Load crates on page load
     loadCrates();
+
+    // Sync release button
+    const syncBtn = document.getElementById('btn-sync-release');
+    if (syncBtn) {
+        syncBtn.addEventListener('click', async () => {
+            syncBtn.disabled = true;
+            syncBtn.textContent = 'Syncing...';
+
+            try {
+                const response = await fetch(`/sync/inventory/release/${releaseId}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    syncBtn.textContent = 'Synced!';
+                    setTimeout(() => {
+                        syncBtn.textContent = 'Sync';
+                        syncBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    syncBtn.textContent = 'Error';
+                    setTimeout(() => {
+                        syncBtn.textContent = 'Sync';
+                        syncBtn.disabled = false;
+                    }, 2000);
+                }
+            } catch (err) {
+                syncBtn.textContent = 'Error';
+                setTimeout(() => {
+                    syncBtn.textContent = 'Sync';
+                    syncBtn.disabled = false;
+                }, 2000);
+            }
+        });
+    }
 
     // Tag management
     let allTags = [];

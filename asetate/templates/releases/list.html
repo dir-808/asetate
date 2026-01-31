@@ -153,7 +153,7 @@
 
 {% block scripts %}
 <style>
-/* Sidebar push content behavior */
+/* Sidebar overlay behavior - no content push */
 .collection-layout {
     display: flex;
     position: relative;
@@ -164,20 +164,7 @@
     min-width: 0;
 }
 
-/* Use margin instead of padding to avoid grid reflow during animation */
-body.panel-open .collection-page {
-    margin-right: 460px;
-}
-
-/* Prevent image resize during panel animation */
-.release-card {
-    contain: layout style;
-}
-
-.release-cover img {
-    will-change: auto;
-}
-
+/* Panel overlays content - no reflow */
 .release-panel {
     position: fixed;
     top: 0;
@@ -187,11 +174,12 @@ body.panel-open .collection-page {
     background-color: var(--bg-surface);
     border-left: 2px solid var(--border);
     transform: translateX(100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.25s ease-out;
     z-index: 900;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
 }
 
 .release-panel.open {
@@ -218,11 +206,6 @@ body.panel-open .collection-page {
     overflow-x: hidden;
 }
 
-@media (max-width: 1200px) {
-    body.panel-open .collection-page {
-        padding-right: 0;
-    }
-}
 
 /* Crate icons on release cards */
 .release-crate-icons {
@@ -334,7 +317,6 @@ function filterByCrate(crateId) {
 
         currentReleaseId = releaseId;
         panel.classList.add('open');
-        document.body.classList.add('panel-open');
         panelContent.innerHTML = '<div class="panel-loading"><span>Loading...</span></div>';
 
         // Update URL without full navigation
@@ -378,7 +360,6 @@ function filterByCrate(crateId) {
     // Close panel
     function closePanel() {
         panel.classList.remove('open');
-        document.body.classList.remove('panel-open');
         currentReleaseId = null;
 
         // Remove release param from URL
