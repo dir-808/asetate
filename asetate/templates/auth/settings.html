@@ -142,20 +142,22 @@
         </div>
 
         <!-- Auto-backup settings -->
-        <div class="auto-backup-section" style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border);">
-            <h3 style="font-size: 0.9rem; margin-bottom: var(--space-sm);">Auto-Backup</h3>
+        <div class="auto-backup-section">
+            <h3>Auto-Backup</h3>
             <form action="{{ url_for('auth.save_backup_settings') }}" method="POST" class="auto-backup-form">
-                <div class="form-check">
-                    <input type="checkbox"
-                           id="auto_backup_enabled"
-                           name="auto_backup_enabled"
-                           class="form-check-input"
-                           {% if current_user.auto_backup_enabled %}checked{% endif %}>
-                    <label for="auto_backup_enabled" class="form-check-label">
+                <label class="toggle-setting">
+                    <span class="toggle-setting-text">
                         <strong>Enable automatic backups</strong>
                         <span class="text-muted">Automatically save a backup after each sync</span>
+                    </span>
+                    <label class="toggle">
+                        <input type="checkbox"
+                               id="auto_backup_enabled"
+                               name="auto_backup_enabled"
+                               {% if current_user.auto_backup_enabled %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
                     </label>
-                </div>
+                </label>
                 <div class="form-group auto-backup-path" {% if not current_user.auto_backup_enabled %}style="display: none;"{% endif %}>
                     <label for="backup_path">Backup folder path</label>
                     <input type="text"
@@ -166,7 +168,7 @@
                            placeholder="/path/to/backups or ~/Dropbox/Asetate">
                     <small class="text-muted">Leave empty to use the default location</small>
                 </div>
-                <button type="submit" class="btn btn-secondary btn-sm" style="margin-top: var(--space-sm);">Save Backup Settings</button>
+                <button type="submit" class="btn btn-secondary btn-sm">Save Backup Settings</button>
             </form>
         </div>
 
@@ -391,6 +393,18 @@
 }
 
 /* Auto-backup section */
+.auto-backup-section {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+}
+.auto-backup-section h3 {
+    font-size: 0.9rem;
+    margin-bottom: var(--space-sm);
+}
+.auto-backup-form .form-check {
+    margin-bottom: var(--space-md);
+}
 .auto-backup-form .form-group {
     margin-top: var(--space-md);
 }
@@ -403,6 +417,34 @@
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+.auto-backup-form label[for="backup_path"] {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+}
+.auto-backup-form small {
+    display: block;
+    margin-top: var(--space-xs);
+}
+
+/* Toggle setting row - label with toggle on right */
+.toggle-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    cursor: pointer;
+    max-width: 500px;
+}
+.toggle-setting-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.toggle-setting-text .text-muted {
     font-size: 0.85rem;
 }
 </style>

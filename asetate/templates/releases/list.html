@@ -152,6 +152,48 @@
 
 {% block scripts %}
 <style>
+/* Sidebar push content behavior */
+.collection-layout {
+    display: flex;
+    position: relative;
+}
+
+.collection-page {
+    flex: 1;
+    transition: padding-right 0.3s ease;
+    min-width: 0;
+}
+
+body.panel-open .collection-page {
+    padding-right: 460px;
+}
+
+.release-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 450px;
+    height: 100vh;
+    background-color: var(--bg-surface);
+    border-left: 2px solid var(--border);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.release-panel.open {
+    transform: translateX(0);
+}
+
+@media (max-width: 1200px) {
+    body.panel-open .collection-page {
+        padding-right: 0;
+    }
+}
+
 /* Crate icons on release cards */
 .release-crate-icons {
     position: absolute;
