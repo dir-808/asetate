@@ -57,7 +57,7 @@
                     {% if release.discogs_edit_url %}
                     <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Edit</a>
                     {% endif %}
-                    <button class="btn btn-secondary btn-sm" id="btn-sync-release" title="Sync from Discogs">Sync</button>
+                    <button class="btn btn-secondary btn-sm" id="btn-sync-release" title="Sync from Discogs"><span class="btn-spinner"></span><span class="btn-text">Sync</span></button>
                 </div>
                 <div class="action-group asetate-actions">
                     <div class="crate-dropdown-wrapper">
@@ -594,9 +594,11 @@
     // Sync release button
     const syncBtn = document.getElementById('btn-sync-release');
     if (syncBtn) {
+        const syncBtnText = syncBtn.querySelector('.btn-text');
         syncBtn.addEventListener('click', async () => {
             syncBtn.disabled = true;
-            syncBtn.textContent = 'Syncing...';
+            syncBtn.classList.add('is-loading');
+            syncBtnText.textContent = 'Syncing...';
 
             try {
                 const response = await fetch(`/sync/release/${releaseId}`, {
@@ -607,16 +609,18 @@
                     // Reload the page to show updated data
                     window.location.reload();
                 } else {
-                    syncBtn.textContent = 'Error';
+                    syncBtn.classList.remove('is-loading');
+                    syncBtnText.textContent = 'Error';
                     setTimeout(() => {
-                        syncBtn.textContent = 'Sync';
+                        syncBtnText.textContent = 'Sync';
                         syncBtn.disabled = false;
                     }, 2000);
                 }
             } catch (err) {
-                syncBtn.textContent = 'Error';
+                syncBtn.classList.remove('is-loading');
+                syncBtnText.textContent = 'Error';
                 setTimeout(() => {
-                    syncBtn.textContent = 'Sync';
+                    syncBtnText.textContent = 'Sync';
                     syncBtn.disabled = false;
                 }, 2000);
             }

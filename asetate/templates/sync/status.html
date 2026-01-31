@@ -87,11 +87,11 @@
             </button>
             <button class="btn btn-secondary" id="btn-resume"
                 style="display: {% if sync_status.can_resume %}inline-flex{% else %}none{% endif %};">
-                Resume Sync
+                <span class="btn-spinner"></span><span class="btn-text">Resume Sync</span>
             </button>
             <button class="btn btn-secondary" id="btn-cancel"
                 style="display: {% if sync_status.status == 'running' %}inline-flex{% else %}none{% endif %};">
-                Pause
+                <span class="btn-spinner"></span><span class="btn-text">Pause</span>
             </button>
         </div>
     </div>
@@ -134,7 +134,7 @@
 
             <div class="sync-actions">
                 <button class="btn btn-primary" id="btn-inventory-sync">
-                    Sync Inventory
+                    <span class="btn-spinner"></span><span class="btn-text">Sync Inventory</span>
                 </button>
             </div>
 
@@ -388,29 +388,34 @@
     function updateInventoryUI(status) {
         invStatSynced.textContent = status.items_synced || 0;
         invStatLastSync.textContent = formatDate(status.last_sync);
+        const btnText = btnInventorySync.querySelector('.btn-text');
 
         if (status.is_running) {
             invStatusIndicator.className = 'status-indicator status-running';
             invStatusText.textContent = status.message || 'Syncing...';
             btnInventorySync.disabled = true;
-            btnInventorySync.textContent = 'Syncing...';
+            btnInventorySync.classList.add('is-loading');
+            if (btnText) btnText.textContent = 'Syncing...';
         } else if (status.status === 'completed') {
             invStatusIndicator.className = 'status-indicator status-completed';
             invStatusText.textContent = status.message || 'Sync complete';
             btnInventorySync.disabled = false;
-            btnInventorySync.textContent = 'Sync Inventory';
+            btnInventorySync.classList.remove('is-loading');
+            if (btnText) btnText.textContent = 'Sync Inventory';
             // Refresh notifications after sync completes
             fetchNotifications();
         } else if (status.status === 'failed') {
             invStatusIndicator.className = 'status-indicator status-failed';
             invStatusText.textContent = status.message || 'Sync failed';
             btnInventorySync.disabled = false;
-            btnInventorySync.textContent = 'Sync Inventory';
+            btnInventorySync.classList.remove('is-loading');
+            if (btnText) btnText.textContent = 'Sync Inventory';
         } else {
             invStatusIndicator.className = 'status-indicator';
             invStatusText.textContent = 'Ready to sync inventory';
             btnInventorySync.disabled = false;
-            btnInventorySync.textContent = 'Sync Inventory';
+            btnInventorySync.classList.remove('is-loading');
+            if (btnText) btnText.textContent = 'Sync Inventory';
         }
 
         // Start/stop polling
@@ -444,8 +449,10 @@
     }
 
     async function startInventorySync() {
+        const btnText = btnInventorySync.querySelector('.btn-text');
         btnInventorySync.disabled = true;
-        btnInventorySync.textContent = 'Starting...';
+        btnInventorySync.classList.add('is-loading');
+        if (btnText) btnText.textContent = 'Starting...';
 
         try {
             const response = await fetch('/sync/inventory/start', { method: 'POST' });
@@ -457,12 +464,14 @@
             } else {
                 alert(result.error || 'Failed to start inventory sync');
                 btnInventorySync.disabled = false;
-                btnInventorySync.textContent = 'Sync Inventory';
+                btnInventorySync.classList.remove('is-loading');
+                if (btnText) btnText.textContent = 'Sync Inventory';
             }
         } catch (err) {
             alert('Failed to start inventory sync: ' + err.message);
             btnInventorySync.disabled = false;
-            btnInventorySync.textContent = 'Sync Inventory';
+            btnInventorySync.classList.remove('is-loading');
+            if (btnText) btnText.textContent = 'Sync Inventory';
         }
     }
 

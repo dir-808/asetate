@@ -121,9 +121,11 @@ a:hover {
     gap: var(--space-sm);
 }
 
-/* Chunky rectangular nav buttons */
+/* Chunky rectangular nav buttons with LED indicator */
 .nav-links a {
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 0.75rem;
@@ -136,29 +138,29 @@ a:hover {
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+/* LED indicator inside nav link */
+.nav-links a .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 50%; /* LED dots are round - mimics hardware */
+    transition: background-color 0.15s ease;
+}
+
 .nav-links a:hover {
     color: var(--text-primary);
     background-color: var(--bg-hover);
     border-color: var(--text-muted);
 }
 
-/* Active nav link with LED indicator */
+/* Active nav link with lit LED */
 .nav-links a.active {
     color: var(--primary);
     border-color: var(--primary);
 }
 
-/* LED indicator dot for active state */
-.nav-links a.active::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+.nav-links a.active .led {
     background: var(--primary);
-    border-radius: 50%; /* Only rounded element allowed - mimics actual LED */
 }
 
 .nav-user {
@@ -181,6 +183,15 @@ a:hover {
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+/* LED indicator inside user link */
+.user-link .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 50%;
+    transition: background-color 0.15s ease;
+}
+
 .user-link:hover {
     color: var(--text-primary);
     background-color: var(--bg-hover);
@@ -190,6 +201,10 @@ a:hover {
 .user-link.active {
     color: var(--primary);
     border-color: var(--primary);
+}
+
+.user-link.active .led {
+    background: var(--primary);
 }
 
 /* ============================================

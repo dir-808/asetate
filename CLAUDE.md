@@ -112,6 +112,54 @@ Key principles:
 }
 ```
 
+**Sync Buttons (blinking LED for async operations):**
+Buttons that trigger async operations (sync, import, export) should include a `btn-spinner` LED that blinks during loading:
+
+```html
+<button class="btn btn-secondary btn-sm" id="btn-sync">
+    <span class="btn-spinner"></span>
+    <span class="btn-text">Sync</span>
+</button>
+```
+
+```css
+/* LED spinner - hidden by default, shows when loading */
+.btn-spinner {
+    display: none;
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 50%; /* LED dots mimic hardware */
+    margin-right: var(--space-xs);
+    animation: led-blink 0.6s ease-in-out infinite;
+}
+
+.btn.is-loading .btn-spinner {
+    display: inline-block;
+}
+
+@keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+```
+
+**JavaScript pattern for sync buttons:**
+```javascript
+const btn = document.getElementById('btn-sync');
+const btnText = btn.querySelector('.btn-text');
+
+// Start loading - LED appears and blinks
+btn.classList.add('is-loading');
+btnText.textContent = 'Syncing...';
+
+// Stop loading - LED disappears
+btn.classList.remove('is-loading');
+btnText.textContent = 'Sync';
+```
+
+**When to use blinking LED:** Only for operations that take time and need visual feedback (sync, import, export). Regular action buttons (Save, Cancel, Delete) don't need LEDs.
+
 #### Borders
 - **1px borders only** - consistent thickness throughout
 - Grey (`--border`) for inactive/structural borders
@@ -185,24 +233,42 @@ The nav bar should feel like the MPC's top control panel - a functional toolbar,
 **Styling approach:**
 - Subtle panel depth via border colors (light top edge, dark bottom edge)
 - Nav links styled as chunky rectangular "buttons" (generous padding, uppercase, letter-spacing)
-- Active state: orange text + LED indicator dot (small colored circle)
+- Active state: orange text + border + LED indicator lights up
 - Hover state: subtle background change, no shadows
 - Keep brand simple - solid orange text, no glow effects
 
+**Nav link HTML structure:**
+```html
+<a href="/collection" class="active">
+    <span class="led"></span>Collection
+</a>
+```
+
 **LED indicator pattern:**
 ```css
-.nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+/* Chunky rectangular nav buttons with LED indicator */
+.nav-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    /* ... other styles */
+}
+
+/* LED indicator inside nav link - always visible */
+.nav-links a .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border); /* Grey when inactive */
+    border-radius: 50%; /* LEDs are round - mimics hardware */
+}
+
+/* Active state - LED lights up orange */
+.nav-links a.active .led {
     background: var(--primary);
-    border-radius: 50%; /* Only rounded element allowed - mimics actual LED */
 }
 ```
+
+**Why inline LED (not ::after):** Consistent with toggle-btn and btn-led patterns. LED is part of the button content, not a decorative overlay. This makes it easier to maintain and keeps the visual language consistent across all MPC-style controls.
 
 **Why rounded LED is OK:** Physical LEDs are round. This is the one exception to "no rounded corners" because it mimics actual hardware indicators.
 
