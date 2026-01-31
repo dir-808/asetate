@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, jsonify, abort
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 
-from asetate import db
+from asetate import db, limiter
 from asetate.models import Release, Track, Crate
 
 bp = Blueprint("releases", __name__)
@@ -221,6 +221,7 @@ def release_panel(release_id: int):
 
 @bp.route("/<int:release_id>/tracks/<int:track_id>", methods=["PATCH"])
 @login_required
+@limiter.limit("300 per hour")
 def update_track(release_id: int, track_id: int):
     """Update DJ metadata for a track (BPM, key, energy, playable, notes)."""
     # Ensure release belongs to current user
@@ -288,6 +289,7 @@ def update_track(release_id: int, track_id: int):
 
 @bp.route("/<int:release_id>/corrections", methods=["PATCH"])
 @login_required
+@limiter.limit("300 per hour")
 def update_corrections(release_id: int):
     """Update user corrections for a release (local overrides for Discogs data)."""
     # Ensure release belongs to current user
@@ -327,6 +329,7 @@ def update_corrections(release_id: int):
 
 @bp.route("/<int:release_id>/notes", methods=["PATCH"])
 @login_required
+@limiter.limit("300 per hour")
 def update_release_notes(release_id: int):
     """Update notes for a release."""
     # Ensure release belongs to current user

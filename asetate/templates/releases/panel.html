@@ -202,17 +202,18 @@
     stroke: var(--primary);
 }
 
-/* Track row - consistent grey borders by default */
+/* Track row - no border collapse to maintain consistent line thickness */
 .panel-track-row {
     padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border);
-    margin-top: -1px; /* Collapse adjacent borders */
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
     transition: opacity 0.15s, background-color 0.15s;
     box-sizing: border-box;
 }
 
 .panel-track-row:first-child {
-    margin-top: 0;
+    border-top: 1px solid var(--border);
 }
 
 /* Non-playable tracks are dimmed */
@@ -224,15 +225,26 @@
     opacity: 0.7;
 }
 
-/* Playable tracks get orange borders (same thickness) */
+/* Playable tracks get orange left/right borders, grey top/bottom for consistent separation */
 .panel-track-row:not(.track-dimmed) {
-    border-color: rgba(249, 115, 22, 0.4);
+    border-left-color: rgba(249, 115, 22, 0.4);
+    border-right-color: rgba(249, 115, 22, 0.4);
     background-color: rgba(249, 115, 22, 0.03);
 }
 
-/* Adjacent playable tracks keep grey horizontal line between them */
-.panel-track-row:not(.track-dimmed) + .panel-track-row:not(.track-dimmed) {
-    border-top-color: var(--border);
+/* First playable track gets orange top border */
+.panel-track-row:not(.track-dimmed):first-child {
+    border-top-color: rgba(249, 115, 22, 0.4);
+}
+
+/* Playable track after a non-playable gets orange top border */
+.panel-track-row.track-dimmed + .panel-track-row:not(.track-dimmed) {
+    border-top: 1px solid rgba(249, 115, 22, 0.4);
+}
+
+/* Last playable track gets orange bottom border */
+.panel-track-row:not(.track-dimmed):last-child {
+    border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
 .panel-track-row:not(.track-dimmed):hover {
@@ -492,6 +504,7 @@
 }
 
 .panel-crate-dropdown-wrapper {
+    position: relative;
     display: inline-flex;
     align-items: stretch;
 }
@@ -531,11 +544,7 @@
     color: var(--text-muted);
 }
 
-/* Crate dropdown */
-.panel-crate-dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-}
+/* Crate dropdown - position for dropdown, but keep flex properties from above */
 
 .panel-crate-dropdown {
     position: absolute;
