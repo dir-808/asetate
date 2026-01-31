@@ -134,6 +134,100 @@ Reference: [Every Layout - Sidebar](https://every-layout.dev/layouts/sidebar/)
 - Color progression: green → lime → yellow → orange → red
 - Use global state pattern for drag handling across AJAX-loaded content
 
+#### Navigation Bar
+
+The nav bar should feel like the MPC's top control panel - a functional toolbar, not a decorative header.
+
+**Structure:**
+```
+[Brand/Logo] | [Main Nav Links] | [User/Settings]
+```
+
+**Styling approach:**
+- Subtle panel depth via border colors (light top edge, dark bottom edge)
+- Nav links styled as chunky rectangular "buttons" (generous padding, uppercase, letter-spacing)
+- Active state: orange text + LED indicator dot (small colored circle)
+- Hover state: subtle background change, no shadows
+- Keep brand simple - solid orange text, no glow effects
+
+**LED indicator pattern:**
+```css
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 50%; /* Only rounded element allowed - mimics actual LED */
+}
+```
+
+**Why rounded LED is OK:** Physical LEDs are round. This is the one exception to "no rounded corners" because it mimics actual hardware indicators.
+
+#### Settings Page
+
+Settings should feel like the MPC's "GLOBAL PROGRAM" or "MIDI/SYNC" parameter screens - organized banks of labeled parameters.
+
+**Structure:**
+- Grouped sections (cards) for related settings
+- Each section has a clear header (uppercase, letter-spacing, border below)
+- Form inputs styled as LCD-like fields (subtle inset shadow)
+- Toggle switches as chunky buttons with LED indicators
+
+**Section headers:**
+```css
+.settings-section-header {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--border);
+    margin-bottom: var(--space-md);
+}
+```
+
+**Toggle switches:**
+- Rectangular buttons (not pill-shaped iOS toggles)
+- LED dot that "lights up" green when active
+- Text label inside the button
+- Press effect via inset shadow on active state
+
+```css
+.toggle-switch {
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.toggle-switch.active {
+    border-color: var(--success);
+}
+
+.toggle-switch .led {
+    width: 8px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 50%;
+}
+
+.toggle-switch.active .led {
+    background: var(--success);
+}
+```
+
+**Collapsible sections:**
+- Use `<details>/<summary>` elements
+- Style summary as a clickable row with rotation indicator
+- Don't animate height (layout property) - use opacity transitions if needed
+- Consider these as "parameter pages" like MPC's SHIFT+page navigation
+
 ### Interaction Patterns
 
 #### Hover States
@@ -167,8 +261,8 @@ Use CSS variables consistently:
 3. **Transport Controls**: Play/cue visual metaphors for export/print actions
 4. **Bank/Program Selectors**: A-H, 1-16 style navigation for browsing large collections
 5. **Waveform Hints**: Subtle visual indication of track energy/intensity
-6. **Tactile Button Shadows**: Inset shadows to make buttons feel "pressable"
-7. **LED Indicators**: Small colored dots for status (synced, has notes, in crate)
+6. **Tactile Button Shadows**: Inset shadows to make buttons feel "pressable" *(see "Shadows: Functional vs Decorative" section)*
+7. **LED Indicators**: Small colored dots for status (synced, has notes, in crate) *(pattern documented in Navigation Bar & Settings Page sections)*
 8. **Flip/Reverse Animations**: Page transitions that feel like changing LCD screens
 9. **Click Sounds**: Optional subtle UI sounds for that hardware feedback feel
 10. **Keyboard Shortcuts**: Power-user shortcuts displayed in a hardware-manual style
@@ -198,11 +292,48 @@ Use CSS variables consistently:
 
 Reference: [MDN - CSS/JS Animation Performance](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance)
 
+### Shadows: Functional vs Decorative
+
+The MPC2000 has physical depth - raised buttons, recessed LCD screens, beveled panel edges. We can use shadows to recreate this tactile feel, but must distinguish:
+
+**Functional shadows (allowed):**
+```css
+/* Inset shadow for "recessed screen" effect on inputs/displays */
+.lcd-input {
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Subtle depth on nav/toolbar containers */
+.nav-container {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+}
+
+/* Button press effect */
+.btn:active {
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+```
+
+**Decorative shadows (avoid):**
+```css
+/* NO - ambient drop shadow for aesthetics */
+.card { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+/* NO - glow effects for "pretty" */
+.brand { text-shadow: 0 0 10px var(--primary); }
+
+/* NO - multiple layered shadows */
+.element { box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1); }
+```
+
+**Rule of thumb:** If the shadow mimics physical hardware depth (buttons, screens, panel seams), it's functional. If it's ambient/floating/glowing, it's decorative.
+
 ### Anti-Patterns (Avoid These)
 
 **Visual:**
 - Rounded corners (MPC is angular/rectangular)
-- Gradients or shadows for decoration
+- Decorative shadows (drop shadows, glows, ambient shadows)
 - Thin/light fonts
 - Animations longer than 0.3s
 
