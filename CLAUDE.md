@@ -25,6 +25,42 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 ---
 
+## CSS Architecture
+
+### File Structure
+- **`static/css/style.css`** - Single source of truth for all CSS
+- Templates may have `<style>` blocks for **page-specific layout only** (never for shared components)
+
+### Shared Components (in style.css)
+These components are used across multiple pages. **Always modify in style.css, not in templates:**
+
+| Component | Classes | Used In |
+|-----------|---------|---------|
+| **Energy Bar** | `.energy-bar`, `.energy-bar--sm` | detail.html, panel.html |
+| **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` | detail.html, panel.html |
+| **Action Groups** | `.action-group`, `.action-group--discogs` | detail.html, panel.html |
+| **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper` | detail.html, panel.html |
+| **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` | detail.html, panel.html |
+| **Side Panel** | `.release-panel`, `.panel-header-bar`, `.panel-content` | list.html |
+
+### Naming Conventions
+- **Base class**: `.component` (e.g., `.energy-bar`)
+- **Size variants**: `.component--sm`, `.component--lg`
+- **State variants**: `.component.active`, `.component.selected`
+- **Page-specific overrides**: Keep in template, use unique class
+
+### When to Put Styles in Templates
+- Layout specific to ONE page (e.g., `.collection-layout`)
+- Positioning/sizing overrides (e.g., `.release-notes-simple { width: 400px; }`)
+- Always add comment: `/* NOTE: base styles in style.css */`
+
+### When to Put Styles in style.css
+- Any component used in 2+ places
+- All visual patterns (colors, borders, hover states)
+- All shared behaviors (playable highlighting, energy bar colors)
+
+---
+
 ## UI/UX Guidelines
 
 ### Design Philosophy: MPC2000 Aesthetic

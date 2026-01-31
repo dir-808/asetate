@@ -106,7 +106,7 @@
                     </div>
                     <div class="panel-field panel-field-energy">
                         <label>NRG</label>
-                        <div class="energy-bar-panel" data-field="energy" data-value="{{ track.energy or 3 }}">
+                        <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}">
                             <div class="energy-segment" data-level="1"></div>
                             <div class="energy-segment" data-level="2"></div>
                             <div class="energy-segment" data-level="3"></div>
@@ -202,54 +202,7 @@
     stroke: var(--primary);
 }
 
-/* Track row - no border collapse to maintain consistent line thickness */
-.panel-track-row {
-    padding: var(--space-sm) var(--space-md);
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    transition: opacity 0.15s, background-color 0.15s;
-    box-sizing: border-box;
-}
-
-.panel-track-row:first-child {
-    border-top: 1px solid var(--border);
-}
-
-/* Non-playable tracks are dimmed */
-.panel-track-row.track-dimmed {
-    opacity: 0.5;
-}
-
-.panel-track-row.track-dimmed:hover {
-    opacity: 0.7;
-}
-
-/* Playable tracks get orange left/right borders, grey top/bottom for consistent separation */
-.panel-track-row:not(.track-dimmed) {
-    border-left-color: rgba(249, 115, 22, 0.4);
-    border-right-color: rgba(249, 115, 22, 0.4);
-    background-color: rgba(249, 115, 22, 0.03);
-}
-
-/* First playable track gets orange top border */
-.panel-track-row:not(.track-dimmed):first-child {
-    border-top-color: rgba(249, 115, 22, 0.4);
-}
-
-/* Non-playable followed by playable: make its bottom border orange (this IS the top edge of the playable section) */
-.panel-track-row.track-dimmed:has(+ .panel-track-row:not(.track-dimmed)) {
-    border-bottom-color: rgba(249, 115, 22, 0.4);
-}
-
-/* Last playable in a group (not followed by another playable) gets orange bottom border */
-.panel-track-row:not(.track-dimmed):not(:has(+ .panel-track-row:not(.track-dimmed))) {
-    border-bottom-color: rgba(249, 115, 22, 0.4);
-}
-
-.panel-track-row:not(.track-dimmed):hover {
-    background-color: rgba(249, 115, 22, 0.08);
-}
+/* NOTE: .panel-track-row base styles & playable highlighting now in style.css */
 
 /* Track main row */
 .panel-track-main {
@@ -335,37 +288,6 @@
     border-color: var(--primary);
     outline: none;
 }
-
-/* Energy bar for panel - matches release page style */
-.energy-bar-panel {
-    display: flex;
-    gap: 2px;
-    height: 14px;
-    cursor: pointer;
-}
-
-.energy-bar-panel .energy-segment {
-    width: 10px;
-    background-color: var(--border);
-    border-radius: 2px;
-    transition: background-color 0.15s, transform 0.1s;
-}
-
-.energy-bar-panel .energy-segment:hover {
-    transform: scaleY(1.15);
-}
-
-.energy-bar-panel[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
-.energy-bar-panel[data-value="2"] .energy-segment[data-level="1"],
-.energy-bar-panel[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
-.energy-bar-panel[data-value="3"] .energy-segment[data-level="1"],
-.energy-bar-panel[data-value="3"] .energy-segment[data-level="2"],
-.energy-bar-panel[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
-.energy-bar-panel[data-value="4"] .energy-segment[data-level="1"],
-.energy-bar-panel[data-value="4"] .energy-segment[data-level="2"],
-.energy-bar-panel[data-value="4"] .energy-segment[data-level="3"],
-.energy-bar-panel[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
-.energy-bar-panel[data-value="5"] .energy-segment { background-color: var(--error); }
 
 /* Track extras row - notes and tags */
 .panel-track-extras {
@@ -818,7 +740,7 @@
     window._panelEnergyDrag.updateTrackFn = updateTrack;
 
     // Attach mousedown to energy bars
-    document.querySelectorAll('.energy-bar-panel').forEach(bar => {
+    document.querySelectorAll('.energy-bar').forEach(bar => {
         bar.addEventListener('mousedown', (e) => {
             const state = window._panelEnergyDrag;
             state.isDragging = true;
