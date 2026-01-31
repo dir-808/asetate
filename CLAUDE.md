@@ -42,8 +42,23 @@ style.css is organized into sections:
 - **RELEASE DETAIL PAGE** - Track table, header layout
 - **SIDE PANEL** - Panel positioning, content
 - **SHARED COMPONENTS** - Components used across multiple pages
+- **UTILITIES** - Common helper classes (spacing, text)
 
 When adding new styles, find the appropriate section or create a new one.
+
+### Utility Classes
+Use utility classes instead of inline styles for common patterns:
+
+| Class | CSS |
+|-------|-----|
+| `.mt-sm`, `.mt-md`, `.mt-lg` | `margin-top: var(--space-*)` |
+| `.mb-sm`, `.mb-md`, `.mb-lg` | `margin-bottom: var(--space-*)` |
+| `.pt-sm`, `.pt-md` | `padding-top: var(--space-*)` |
+| `.pl-lg` | `padding-left: var(--space-lg)` |
+| `.text-sm`, `.text-xs` | `font-size: 0.75rem / 0.65rem` |
+| `.cursor-pointer` | `cursor: pointer` |
+
+**Prefer utility classes over inline styles** for spacing and text. Keep `style="display: none;"` for JS-toggled elements.
 
 ### Naming Conventions
 - **Base class**: `.component` (e.g., `.energy-bar`)
@@ -60,7 +75,10 @@ These are used across multiple pages - changes apply everywhere:
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper` |
 | **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` |
-| **Side Panel** | `.release-panel`, `.panel-header-bar`, `.panel-content` |
+| **Side Panel** | `.release-panel`, `.panel-content`, `.panel-discogs-card` |
+| **Buttons** | `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm` |
+| **Playable Toggle** | `.toggle`, `.toggle-slider`, `.toggle-sm` |
+| **Toggle Button (Settings)** | `.toggle-btn`, `.toggle-btn .led` |
 
 ---
 
@@ -166,6 +184,29 @@ btnText.textContent = 'Processing...';
 btn.classList.remove('is-loading');
 btnText.textContent = 'Sync';
 ```
+
+**Danger Button (destructive actions):**
+Use `.btn-danger` for delete/remove actions. Red border with hover fill.
+
+```html
+<button class="btn btn-danger">Delete</button>
+```
+
+**Playable Toggle (track checkbox):**
+The sliding toggle used for marking tracks as playable. Square knob (no border-radius) to maintain MPC aesthetic.
+
+```html
+<label class="toggle">
+    <input type="checkbox" class="track-playable">
+    <span class="toggle-slider"></span>
+</label>
+```
+
+Key points:
+- `.toggle` is the outer container with fixed width
+- `.toggle-slider` is the track background
+- `::before` pseudo-element creates the sliding knob
+- Square corners throughout - no border-radius
 
 #### Borders
 - **1px borders only** - consistent thickness throughout
@@ -466,7 +507,6 @@ Use CSS variables consistently:
 
 ```css
 /* BAD: triggers layout reflow every frame */
-.panel { transition: margin-left 0.3s; }
 .element { transition: width 0.3s, height 0.3s; }
 
 /* GOOD: GPU-accelerated, no reflow */
@@ -476,12 +516,31 @@ Use CSS variables consistently:
 
 **Avoid animating:** `width`, `height`, `margin`, `padding`, `top/left/right/bottom`, `font-size`, `border-width`
 
+**Exception - Sidebar Panel:** The sidebar uses `margin-right` transition on the main content area to push content aside. This is acceptable because:
+1. It only affects one container (not many items)
+2. Grid items have fixed max-width so they reflow, not resize
+3. The alternative (transform) would require complex layout changes
+
+```css
+/* Sidebar exception - acceptable margin animation */
+.collection-main { transition: margin-right 0.3s ease; }
+```
+
 **Use `will-change` sparingly** for elements you know will animate:
 ```css
 .release-panel { will-change: transform; }
 ```
 
 **Transitions:** Keep to 0.15s for micro-interactions, 0.3s max for larger movements.
+
+**Transition property specificity:** Never use `transition: all`. Always specify exact properties:
+```css
+/* BAD */
+.btn { transition: all 0.15s; }
+
+/* GOOD */
+.btn { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+```
 
 Reference: [MDN - CSS/JS Animation Performance](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance)
 
