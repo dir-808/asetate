@@ -967,10 +967,24 @@ input::placeholder, textarea::placeholder {
    COLLECTION PAGE
    ============================================ */
 
+/* Collection layout - sidebar pushes content */
+.collection-layout {
+    display: flex;
+    position: relative;
+    min-height: calc(100vh - 150px);
+}
+
 .collection-page {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
+    transition: margin-right 0.3s ease-out;
+}
+
+.collection-page.panel-open {
+    margin-right: 450px;
 }
 
 .collection-header {
@@ -1151,9 +1165,40 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-cover {
+    position: relative;
     aspect-ratio: 1;
     overflow: hidden;
     background-color: var(--bg-elevated);
+}
+
+/* Crate icons overlay on release cards */
+.release-crate-icons {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    display: flex;
+    gap: 2px;
+}
+
+.release-crate-icon {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.release-crate-more {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    color: var(--text-muted);
 }
 
 .release-cover img {

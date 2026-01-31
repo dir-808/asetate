@@ -152,64 +152,7 @@
 {% endblock %}
 
 {% block scripts %}
-<style>
-/* NOTE: .release-panel, .panel-header-bar, .panel-content styles now in style.css */
-
-/* Collection page layout - sidebar pushes content */
-.collection-layout {
-    display: flex;
-    position: relative;
-    min-height: calc(100vh - 150px);
-}
-
-.collection-page {
-    flex: 1;
-    min-width: 0;
-    transition: margin-right 0.3s ease-out;
-}
-
-.collection-page.panel-open {
-    margin-right: 450px;
-}
-
-/* Crate icons on release cards */
-.release-crate-icons {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    display: flex;
-    gap: 2px;
-}
-
-.release-crate-icon {
-    width: 20px;
-    height: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-}
-
-.release-crate-more {
-    width: 20px;
-    height: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.55rem;
-    color: var(--text-muted);
-}
-
-.release-cover {
-    position: relative;
-}
-
-/* NOTE: .filter-select, .crate-filter-dropdown, .crate-badge-panel styles now in style.css */
-</style>
+<!-- NOTE: All collection page styles now in style.css COLLECTION PAGE section -->
 <script>
 // Crate filter function
 function filterByCrate(crateId) {
