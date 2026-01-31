@@ -242,8 +242,8 @@
     border-top: 1px solid rgba(249, 115, 22, 0.4);
 }
 
-/* Last playable track gets orange bottom border */
-.panel-track-row:not(.track-dimmed):last-child {
+/* Last playable in a group (not followed by another playable) gets orange bottom border */
+.panel-track-row:not(.track-dimmed):not(:has(+ .panel-track-row:not(.track-dimmed))) {
     border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
