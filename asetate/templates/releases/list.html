@@ -208,52 +208,7 @@
     position: relative;
 }
 
-/* Crate filter dropdown */
-.crate-filter-dropdown {
-    display: inline-block;
-}
-
-.filter-select {
-    padding: var(--space-xs) var(--space-sm);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: 2px solid var(--border);
-    background: transparent;
-    cursor: pointer;
-}
-
-.filter-select:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.filter-select option {
-    background: var(--bg-surface);
-    color: var(--text-primary);
-}
-
-/* Crate badge in panel (without color) */
-.crate-badge-panel {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    font-size: 0.75rem;
-    background-color: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s;
-}
-
-.crate-badge-panel:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--text-muted);
-}
+/* NOTE: .filter-select, .crate-filter-dropdown, .crate-badge-panel styles now in style.css */
 </style>
 <script>
 // Crate filter function

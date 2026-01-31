@@ -761,39 +761,118 @@ input::placeholder, textarea::placeholder {
     max-width: 400px;
 }
 
+/* LCD-style search input */
 .search-input {
     width: 100%;
+    /* LCD-like inset shadow for recessed screen effect */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.search-input:focus {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--primary-dim);
 }
 
 .filter-buttons {
     display: flex;
     gap: var(--space-xs);
+    align-items: stretch;
 }
 
+/* MPC2000-style filter buttons with LED indicator on active */
 .filter-btn {
-    padding: var(--space-xs) var(--space-md);
+    position: relative;
+    padding: var(--space-sm) var(--space-md);
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-secondary);
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border: 2px solid var(--border);
     background: transparent;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     cursor: pointer;
 }
 
 .filter-btn:hover {
     color: var(--text-primary);
-    border-color: var(--border-light);
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
 }
 
 .filter-btn.active {
     color: var(--primary);
-    background-color: var(--primary-dim);
     border-color: var(--primary);
+    background-color: transparent;
+}
+
+/* LED indicator dot for active filter */
+.filter-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 50%; /* LED dots are round - mimics hardware */
+}
+
+/* Crate filter dropdown - MPC2000 style select */
+.crate-filter-dropdown {
+    display: inline-block;
+}
+
+.filter-select {
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-select:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-select option {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+/* Crate badge in panel - rectangular, no rounded corners */
+.crate-badge-panel {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.75rem;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.crate-badge-panel:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
 }
 
 /* Release grid - fixed max-width so items reflow but don't resize when panel opens */
