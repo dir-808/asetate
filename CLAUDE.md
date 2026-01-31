@@ -175,14 +175,38 @@ btnText.textContent = 'Sync';
 - 2px borders only for major containers (cards, panels, modals)
 
 #### Track Highlighting (Playable Sections)
-The playable track border system uses a specific pattern to create orange "boxes" around playable tracks without causing layout shifts:
+The playable track border system creates orange "boxes" around playable tracks. This pattern is shared between:
+- **`.panel-track-row`** (sidebar) - the **blueprint**, uses `.track-dimmed` on non-playable
+- **`.track-row`** (full release page) - uses `.track-playable` on playable
+
+**Both must behave identically.** When updating one, update both.
 
 ```css
 /* Base: all tracks have left/right/bottom borders (grey), first-child also has top */
 /* Playable: change left/right to orange, add subtle background */
 /* Orange top edge: change BOTTOM border of preceding non-playable to orange */
 /* Orange bottom edge: change bottom of last playable in group to orange */
-/* Grey lines between adjacent playable tracks stay grey */
+/* Adjacent playable tracks: use ::after pseudo-element for inset gray separator */
+```
+
+**Adjacent playable tracks fix:**
+Gray separator between adjacent playable tracks uses a pseudo-element positioned inside the border box, so it doesn't overlap the orange side borders:
+
+```css
+.track-row.track-playable:has(+ .track-row.track-playable) {
+    position: relative;
+    border-bottom-color: transparent;
+}
+
+.track-row.track-playable:has(+ .track-row.track-playable)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
 ```
 
 Key rule: **Only change border colors, never add/remove borders.** Use `:has()` selector to style elements based on what follows them.

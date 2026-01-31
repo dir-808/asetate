@@ -1556,6 +1556,22 @@ input::placeholder, textarea::placeholder {
     border-bottom-color: rgba(249, 115, 22, 0.4);
 }
 
+/* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
+.track-row.track-playable:has(+ .track-row.track-playable) {
+    position: relative;
+    border-bottom-color: transparent;
+}
+
+.track-row.track-playable:has(+ .track-row.track-playable)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
+
 .track-row.track-playable:hover {
     background-color: rgba(249, 115, 22, 0.06);
 }
