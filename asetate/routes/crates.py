@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from asetate import db
 from asetate.models import Crate, Release, Track, crate_releases, crate_tracks
 from asetate.models.crate import CRATE_COLORS, CRATE_ICONS
+from asetate.models.pixel_icons import search_icons, PIXEL_ICONS
 
 bp = Blueprint("crates", __name__)
 
@@ -388,3 +389,29 @@ def api_crates_for_track(track_id: int):
     ).first_or_404()
     crate_ids = [c.id for c in track.crates]
     return jsonify({"crate_ids": crate_ids})
+
+
+@bp.route("/api/icons")
+@login_required
+def api_search_icons():
+    """Search pixel icons by keyword.
+
+    Query params:
+        q: Search query (optional, returns all if empty)
+        limit: Max results to return (default 50)
+    """
+    query = request.args.get("q", "").strip()
+    limit = min(int(request.args.get("limit", 50)), 200)
+
+    results = search_icons(query, limit)
+
+    return jsonify({
+        "icons": [
+            {
+                "name": icon["name"],
+                "keywords": icon["keywords"],
+                "url": f"/static/icons/{icon['name']}.png",
+            }
+            for icon in results
+        ]
+    })

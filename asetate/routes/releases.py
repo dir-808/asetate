@@ -15,8 +15,10 @@ def get_release_crate_data(release_ids, user_id):
     if not release_ids:
         return {}
 
-    # Query crates for these releases
     from asetate.models.crate import crate_releases
+    from asetate.models.pixel_icons import DEFAULT_ICON
+
+    # Query crates for these releases
     crate_data = db.session.query(
         crate_releases.c.release_id,
         Crate.id,
@@ -27,12 +29,12 @@ def get_release_crate_data(release_ids, user_id):
         Crate.user_id == user_id
     ).all()
 
-    # Group by release
+    # Group by release - icons are now icon names (for pixel icons)
     release_crates = {}
     for release_id, crate_id, icon, name in crate_data:
         if release_id not in release_crates:
             release_crates[release_id] = {"icons": [], "ids": []}
-        release_crates[release_id]["icons"].append(icon or "📁")
+        release_crates[release_id]["icons"].append(icon or DEFAULT_ICON)
         release_crates[release_id]["ids"].append(crate_id)
 
     return release_crates

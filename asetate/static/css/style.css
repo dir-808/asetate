@@ -2527,6 +2527,111 @@ body.crate-panel-open .crates-main {
     border-color: var(--border);
 }
 
+/* Pixel Icon Picker */
+.icon-preview-box {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
+    /* No border-radius - MPC style */
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.icon-preview-img {
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: invert(1); /* White icons on dark background */
+}
+
+.icon-search-input {
+    flex: 1;
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--border);
+    /* No border-radius - MPC style */
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+    gap: 3px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: var(--space-xs);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+}
+
+.icon-grid-sm {
+    max-height: 140px;
+}
+
+.icon-grid-item {
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    /* No border-radius - MPC style */
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.icon-grid-item:hover {
+    border-color: var(--border);
+    background: var(--bg-surface);
+}
+
+.icon-grid-item.selected {
+    border-color: var(--primary);
+    background: var(--bg-surface);
+}
+
+.icon-grid-item img {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: invert(1); /* White icons on dark background */
+}
+
+/* Pixel icons in crate cards */
+.crate-pixel-icon {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: invert(1); /* White icons on dark background */
+}
+
+/* Large pixel icon on crate detail page */
+.crate-pixel-icon-lg {
+    width: 40px;
+    height: 40px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: invert(1); /* White icons on dark background */
+}
+
+/* Pixel icons on release cards (crate indicators) */
+.release-crate-icon {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.5));
+}
+
 .color-picker {
     display: flex;
     flex-wrap: wrap;

@@ -29,7 +29,7 @@
                 <!-- Crate body -->
                 <div class="crate-body">
                     <div class="crate-icon-container">
-                        <span class="crate-emoji">{{ node.crate.display_icon }}</span>
+                        <img src="{{ node.crate.icon_url }}" alt="" class="crate-pixel-icon">
                     </div>
                     <div class="crate-info">
                         <span class="crate-name">{{ node.crate.name }}</span>
@@ -105,18 +105,17 @@
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
-                        <button type="button" class="icon-preview" id="icon-preview" title="Click to select an emoji">📁</button>
+                        <div class="icon-preview-box" id="icon-preview">
+                            <img src="/static/icons/folder.png" alt="" class="icon-preview-img" id="icon-preview-img">
+                        </div>
                         <input type="text"
-                               id="crate-icon-input"
-                               class="icon-text-input"
-                               placeholder="Type or paste emoji"
-                               maxlength="4">
+                               id="crate-icon-search"
+                               class="icon-search-input"
+                               placeholder="Search icons...">
                         <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Clear</button>
                     </div>
-                    <div class="icon-suggestions" id="icon-suggestions">
-                        {% for icon in crate_icons[:16] %}
-                        <button type="button" class="icon-suggestion" data-icon="{{ icon }}">{{ icon }}</button>
-                        {% endfor %}
+                    <div class="icon-grid" id="icon-grid">
+                        <!-- Icons loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="crate-icon" name="icon" value="">
@@ -167,49 +166,81 @@
     const parentName = document.getElementById('parent-name');
     const iconInput = document.getElementById('crate-icon');
     const colorInput = document.getElementById('crate-color');
-    const iconPreview = document.getElementById('icon-preview');
-    const iconTextInput = document.getElementById('crate-icon-input');
+    const iconPreviewImg = document.getElementById('icon-preview-img');
+    const iconSearchInput = document.getElementById('crate-icon-search');
+    const iconGrid = document.getElementById('icon-grid');
     const clearIconBtn = document.getElementById('clear-icon');
     const cratePanel = document.getElementById('crate-panel');
     const cratePanelContent = document.getElementById('crate-panel-content');
     const cratesMain = document.getElementById('crates-main');
 
-    // Extract first emoji from string
-    function extractFirstEmoji(str) {
-        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-        const match = str.match(emojiRegex);
-        return match ? match[0] : null;
-    }
+    const DEFAULT_ICON = 'folder';
+    let searchTimeout = null;
+    let allIcons = []; // Cache all icons for faster filtering
 
-    // Update icon from text input
-    function updateIconFromInput() {
-        const value = iconTextInput.value.trim();
-        if (value) {
-            const emoji = extractFirstEmoji(value);
-            if (emoji) {
-                iconInput.value = emoji;
-                iconPreview.textContent = emoji;
-                iconTextInput.value = emoji;
-            }
+    // Load icons from API
+    async function loadIcons(query = '') {
+        try {
+            const response = await fetch(`/crates/api/icons?q=${encodeURIComponent(query)}&limit=60`);
+            const data = await response.json();
+            return data.icons;
+        } catch (err) {
+            console.error('Failed to load icons:', err);
+            return [];
         }
     }
 
-    iconTextInput.addEventListener('input', updateIconFromInput);
-    iconTextInput.addEventListener('paste', () => setTimeout(updateIconFromInput, 0));
+    // Render icon grid
+    function renderIconGrid(icons, container, onSelect) {
+        container.innerHTML = '';
+        icons.forEach(icon => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'icon-grid-item';
+            btn.dataset.icon = icon.name;
+            btn.title = icon.keywords.slice(0, 3).join(', ');
+            btn.innerHTML = `<img src="${icon.url}" alt="${icon.name}">`;
+            btn.addEventListener('click', () => onSelect(icon.name, icon.url));
+            container.appendChild(btn);
+        });
+    }
+
+    // Select icon handler for modal
+    function selectIcon(iconName, iconUrl) {
+        iconInput.value = iconName;
+        iconPreviewImg.src = iconUrl;
+        // Highlight selected
+        iconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        });
+    }
+
+    // Initialize icon grid with all icons
+    async function initIconGrid() {
+        allIcons = await loadIcons('');
+        renderIconGrid(allIcons, iconGrid, selectIcon);
+    }
+
+    // Search icons with debounce
+    iconSearchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            const query = iconSearchInput.value.trim();
+            if (query) {
+                const results = await loadIcons(query);
+                renderIconGrid(results, iconGrid, selectIcon);
+            } else {
+                renderIconGrid(allIcons, iconGrid, selectIcon);
+            }
+        }, 200);
+    });
 
     clearIconBtn.addEventListener('click', () => {
         iconInput.value = '';
-        iconPreview.textContent = '📁';
-        iconTextInput.value = '';
-    });
-
-    document.querySelectorAll('.icon-suggestion').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const icon = btn.dataset.icon;
-            iconInput.value = icon;
-            iconPreview.textContent = icon;
-            iconTextInput.value = icon;
-        });
+        iconPreviewImg.src = `/static/icons/${DEFAULT_ICON}.png`;
+        iconSearchInput.value = '';
+        renderIconGrid(allIcons, iconGrid, selectIcon);
+        iconGrid.querySelectorAll('.icon-grid-item').forEach(btn => btn.classList.remove('selected'));
     });
 
     document.querySelectorAll('.color-option').forEach(btn => {
@@ -239,16 +270,21 @@
         }
         modal.classList.add('open');
         nameInput.focus();
+        // Load icons when modal opens
+        if (allIcons.length === 0) {
+            initIconGrid();
+        }
     }
 
     function closeModal() {
         modal.classList.remove('open');
         form.reset();
         iconInput.value = '';
-        iconPreview.textContent = '📁';
-        iconTextInput.value = '';
+        iconPreviewImg.src = `/static/icons/${DEFAULT_ICON}.png`;
+        iconSearchInput.value = '';
         document.querySelectorAll('.color-option').forEach((b, i) => b.classList.toggle('selected', i === 0));
         colorInput.value = '';
+        iconGrid.querySelectorAll('.icon-grid-item').forEach(btn => btn.classList.remove('selected'));
     }
 
     document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
@@ -333,7 +369,8 @@
         }
     }
 
-    function renderPanelForm(crate) {
+    async function renderPanelForm(crate) {
+        const currentIcon = crate.icon || DEFAULT_ICON;
         cratePanelContent.innerHTML = `
             <form id="panel-edit-form">
                 <div class="panel-form-group">
@@ -346,10 +383,16 @@
                 </div>
                 <div class="panel-form-group">
                     <label>Icon</label>
-                    <div class="icon-input-row">
-                        <button type="button" class="icon-preview" id="panel-icon-preview">${crate.icon || '📁'}</button>
-                        <input type="text" id="panel-icon-input" class="icon-text-input" value="${crate.icon || ''}" placeholder="Emoji" maxlength="4">
+                    <div class="icon-picker-container panel-icon-picker">
+                        <div class="icon-input-row">
+                            <div class="icon-preview-box" id="panel-icon-preview">
+                                <img src="/static/icons/${currentIcon}.png" alt="" class="icon-preview-img" id="panel-icon-preview-img">
+                            </div>
+                            <input type="text" id="panel-icon-search" class="icon-search-input" placeholder="Search icons...">
+                        </div>
+                        <div class="icon-grid icon-grid-sm" id="panel-icon-grid"></div>
                     </div>
+                    <input type="hidden" id="panel-icon" value="${crate.icon || ''}">
                 </div>
                 <div class="panel-form-group">
                     <label>Color</label>
@@ -374,16 +417,46 @@
 
         // Setup panel form handlers
         const panelForm = document.getElementById('panel-edit-form');
-        const panelIconPreview = document.getElementById('panel-icon-preview');
-        const panelIconInput = document.getElementById('panel-icon-input');
+        const panelIconPreviewImg = document.getElementById('panel-icon-preview-img');
+        const panelIconInput = document.getElementById('panel-icon');
+        const panelIconSearch = document.getElementById('panel-icon-search');
+        const panelIconGrid = document.getElementById('panel-icon-grid');
         const panelColorInput = document.getElementById('panel-color');
+        let panelSearchTimeout = null;
 
-        panelIconInput.addEventListener('input', () => {
-            const emoji = extractFirstEmoji(panelIconInput.value);
-            if (emoji) {
-                panelIconPreview.textContent = emoji;
-                panelIconInput.value = emoji;
-            }
+        // Panel icon selection handler
+        function selectPanelIcon(iconName, iconUrl) {
+            panelIconInput.value = iconName;
+            panelIconPreviewImg.src = iconUrl;
+            panelIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.icon === iconName);
+            });
+        }
+
+        // Load and render panel icon grid
+        const panelIcons = allIcons.length > 0 ? allIcons : await loadIcons('');
+        if (allIcons.length === 0) allIcons = panelIcons;
+        renderIconGrid(panelIcons.slice(0, 40), panelIconGrid, selectPanelIcon);
+
+        // Highlight current icon if set
+        if (crate.icon) {
+            panelIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.icon === crate.icon);
+            });
+        }
+
+        // Panel icon search
+        panelIconSearch.addEventListener('input', () => {
+            clearTimeout(panelSearchTimeout);
+            panelSearchTimeout = setTimeout(async () => {
+                const query = panelIconSearch.value.trim();
+                if (query) {
+                    const results = await loadIcons(query);
+                    renderIconGrid(results.slice(0, 40), panelIconGrid, selectPanelIcon);
+                } else {
+                    renderIconGrid(allIcons.slice(0, 40), panelIconGrid, selectPanelIcon);
+                }
+            }, 200);
         });
 
         document.querySelectorAll('#panel-color-picker .color-option').forEach(btn => {

@@ -53,7 +53,7 @@
                         <option value="">All Crates</option>
                         {% for crate in available_crates %}
                         <option value="{{ crate.id }}" {% if crate_filter == crate.id|string %}selected{% endif %}>
-                            {{ crate.icon or '📁' }} {{ crate.name }}
+                            {{ crate.name }}
                         </option>
                         {% endfor %}
                     </select>
@@ -76,7 +76,7 @@
                     {% if release.crate_icons %}
                     <div class="release-crate-icons">
                         {% for icon in release.crate_icons[:3] %}
-                        <span class="release-crate-icon">{{ icon }}</span>
+                        <img src="/static/icons/{{ icon }}.png" alt="" class="release-crate-icon">
                         {% endfor %}
                         {% if release.crate_icons|length > 3 %}
                         <span class="release-crate-more">+{{ release.crate_icons|length - 3 }}</span>
