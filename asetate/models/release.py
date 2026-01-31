@@ -49,6 +49,9 @@ class Release(db.Model):
     # Export tracking
     last_exported_at = db.Column(db.DateTime)  # For "export since last export" feature
 
+    # User notes (freeform text for the whole release)
+    notes = db.Column(db.Text)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
@@ -123,6 +126,31 @@ class Release(db.Model):
         self.price = None
         self.location = None
         self.inventory_synced_at = None
+
+    def get_average_bpm(self) -> dict:
+        """Calculate average BPM of playable tracks.
+
+        Returns a dict with:
+        - display: String to display (e.g., "125" or "VARIED")
+        - value: Numeric average or None
+        - is_varied: True if BPM range is > 16% of average
+        """
+        playable_tracks = [t for t in self.tracks if t.is_playable and t.bpm]
+        if not playable_tracks:
+            return {"display": "—", "value": None, "is_varied": False}
+
+        bpms = [t.bpm for t in playable_tracks]
+        avg = sum(bpms) / len(bpms)
+        min_bpm = min(bpms)
+        max_bpm = max(bpms)
+
+        # Check if range exceeds 16% of average
+        bpm_range = max_bpm - min_bpm
+        is_varied = bpm_range > (avg * 0.16) if len(bpms) > 1 else False
+
+        if is_varied:
+            return {"display": "VARIED", "value": round(avg), "is_varied": True}
+        return {"display": str(round(avg)), "value": round(avg), "is_varied": False}
 
     def update_inventory_data(
         self,

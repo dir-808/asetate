@@ -28,7 +28,7 @@ class Track(db.Model):
     bpm = db.Column(db.Integer, index=True)  # Indexed for range queries
     musical_key = db.Column(db.String(10))  # Standard notation: Am, F#m, Bb, etc.
     camelot = db.Column(db.String(5))  # Camelot wheel: 8A, 11B, etc.
-    energy = db.Column(db.Integer)  # 1-10 scale
+    energy = db.Column(db.Integer)  # 1-5 scale
     is_playable = db.Column(db.Boolean, default=False, nullable=False, index=True)
     notes = db.Column(db.Text)  # Freeform user notes
 
@@ -41,7 +41,7 @@ class Track(db.Model):
     tags = db.relationship("Tag", secondary="track_tags", back_populates="tracks")
 
     __table_args__ = (
-        db.CheckConstraint("energy >= 1 AND energy <= 10", name="energy_range"),
+        db.CheckConstraint("energy >= 1 AND energy <= 5", name="energy_range"),
         db.CheckConstraint("bpm >= 20 AND bpm <= 300", name="bpm_range"),
     )
 

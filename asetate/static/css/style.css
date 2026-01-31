@@ -372,8 +372,10 @@ input::placeholder, textarea::placeholder {
 /* Toggle switch */
 .toggle {
     position: relative;
+    display: inline-block;
     width: 44px;
     height: 24px;
+    vertical-align: middle;
 }
 
 .toggle input {
@@ -388,6 +390,7 @@ input::placeholder, textarea::placeholder {
     inset: 0;
     background-color: var(--border);
     transition: 0.2s;
+    border-radius: 24px;
 }
 
 .toggle-slider::before {
@@ -399,6 +402,7 @@ input::placeholder, textarea::placeholder {
     bottom: 3px;
     background-color: var(--text-muted);
     transition: 0.2s;
+    border-radius: 50%;
 }
 
 .toggle input:checked + .toggle-slider {
@@ -939,6 +943,18 @@ input::placeholder, textarea::placeholder {
     font-size: 0.8rem;
     color: var(--text-secondary);
     margin-top: var(--space-sm);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.avg-bpm {
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.bpm-varied {
+    color: var(--warning);
+    font-style: italic;
 }
 
 .release-actions {
@@ -1061,6 +1077,11 @@ input::placeholder, textarea::placeholder {
 .col-playable {
     width: 70px;
     text-align: center;
+    vertical-align: middle;
+}
+
+.col-playable .toggle {
+    margin: 0 auto;
 }
 
 /* Track input styling */
@@ -1082,6 +1103,60 @@ input::placeholder, textarea::placeholder {
 .track-input:focus {
     background-color: var(--bg-input);
     border-color: var(--primary);
+}
+
+/* Energy slider styling */
+.energy-slider-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    justify-content: center;
+}
+
+.track-energy-slider {
+    width: 50px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.track-energy-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.track-energy-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.track-energy-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none;
+    cursor: pointer;
+}
+
+.energy-value {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    min-width: 16px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.col-energy {
+    width: 100px;
 }
 
 .track-input::placeholder {
@@ -1459,11 +1534,29 @@ input::placeholder, textarea::placeholder {
 
 .crate-badge {
     display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
     padding: var(--space-xs) var(--space-sm);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     background-color: var(--bg-elevated);
     border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.crate-badge:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+
+.crate-badge-icon {
+    font-size: 0.9rem;
+}
+
+.crate-badge-name {
+    font-weight: 500;
 }
 
 /* Crate selector in modal */

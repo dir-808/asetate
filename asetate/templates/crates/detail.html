@@ -18,6 +18,9 @@
     </nav>
 
     <header class="crate-header">
+        <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; color: {{ crate.color_hex }}; border-color: {{ crate.color_hex }}40"{% endif %}>
+            {{ crate.display_icon }}
+        </div>
         <div class="crate-info">
             <h1>{{ crate.name }}</h1>
             {% if crate.description %}
@@ -128,6 +131,62 @@
                 <label for="edit-crate-description">Description</label>
                 <input type="text" id="edit-crate-description" value="{{ crate.description or '' }}" placeholder="Optional">
             </div>
+
+            <!-- Icon Picker -->
+            <div class="form-group">
+                <label>Icon</label>
+                <div class="icon-picker-container">
+                    <div class="icon-input-row">
+                        <button type="button" class="icon-preview" id="edit-icon-preview" title="Click to select an emoji">{{ crate.display_icon }}</button>
+                        <input type="text"
+                               id="edit-crate-icon-input"
+                               class="icon-text-input"
+                               placeholder="Type or paste any emoji"
+                               maxlength="4"
+                               value="{{ crate.icon or '' }}">
+                        <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Clear</button>
+                    </div>
+                    <div class="icon-suggestions" id="edit-icon-suggestions">
+                        <span class="suggestions-label">Suggestions:</span>
+                        {% for icon in crate_icons[:20] %}
+                        <button type="button" class="icon-suggestion" data-icon="{{ icon }}">{{ icon }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input type="hidden" id="edit-crate-icon" name="icon" value="{{ crate.icon or '' }}">
+            </div>
+
+            <!-- Color Picker -->
+            <div class="form-group">
+                <label>Color</label>
+                <div class="color-picker" id="edit-color-picker">
+                    <button type="button" class="color-option {% if not crate.color %}selected{% endif %}" data-color="" style="background: #e0e0e0" title="None"></button>
+                    {% for color in crate_colors %}
+                    <button type="button" class="color-option {% if crate.color == color.id %}selected{% endif %}" data-color="{{ color.id }}" style="background-color: {{ color.hex }}" title="{{ color.name }}"></button>
+                    {% endfor %}
+                    <div class="color-custom" title="Custom color">
+                        <label class="color-custom-label" for="edit-custom-color">
+                            <span class="color-custom-icon">🎨</span>
+                            <input type="color" id="edit-custom-color" value="{{ crate.color_hex or '#337EA9' }}">
+                        </label>
+                    </div>
+                </div>
+                <input type="hidden" id="edit-crate-color" name="color" value="{{ crate.color or '' }}">
+            </div>
+
+            <!-- Parent Crate -->
+            <div class="form-group">
+                <label for="edit-crate-parent">Parent Crate</label>
+                <select id="edit-crate-parent" class="form-select">
+                    <option value="">None (top-level)</option>
+                    {% for p in available_parents %}
+                    <option value="{{ p.id }}" {% if crate.parent_id == p.id %}selected{% endif %}>
+                        {{ '—' * p.depth }} {{ p.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" id="edit-btn-cancel">Cancel</button>
                 <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -155,6 +214,175 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Crate header with large icon */
+.crate-header {
+    display: flex;
+    gap: var(--space-lg);
+    align-items: flex-start;
+    margin-bottom: var(--space-xl);
+}
+
+.crate-icon-large {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: var(--bg-surface);
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* Sub-crate cards with color */
+.sub-crate-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s;
+}
+
+.sub-crate-card:hover {
+    background: var(--bg-hover);
+}
+
+/* Icon and color picker styles for edit modal */
+.icon-picker-container {
+    margin-top: var(--space-xs);
+}
+
+.icon-input-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.icon-preview {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-text-input {
+    flex: 1;
+    max-width: 150px;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.icon-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.suggestions-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-right: var(--space-xs);
+}
+
+.icon-suggestion {
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-suggestion:hover {
+    border-color: var(--border);
+    transform: scale(1.1);
+}
+
+.color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: var(--space-xs);
+}
+
+.color-option {
+    width: 24px;
+    height: 24px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px var(--bg);
+}
+
+.color-custom-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+}
+
+.color-custom-label:hover {
+    border-color: var(--text);
+}
+
+.color-custom-icon {
+    font-size: 0.9rem;
+}
+
+.color-custom input[type="color"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.form-select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--text);
+    font-size: 0.9rem;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -174,11 +402,72 @@
     document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
     editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
 
+    // Icon picker for edit modal
+    const editIconInput = document.getElementById('edit-crate-icon');
+    const editIconPreview = document.getElementById('edit-icon-preview');
+    const editIconTextInput = document.getElementById('edit-crate-icon-input');
+    const editClearIconBtn = document.getElementById('edit-clear-icon');
+    const editColorInput = document.getElementById('edit-crate-color');
+
+    function extractFirstEmoji(str) {
+        const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+        const match = str.match(emojiRegex);
+        return match ? match[0] : null;
+    }
+
+    function updateEditIconFromInput() {
+        const value = editIconTextInput.value.trim();
+        if (value) {
+            const emoji = extractFirstEmoji(value);
+            if (emoji) {
+                editIconInput.value = emoji;
+                editIconPreview.textContent = emoji;
+                editIconTextInput.value = emoji;
+            }
+        }
+    }
+
+    editIconTextInput.addEventListener('input', updateEditIconFromInput);
+    editIconTextInput.addEventListener('paste', () => setTimeout(updateEditIconFromInput, 0));
+
+    editClearIconBtn.addEventListener('click', () => {
+        editIconInput.value = '';
+        editIconPreview.textContent = '📁';
+        editIconTextInput.value = '';
+    });
+
+    document.querySelectorAll('#edit-icon-suggestions .icon-suggestion').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const icon = btn.dataset.icon;
+            editIconInput.value = icon;
+            editIconPreview.textContent = icon;
+            editIconTextInput.value = icon;
+        });
+    });
+
+    // Color picker for edit modal
+    document.querySelectorAll('#edit-color-picker .color-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            editColorInput.value = btn.dataset.color;
+        });
+    });
+
+    document.getElementById('edit-custom-color').addEventListener('input', (e) => {
+        document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
+        editColorInput.value = e.target.value;
+    });
+
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const parentVal = document.getElementById('edit-crate-parent').value;
         const data = {
             name: document.getElementById('edit-crate-name').value.trim(),
             description: document.getElementById('edit-crate-description').value.trim(),
+            icon: editIconInput.value || null,
+            color: editColorInput.value || null,
+            parent_id: parentVal ? parseInt(parentVal) : null,
         };
 
         try {
