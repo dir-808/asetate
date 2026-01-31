@@ -240,6 +240,63 @@ grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
 
 Reference: [Every Layout - Sidebar](https://every-layout.dev/layouts/sidebar/)
 
+**Discogs Card (clickable metadata section):**
+The Discogs card groups release metadata and Discogs actions at the top of the sidebar panel. The entire card is clickable to navigate to the full release page.
+
+Structure:
+```html
+<div class="panel-discogs-card" id="panel-discogs-card"
+     data-href="{{ url_for('releases.view_release', release_id=release.id) }}">
+    <header class="panel-header">
+        <!-- Cover, title, artist, stats -->
+    </header>
+    <div class="panel-discogs-actions">
+        <!-- Buttons with onclick="event.stopPropagation();" -->
+        <a href="..." onclick="event.stopPropagation();">View</a>
+        <button onclick="event.stopPropagation();">Sync</button>
+    </div>
+</div>
+```
+
+Styling:
+```css
+.panel-discogs-card {
+    background-color: var(--lcd-bg);
+    border: 2px solid var(--border);
+    padding: var(--space-md);
+    cursor: pointer;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); /* Recessed LCD effect */
+}
+
+.panel-discogs-card:hover {
+    border-color: var(--primary);
+}
+
+/* Text uses LCD colors */
+.panel-discogs-card .panel-info h2,
+.panel-discogs-card .panel-artist,
+.panel-discogs-card .panel-meta,
+.panel-discogs-card .panel-stats {
+    color: var(--lcd-text);
+}
+```
+
+JavaScript:
+```javascript
+const discogsCard = document.getElementById('panel-discogs-card');
+if (discogsCard) {
+    discogsCard.addEventListener('click', () => {
+        window.location.href = discogsCard.dataset.href;
+    });
+}
+```
+
+Key points:
+- Buttons inside must have `onclick="event.stopPropagation();"` to prevent card navigation
+- Uses `data-href` attribute for the destination URL
+- LCD-style background and text colors
+- Orange border on hover indicates interactivity
+
 #### Inputs & Forms
 - Minimal styling - transparent background until hover/focus
 - 1px border on focus (orange)

@@ -1,50 +1,46 @@
 {# Side panel partial for release details - loaded via AJAX #}
 <div class="panel-release" data-release-id="{{ release.id }}">
-    <!-- Hidden expand button - will be moved to header bar by JS -->
-    <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="panel-expand-btn" id="panel-expand-btn" title="Open full page" style="display: none;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-        </svg>
-    </a>
-
-    <header class="panel-header">
-        <div class="panel-cover">
-            {% if release.cover_art_url %}
-            <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
-            {% else %}
-            <div class="cover-placeholder-panel">
-                <span>No Cover</span>
-            </div>
-            {% endif %}
-        </div>
-        <div class="panel-info">
-            <h2>{{ release.display_title }}</h2>
-            <p class="panel-artist">{{ release.display_artist }}</p>
-            <div class="panel-meta">
-                {% if release.label %}<span>{{ release.label }}</span>{% endif %}
-                {% if release.year %}<span>{{ release.year }}</span>{% endif %}
-            </div>
-            {% set avg_bpm = release.get_average_bpm() %}
-            <div class="panel-stats">
-                <span>{{ stats.total }} tracks</span>
-                <span class="stat-divider">•</span>
-                <span class="text-success">{{ stats.playable }} playable</span>
-                {% if avg_bpm.value %}
-                <span class="stat-divider">•</span>
-                <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}">{{ avg_bpm.display }}</span>
+    <!-- Discogs Card - clickable to open full page -->
+    <div class="panel-discogs-card" id="panel-discogs-card" data-href="{{ url_for('releases.view_release', release_id=release.id) }}">
+        <header class="panel-header">
+            <div class="panel-cover">
+                {% if release.cover_art_url %}
+                <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
+                {% else %}
+                <div class="cover-placeholder-panel">
+                    <span>No Cover</span>
+                </div>
                 {% endif %}
             </div>
+            <div class="panel-info">
+                <h2>{{ release.display_title }}</h2>
+                <p class="panel-artist">{{ release.display_artist }}</p>
+                <div class="panel-meta">
+                    {% if release.label %}<span>{{ release.label }}</span>{% endif %}
+                    {% if release.year %}<span>{{ release.year }}</span>{% endif %}
+                </div>
+                {% set avg_bpm = release.get_average_bpm() %}
+                <div class="panel-stats">
+                    <span>{{ stats.total }} tracks</span>
+                    <span class="stat-divider">•</span>
+                    <span class="text-success">{{ stats.playable }} playable</span>
+                    {% if avg_bpm.value %}
+                    <span class="stat-divider">•</span>
+                    <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}">{{ avg_bpm.display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+        <div class="panel-discogs-actions">
+            <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">View</a>
+            {% if release.discogs_edit_url %}
+            <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">Edit</a>
+            {% endif %}
+            <button class="btn btn-secondary btn-sm" id="panel-btn-sync" title="Sync from Discogs" onclick="event.stopPropagation();"><span class="activity-led"></span><span class="btn-text">Sync</span></button>
         </div>
-    </header>
+    </div>
 
     <div class="panel-actions">
-        <div class="panel-action-group discogs-group">
-            <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View</a>
-            {% if release.discogs_edit_url %}
-            <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Edit</a>
-            {% endif %}
-            <button class="btn btn-secondary btn-sm" id="panel-btn-sync" title="Sync from Discogs"><span class="activity-led"></span><span class="btn-text">Sync</span></button>
-        </div>
         <div class="panel-action-group asetate-group">
             <div class="panel-crate-dropdown-wrapper">
                 <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate ▾</button>
@@ -666,6 +662,14 @@
                     syncBtn.disabled = false;
                 }, 2000);
             }
+        });
+    }
+
+    // Discogs card click to open full page
+    const discogsCard = document.getElementById('panel-discogs-card');
+    if (discogsCard) {
+        discogsCard.addEventListener('click', () => {
+            window.location.href = discogsCard.dataset.href;
         });
     }
 
