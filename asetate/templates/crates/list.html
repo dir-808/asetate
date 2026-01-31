@@ -16,38 +16,44 @@
         {% if crate_tree %}
         <div class="crates-grid">
             {% macro render_crate(node, depth=0) %}
-            <div class="crate-card"
-                 data-crate-id="{{ node.crate.id }}"
-                 data-depth="{{ depth }}"
-                 style="{% if node.crate.color_hex %}--crate-color: {{ node.crate.color_hex }}{% endif %}"
-                 tabindex="0">
-                <div class="crate-card-main">
-                    <span class="crate-icon-lg" {% if node.crate.color_hex %}style="background-color: {{ node.crate.color_hex }}20"{% endif %}>
-                        {{ node.crate.display_icon }}
-                    </span>
-                    <div class="crate-card-info">
-                        <span class="crate-card-name">{{ node.crate.name }}</span>
-                        {% if node.crate.description %}
-                        <span class="crate-card-desc">{{ node.crate.description[:40] }}{% if node.crate.description|length > 40 %}...{% endif %}</span>
-                        {% endif %}
-                        <div class="crate-card-stats">
-                            <span>{{ node.release_count }} releases</span>
-                            <span>{{ node.track_count }} tracks</span>
-                        </div>
+            <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}"
+               class="crate-box {% if depth > 0 %}sub-crate{% endif %}"
+               data-crate-id="{{ node.crate.id }}"
+               style="{% if node.crate.color_hex %}--crate-accent: {{ node.crate.color_hex }}{% endif %}">
+                <!-- Crate lid (opens on hover) -->
+                <div class="crate-lid">
+                    <div class="crate-lid-inner">
+                        <span class="crate-lid-label">{{ node.crate.name[:12] }}{% if node.crate.name|length > 12 %}...{% endif %}</span>
                     </div>
                 </div>
-                <div class="crate-card-actions">
-                    <a href="{{ url_for('crates.view_crate', crate_id=node.crate.id) }}" class="btn btn-secondary btn-sm" title="View crate">Open</a>
-                    <button class="btn btn-secondary btn-sm crate-edit-btn" data-crate-id="{{ node.crate.id }}" title="Edit crate">Edit</button>
-                    <button class="btn-icon crate-subcrate-btn" data-crate-id="{{ node.crate.id }}" data-crate-name="{{ node.crate.name }}" title="Add sub-crate">+</button>
+                <!-- Crate body -->
+                <div class="crate-body">
+                    <div class="crate-icon-container">
+                        <span class="crate-emoji">{{ node.crate.display_icon }}</span>
+                    </div>
+                    <div class="crate-info">
+                        <span class="crate-name">{{ node.crate.name }}</span>
+                        <span class="crate-stats">{{ node.release_count }} releases</span>
+                    </div>
+                    <!-- Action buttons (on hover) -->
+                    <div class="crate-hover-actions">
+                        <button class="crate-action-btn crate-edit-btn"
+                                data-crate-id="{{ node.crate.id }}"
+                                title="Edit">✎</button>
+                        <button class="crate-action-btn crate-subcrate-btn"
+                                data-crate-id="{{ node.crate.id }}"
+                                data-crate-name="{{ node.crate.name }}"
+                                title="Add sub-crate">+</button>
+                    </div>
                 </div>
-            </div>
+                <!-- Crate slats (visual only) -->
+                <div class="crate-slat crate-slat-1"></div>
+                <div class="crate-slat crate-slat-2"></div>
+            </a>
             {% if node.children %}
-            <div class="crate-children" style="--depth: {{ depth + 1 }}">
-                {% for child in node.children %}
-                {{ render_crate(child, depth + 1) }}
-                {% endfor %}
-            </div>
+            {% for child in node.children %}
+            {{ render_crate(child, depth + 1) }}
+            {% endfor %}
             {% endif %}
             {% endmacro %}
 
@@ -148,132 +154,220 @@
 </div>
 
 <style>
-/* Crates page layout with sidebar */
+/* Crates page layout - sidebar pushes content */
 .crates-page-layout {
     display: flex;
-    gap: var(--space-lg);
+    position: relative;
 }
 
 .crates-main {
     flex: 1;
     min-width: 0;
+    transition: padding-right 0.3s ease;
 }
 
-.crates-main.panel-open {
-    margin-right: 400px;
+body.crate-panel-open .crates-main {
+    padding-right: 420px;
 }
 
-/* Crate grid layout */
+/* Crate grid - square cards like releases */
 .crates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-md);
+}
+
+/* Stylised crate box */
+.crate-box {
+    position: relative;
+    aspect-ratio: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(135deg, #2a2520 0%, #1a1815 100%);
+    border: 2px solid #3d352d;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    --crate-accent: var(--primary);
 }
 
-/* Crate card */
-.crate-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-sm) var(--space-md);
-    background: var(--bg-surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-sm);
-    transition: border-color 0.15s, background-color 0.15s;
-    cursor: default;
+.crate-box:hover {
+    transform: translateY(-4px);
+    border-color: var(--crate-accent);
 }
 
-.crate-card:hover {
-    border-color: var(--text-muted);
+/* Sub-crate indicator */
+.crate-box.sub-crate::before {
+    content: '↳';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    z-index: 5;
 }
 
-.crate-card[style*="--crate-color"] {
-    border-left-width: 4px;
-    border-left-color: var(--crate-color);
-}
-
-.crate-card-main {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex: 1;
-    min-width: 0;
-}
-
-.crate-icon-lg {
-    width: 42px;
-    height: 42px;
+/* Crate lid - opens on hover */
+.crate-lid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 28px;
+    background: linear-gradient(180deg, #3d352d 0%, #2a2520 100%);
+    border-bottom: 2px solid #1a1815;
+    transform-origin: top center;
+    transition: transform 0.3s ease;
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
-    flex-shrink: 0;
 }
 
-.crate-card-info {
+.crate-lid-inner {
+    background: #1a1815;
+    padding: 2px 8px;
+    border-radius: 2px;
+}
+
+.crate-lid-label {
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--crate-accent);
+    font-weight: 600;
+}
+
+.crate-box:hover .crate-lid {
+    transform: rotateX(-75deg) translateY(-8px);
+}
+
+/* Crate body */
+.crate-body {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.crate-card-name {
-    font-weight: 500;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.crate-card-desc {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.crate-card-stats {
-    display: flex;
-    gap: var(--space-md);
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-}
-
-.crate-card-actions {
-    display: flex;
-    gap: var(--space-xs);
     align-items: center;
+    justify-content: center;
+    padding: var(--space-md);
+    padding-top: 32px;
+    position: relative;
+    z-index: 1;
 }
 
-/* Sub-crate indentation */
-.crate-children {
-    margin-left: calc(var(--depth, 1) * 24px);
+.crate-icon-container {
+    width: 48px;
+    height: 48px;
     display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    border-left: 2px solid var(--border);
-    padding-left: var(--space-sm);
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.crate-emoji {
+    font-size: 1.5rem;
+}
+
+.crate-info {
+    text-align: center;
+}
+
+.crate-name {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    margin-bottom: 2px;
+}
+
+.crate-stats {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+/* Crate slats (decorative wooden slats) */
+.crate-slat {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        #3d352d 10%,
+        #3d352d 90%,
+        transparent 100%);
+    z-index: 0;
+}
+
+.crate-slat-1 {
+    bottom: 30%;
+}
+
+.crate-slat-2 {
+    bottom: 60%;
+}
+
+/* Hover actions */
+.crate-hover-actions {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+}
+
+.crate-box:hover .crate-hover-actions {
+    opacity: 1;
+}
+
+.crate-action-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.crate-action-btn:hover {
+    background: var(--crate-accent);
+    border-color: var(--crate-accent);
+    color: var(--bg-primary);
 }
 
 /* Crate edit sidebar */
 .crate-panel {
     position: fixed;
     top: 0;
-    right: -420px;
+    right: 0;
     width: 400px;
     height: 100vh;
     background: var(--bg-surface);
     border-left: 2px solid var(--border);
-    z-index: 100;
-    transition: right 0.25s ease;
+    z-index: 900;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
     overflow-y: auto;
 }
 
 .crate-panel.open {
-    right: 0;
+    transform: translateX(0);
 }
 
 .crate-panel-header {
@@ -298,7 +392,7 @@
     padding: var(--space-md);
 }
 
-/* Icon/color picker compact */
+/* Icon/color picker styles */
 .icon-picker-container {
     margin-top: var(--space-xs);
 }
@@ -455,6 +549,12 @@
     color: var(--error);
     margin-bottom: var(--space-sm);
 }
+
+@media (max-width: 1200px) {
+    body.crate-panel-open .crates-main {
+        padding-right: 0;
+    }
+}
 </style>
 {% endblock %}
 
@@ -557,6 +657,7 @@
     document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
     document.getElementById('btn-new-crate-empty')?.addEventListener('click', () => openModal());
 
+    // Stop propagation on action buttons so clicking them doesn't navigate to crate
     document.querySelectorAll('.crate-subcrate-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -609,13 +710,13 @@
     // Crate edit panel
     function openPanel(crateId) {
         cratePanel.classList.add('open');
-        cratesMain.classList.add('panel-open');
+        document.body.classList.add('crate-panel-open');
         loadCrateForEdit(crateId);
     }
 
     function closePanel() {
         cratePanel.classList.remove('open');
-        cratesMain.classList.remove('panel-open');
+        document.body.classList.remove('crate-panel-open');
     }
 
     document.getElementById('crate-panel-close').addEventListener('click', closePanel);
@@ -745,7 +846,7 @@
         });
     }
 
-    // Edit button click handlers
+    // Edit button click handlers - stop navigation
     document.querySelectorAll('.crate-edit-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();

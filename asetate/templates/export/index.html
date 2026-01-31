@@ -133,18 +133,16 @@
             <div class="export-section card">
                 <h3>Export Format</h3>
                 <div class="filter-group">
-                    <label class="radio-label">
-                        <input type="radio" name="export-grouping" value="tracks" checked>
-                        <span>Individual tracks</span>
-                    </label>
-                    <p class="text-muted radio-hint">One row per playable track</p>
-                </div>
-                <div class="filter-group">
-                    <label class="radio-label">
-                        <input type="radio" name="export-grouping" value="releases">
-                        <span>Group by release</span>
-                    </label>
-                    <p class="text-muted radio-hint">One row per release with playable track info combined</p>
+                    <label>Group by release</label>
+                    <div class="toggle-switch-wrapper">
+                        <span class="toggle-label-left">Tracks</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="export-group-by-release">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label-right">Releases</span>
+                    </div>
+                    <p class="text-muted toggle-hint" id="grouping-hint">One row per playable track</p>
                 </div>
             </div>
 
@@ -316,6 +314,32 @@
 .seller-column {
     background: rgba(249, 115, 22, 0.1);
 }
+
+/* Toggle switch for export format */
+.toggle-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-xs);
+}
+
+.toggle-label-left,
+.toggle-label-right {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.toggle-label-left.active,
+.toggle-label-right.active {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.toggle-hint {
+    font-size: 0.75rem;
+    margin-top: var(--space-xs);
+}
 </style>
 {% endblock %}
 
@@ -391,6 +415,7 @@
             search: document.getElementById('filter-search').value,
             tags: document.getElementById('filter-tags').value,
             not_exported: document.getElementById('filter-not-exported').checked,
+            group_by_release: document.getElementById('export-group-by-release')?.checked || false,
         };
 
         // DJ-specific filters
@@ -838,6 +863,29 @@
             presetModal.classList.remove('open');
         }
     });
+
+    // Export grouping toggle
+    const groupingToggle = document.getElementById('export-group-by-release');
+    const groupingHint = document.getElementById('grouping-hint');
+    const leftLabel = document.querySelector('.toggle-label-left');
+    const rightLabel = document.querySelector('.toggle-label-right');
+
+    function updateGroupingUI() {
+        const isRelease = groupingToggle.checked;
+        leftLabel.classList.toggle('active', !isRelease);
+        rightLabel.classList.toggle('active', isRelease);
+        groupingHint.textContent = isRelease
+            ? 'One row per release with playable track info combined'
+            : 'One row per playable track';
+    }
+
+    groupingToggle.addEventListener('change', () => {
+        updateGroupingUI();
+        updatePreview();
+    });
+
+    // Initialize grouping UI
+    updateGroupingUI();
 
     // Initialize
     updateCueUI();

@@ -29,6 +29,12 @@ class Release(db.Model):
     cover_art_url = db.Column(db.String(1000))
     discogs_uri = db.Column(db.String(500))
 
+    # Additional Discogs metadata
+    country = db.Column(db.String(100))  # Country of release
+    format_details = db.Column(db.String(500))  # Format description (e.g., "LP, Album, 180g")
+    genres = db.Column(db.JSON)  # List of genres
+    styles = db.Column(db.JSON)  # List of styles
+
     # User corrections (JSON) - local overrides for incorrect Discogs data
     # Format: {"title": "Corrected Title", "artist": "Corrected Artist", ...}
     user_corrections = db.Column(db.JSON)
@@ -179,3 +185,17 @@ class Release(db.Model):
         return self.inventory_listings.filter(
             InventoryListing.status.in_([ListingStatus.FOR_SALE, ListingStatus.DRAFT])
         ).count()
+
+    @property
+    def display_genres(self) -> str:
+        """Return comma-separated genres."""
+        if self.genres:
+            return ", ".join(self.genres)
+        return ""
+
+    @property
+    def display_styles(self) -> str:
+        """Return comma-separated styles."""
+        if self.styles:
+            return ", ".join(self.styles)
+        return ""

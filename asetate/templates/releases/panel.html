@@ -1,5 +1,12 @@
 {# Side panel partial for release details - loaded via AJAX #}
 <div class="panel-release" data-release-id="{{ release.id }}">
+    <!-- Full page button in top left -->
+    <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="panel-fullpage-corner" title="Open full page">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+        </svg>
+    </a>
+
     <header class="panel-header">
         <div class="panel-cover">
             {% if release.cover_art_url %}
@@ -34,11 +41,6 @@
         <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Discogs</a>
         <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate</button>
         <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to export cue">Cue</button>
-        <a href="{{ url_for('releases.view_release', release_id=release.id) }}" class="btn btn-secondary btn-sm panel-fullpage-btn" title="Open full page">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-            </svg>
-        </a>
     </div>
 
     <div class="panel-crates" id="panel-release-crates">
@@ -61,9 +63,9 @@
         </div>
 
         {% if tracks %}
-        <div class="panel-tracks-list">
+        <div class="panel-tracks-list" id="panel-tracks-list">
             {% for track in tracks %}
-            <div class="panel-track-row {% if track.is_playable %}track-playable{% endif %}"
+            <div class="panel-track-row {% if not track.is_playable %}track-dimmed{% endif %}"
                  data-track-id="{{ track.id }}">
                 <div class="panel-track-main">
                     <span class="panel-track-pos">{{ track.display_position }}</span>
@@ -72,59 +74,52 @@
                         <span class="panel-track-duration">{{ track.display_duration }}</span>
                     </div>
                     <div class="panel-playable-toggle">
-                        <label class="toggle toggle-sm" title="Mark as playable">
+                        <label class="toggle toggle-sm" title="Playable">
                             <input type="checkbox" class="panel-track-playable"
                                    {% if track.is_playable %}checked{% endif %}
                                    data-field="is_playable">
                             <span class="toggle-slider"></span>
                         </label>
-                        <span class="panel-playable-label">Play</span>
                     </div>
                 </div>
                 <div class="panel-track-fields">
-                    <div class="panel-field">
+                    <div class="panel-field panel-field-bpm">
                         <label>BPM</label>
                         <input type="number" class="panel-input panel-bpm"
                                value="{{ track.bpm or '' }}" placeholder="—"
                                min="20" max="300" data-field="bpm">
                     </div>
-                    <div class="panel-field">
+                    <div class="panel-field panel-field-key">
                         <label>Key</label>
                         <input type="text" class="panel-input panel-key"
                                value="{{ track.camelot or track.musical_key or '' }}"
                                placeholder="—" data-field="camelot" list="panel-camelot-keys">
                     </div>
                     <div class="panel-field panel-field-energy">
-                        <label>Energy</label>
-                        <div class="energy-bar" data-field="energy" data-value="{{ track.energy or 3 }}">
-                            <div class="energy-segment" data-level="1"></div>
-                            <div class="energy-segment" data-level="2"></div>
-                            <div class="energy-segment" data-level="3"></div>
-                            <div class="energy-segment" data-level="4"></div>
-                            <div class="energy-segment" data-level="5"></div>
+                        <label>NRG</label>
+                        <div class="energy-bar-compact" data-field="energy" data-value="{{ track.energy or 3 }}">
+                            <span class="energy-dot" data-level="1"></span>
+                            <span class="energy-dot" data-level="2"></span>
+                            <span class="energy-dot" data-level="3"></span>
+                            <span class="energy-dot" data-level="4"></span>
+                            <span class="energy-dot" data-level="5"></span>
                         </div>
                     </div>
                 </div>
-                {% if track.notes %}
-                <div class="panel-track-notes-display">
-                    <span class="panel-track-notes-icon" title="Track notes">📝</span>
-                    <span class="panel-track-notes-text">{{ track.notes[:50] }}{% if track.notes|length > 50 %}...{% endif %}</span>
-                </div>
-                {% endif %}
-                <div class="panel-track-notes-row">
+                <div class="panel-track-extras">
                     <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
+                            data-track-id="{{ track.id }}"
                             data-track-notes="{{ track.notes or '' }}"
                             title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
-                        {% if track.notes %}Edit Notes{% else %}+ Notes{% endif %}
+                        {% if track.notes %}📝{% else %}+Note{% endif %}
                     </button>
+                    <div class="panel-track-tags" data-track-id="{{ track.id }}">
+                        {% for tag in track.tags %}
+                        <span class="tag-badge-sm" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
+                        {% endfor %}
+                        <button class="panel-tag-add-btn" title="Add tag">+</button>
+                    </div>
                 </div>
-                {% if track.tags %}
-                <div class="panel-track-tags">
-                    {% for tag in track.tags %}
-                    <span class="tag-badge-sm" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -144,7 +139,7 @@
             <option value="12A"><option value="12B">
         </datalist>
         {% else %}
-        <p class="text-muted">No tracks found.</p>
+        <p class="text-muted" style="padding: var(--space-md);">No tracks found.</p>
         {% endif %}
     </section>
 </div>
@@ -164,94 +159,190 @@
     </div>
 </div>
 
+<!-- Tag datalist for autocomplete -->
+<datalist id="panel-all-tags"></datalist>
+
 <style>
-/* Panel improvements */
-.panel-playable-toggle {
+/* Full page button - top left corner */
+.panel-fullpage-corner {
+    position: absolute;
+    top: var(--space-sm);
+    left: var(--space-sm);
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    z-index: 10;
+    transition: all 0.15s;
 }
 
-.panel-playable-label {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.panel-fullpage-corner:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-dim);
 }
 
-.panel-track-row.track-playable .panel-playable-label {
-    color: var(--success);
+.panel-release {
+    position: relative;
+    padding-top: var(--space-xl);
 }
 
+/* Track row - dimmed for non-playable */
+.panel-track-row {
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--border);
+    transition: opacity 0.15s, background-color 0.15s;
+}
+
+.panel-track-row:last-child {
+    border-bottom: none;
+}
+
+.panel-track-row.track-dimmed {
+    opacity: 0.5;
+}
+
+.panel-track-row.track-dimmed:hover {
+    opacity: 0.8;
+}
+
+.panel-track-row:hover {
+    background-color: var(--bg-surface);
+}
+
+/* Track main row */
+.panel-track-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.panel-track-pos {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    min-width: 28px;
+}
+
+.panel-track-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.panel-track-title {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-track-duration {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.panel-playable-toggle {
+    flex-shrink: 0;
+}
+
+/* Track fields row */
 .panel-track-fields {
     display: flex;
     gap: var(--space-sm);
     margin-top: var(--space-xs);
-    padding-left: calc(30px + var(--space-sm));
+    padding-left: 28px;
+    align-items: center;
 }
 
 .panel-field {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 4px;
 }
 
 .panel-field label {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
-.panel-field-energy {
-    flex: 1;
+.panel-field-bpm .panel-input,
+.panel-field-key .panel-input {
+    width: 45px;
 }
 
-/* Segmented Energy Bar */
-.energy-bar {
+.panel-input {
+    padding: 2px 4px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-align: center;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-primary);
+}
+
+.panel-input:hover {
+    background: var(--bg-input);
+    border-color: var(--border);
+}
+
+.panel-input:focus {
+    background: var(--bg-input);
+    border-color: var(--primary);
+    outline: none;
+}
+
+/* Compact energy bar - small dots */
+.energy-bar-compact {
     display: flex;
-    gap: 2px;
-    height: 20px;
+    gap: 3px;
     cursor: pointer;
 }
 
-.energy-segment {
-    flex: 1;
+.energy-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
     background-color: var(--border);
-    border-radius: 2px;
     transition: background-color 0.15s, transform 0.1s;
-    min-width: 16px;
 }
 
-.energy-segment:hover {
-    transform: scaleY(1.1);
+.energy-dot:hover {
+    transform: scale(1.2);
 }
 
-.energy-segment.active {
-    background-color: var(--primary);
-}
+.energy-bar-compact[data-value="1"] .energy-dot[data-level="1"] { background-color: var(--success); }
+.energy-bar-compact[data-value="2"] .energy-dot[data-level="1"],
+.energy-bar-compact[data-value="2"] .energy-dot[data-level="2"] { background-color: #84cc16; }
+.energy-bar-compact[data-value="3"] .energy-dot[data-level="1"],
+.energy-bar-compact[data-value="3"] .energy-dot[data-level="2"],
+.energy-bar-compact[data-value="3"] .energy-dot[data-level="3"] { background-color: var(--warning); }
+.energy-bar-compact[data-value="4"] .energy-dot[data-level="1"],
+.energy-bar-compact[data-value="4"] .energy-dot[data-level="2"],
+.energy-bar-compact[data-value="4"] .energy-dot[data-level="3"],
+.energy-bar-compact[data-value="4"] .energy-dot[data-level="4"] { background-color: var(--primary); }
+.energy-bar-compact[data-value="5"] .energy-dot { background-color: var(--error); }
 
-.energy-bar[data-value="1"] .energy-segment[data-level="1"] { background-color: var(--success); }
-.energy-bar[data-value="2"] .energy-segment[data-level="1"],
-.energy-bar[data-value="2"] .energy-segment[data-level="2"] { background-color: #84cc16; }
-.energy-bar[data-value="3"] .energy-segment[data-level="1"],
-.energy-bar[data-value="3"] .energy-segment[data-level="2"],
-.energy-bar[data-value="3"] .energy-segment[data-level="3"] { background-color: var(--warning); }
-.energy-bar[data-value="4"] .energy-segment[data-level="1"],
-.energy-bar[data-value="4"] .energy-segment[data-level="2"],
-.energy-bar[data-value="4"] .energy-segment[data-level="3"],
-.energy-bar[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
-.energy-bar[data-value="5"] .energy-segment { background-color: var(--error); }
-
-/* Track notes in panel */
-.panel-track-notes-row {
+/* Track extras row - notes and tags */
+.panel-track-extras {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
     margin-top: var(--space-xs);
-    padding-left: calc(30px + var(--space-sm));
+    padding-left: 28px;
+    flex-wrap: wrap;
 }
 
 .panel-notes-btn {
-    font-size: 0.65rem;
-    padding: 2px 8px;
+    font-size: 0.6rem;
+    padding: 2px 6px;
     background: transparent;
     border: 1px dashed var(--border);
     color: var(--text-muted);
@@ -272,23 +363,78 @@
     background-color: rgba(251, 191, 36, 0.1);
 }
 
-.panel-track-notes-display {
+/* Panel tags */
+.panel-track-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.tag-badge-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 1px 6px;
+    font-size: 0.55rem;
+    font-weight: 600;
+    background-color: var(--tag-color, var(--primary));
+    color: var(--bg-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    cursor: default;
+}
+
+.tag-badge-sm .tag-remove-sm {
+    display: none;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 2px;
+    font-size: 0.7rem;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+.tag-badge-sm:hover .tag-remove-sm {
+    display: inline;
+}
+
+.panel-tag-add-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    line-height: 1;
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-top: var(--space-xs);
-    padding-left: calc(30px + var(--space-sm));
-    font-size: 0.7rem;
-    color: var(--text-secondary);
+    justify-content: center;
 }
 
-.panel-track-notes-icon {
-    font-size: 0.75rem;
+.panel-tag-add-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
-.panel-track-notes-text {
-    font-style: italic;
-    opacity: 0.8;
+.panel-tag-input {
+    width: 60px;
+    padding: 1px 4px;
+    font-size: 0.6rem;
+    background-color: var(--bg-input);
+    border: 1px solid var(--primary);
+    color: var(--text-primary);
+}
+
+/* Tracks list - no max-height, let it flow */
+.panel-tracks-list {
+    /* No max-height - removes unnecessary scrollbar */
 }
 
 /* Notes modal within panel */
@@ -345,19 +491,6 @@
     gap: var(--space-sm);
     margin-top: var(--space-md);
 }
-
-/* Full page button as expansion icon */
-.panel-fullpage-btn {
-    padding: var(--space-xs);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.panel-fullpage-btn svg {
-    width: 14px;
-    height: 14px;
-}
 </style>
 
 <script>
@@ -365,6 +498,7 @@
     const releaseId = {{ release.id }};
     const saveIndicator = document.getElementById('panel-save-indicator');
     let saveTimeout = null;
+    let allTags = [];
 
     function showSaving() {
         saveIndicator.textContent = 'Saving...';
@@ -402,8 +536,7 @@
                 showSaved();
                 if (field === 'is_playable') {
                     const row = document.querySelector(`.panel-track-row[data-track-id="${trackId}"]`);
-                    row.classList.toggle('track-playable', value);
-                    // Update stats display
+                    row.classList.toggle('track-dimmed', !value);
                     updatePanelStats();
                 }
                 if (field === 'bpm') {
@@ -425,7 +558,8 @@
         let bpmCount = 0;
 
         rows.forEach(row => {
-            if (row.classList.contains('track-playable')) {
+            const isPlayable = !row.classList.contains('track-dimmed');
+            if (isPlayable) {
                 playableCount++;
                 const bpmInput = row.querySelector('.panel-bpm');
                 if (bpmInput && bpmInput.value) {
@@ -476,10 +610,10 @@
     });
 
     // Energy bar click handler
-    document.querySelectorAll('.energy-bar').forEach(bar => {
-        bar.querySelectorAll('.energy-segment').forEach(segment => {
-            segment.addEventListener('click', (e) => {
-                const level = parseInt(segment.dataset.level);
+    document.querySelectorAll('.energy-bar-compact').forEach(bar => {
+        bar.querySelectorAll('.energy-dot').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const level = parseInt(dot.dataset.level);
                 const row = bar.closest('.panel-track-row');
                 const trackId = row.dataset.trackId;
 
@@ -492,11 +626,11 @@
     // Track Notes Modal
     const notesModal = document.getElementById('panel-track-notes-modal');
     const notesTextarea = document.getElementById('panel-track-notes-textarea');
-    let currentNotesBtn = null;
+    let currentNotesTrackId = null;
 
     document.querySelectorAll('.panel-notes-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            currentNotesBtn = btn;
+            currentNotesTrackId = btn.dataset.trackId;
             notesTextarea.value = btn.dataset.trackNotes || '';
             notesModal.style.display = 'flex';
             notesTextarea.focus();
@@ -512,16 +646,13 @@
     });
 
     document.getElementById('panel-notes-save')?.addEventListener('click', async () => {
-        if (!currentNotesBtn) return;
+        if (!currentNotesTrackId) return;
 
-        const row = currentNotesBtn.closest('.panel-track-row');
-        const trackId = row.dataset.trackId;
         const notes = notesTextarea.value.trim();
-
         showSaving();
 
         try {
-            const response = await fetch(`/releases/${releaseId}/tracks/${trackId}`, {
+            const response = await fetch(`/releases/${releaseId}/tracks/${currentNotesTrackId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes: notes || null })
@@ -530,13 +661,17 @@
             if (response.ok) {
                 showSaved();
                 notesModal.style.display = 'none';
-                currentNotesBtn.dataset.trackNotes = notes;
-                if (notes) {
-                    currentNotesBtn.textContent = 'Edit Notes';
-                    currentNotesBtn.classList.add('has-notes');
-                } else {
-                    currentNotesBtn.textContent = '+ Notes';
-                    currentNotesBtn.classList.remove('has-notes');
+                // Update button
+                const btn = document.querySelector(`.panel-notes-btn[data-track-id="${currentNotesTrackId}"]`);
+                if (btn) {
+                    btn.dataset.trackNotes = notes;
+                    if (notes) {
+                        btn.textContent = '📝';
+                        btn.classList.add('has-notes');
+                    } else {
+                        btn.textContent = '+Note';
+                        btn.classList.remove('has-notes');
+                    }
                 }
             } else {
                 showError();
@@ -544,6 +679,106 @@
         } catch (err) {
             showError();
         }
+    });
+
+    // Load all tags for autocomplete
+    async function loadAllTags() {
+        try {
+            const response = await fetch('/tags/');
+            const data = await response.json();
+            allTags = data.tags;
+            // Populate datalist
+            const datalist = document.getElementById('panel-all-tags');
+            datalist.innerHTML = allTags.map(t => `<option value="${t.name}">`).join('');
+        } catch (err) {
+            console.error('Failed to load tags:', err);
+        }
+    }
+    loadAllTags();
+
+    // Tag management
+    async function addTagToTrack(trackId, tagName) {
+        try {
+            const response = await fetch(`/tags/track/${trackId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: tagName.trim().toLowerCase() })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                // Refresh tags list to include new tag
+                loadAllTags();
+                return result.tag;
+            }
+            return null;
+        } catch (err) {
+            console.error('Failed to add tag:', err);
+            return null;
+        }
+    }
+
+    async function removeTagFromTrack(trackId, tagId) {
+        try {
+            await fetch(`/tags/track/${trackId}/${tagId}`, { method: 'DELETE' });
+        } catch (err) {
+            console.error('Failed to remove tag:', err);
+        }
+    }
+
+    // Tag add button handler
+    document.querySelectorAll('.panel-tag-add-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const container = btn.closest('.panel-track-tags');
+            const trackId = container.dataset.trackId;
+
+            // Check if input already exists
+            if (container.querySelector('.panel-tag-input')) return;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'panel-tag-input';
+            input.placeholder = 'tag';
+            input.setAttribute('list', 'panel-all-tags');
+            container.insertBefore(input, btn);
+            input.focus();
+
+            async function submitTag() {
+                const value = input.value.trim();
+                if (value) {
+                    const tag = await addTagToTrack(trackId, value);
+                    if (tag) {
+                        const tagEl = document.createElement('span');
+                        tagEl.className = 'tag-badge-sm';
+                        tagEl.dataset.tagId = tag.id;
+                        tagEl.style.setProperty('--tag-color', tag.color || '#E07A5F');
+                        tagEl.textContent = tag.name;
+                        container.insertBefore(tagEl, input);
+                    }
+                }
+                input.remove();
+            }
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitTag();
+                } else if (e.key === 'Escape') {
+                    input.remove();
+                }
+            });
+
+            // Apply tag on selecting from dropdown
+            input.addEventListener('change', () => {
+                if (input.value.trim()) {
+                    submitTag();
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => input.remove(), 150);
+            });
+        });
     });
 
     // Load crates for this release

@@ -22,7 +22,21 @@
             <div class="release-meta-large">
                 {% if release.label %}<span>{{ release.label }}</span>{% endif %}
                 {% if release.year %}<span>{{ release.year }}</span>{% endif %}
+                {% if release.country %}<span>{{ release.country }}</span>{% endif %}
             </div>
+            {% if release.format_details or release.display_genres or release.display_styles %}
+            <div class="release-extra-info">
+                {% if release.format_details %}
+                <span class="release-format" title="Format">{{ release.format_details }}</span>
+                {% endif %}
+                {% if release.display_genres %}
+                <span class="release-genre" title="Genre">{{ release.display_genres }}</span>
+                {% endif %}
+                {% if release.display_styles %}
+                <span class="release-style" title="Style">{{ release.display_styles }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
             {% set avg_bpm = release.get_average_bpm() %}
             <div class="release-stats" id="release-stats">
                 <span id="stat-total">{{ stats.total }} tracks</span>
@@ -456,6 +470,35 @@
 .energy-bar-table[data-value="4"] .energy-segment[data-level="3"],
 .energy-bar-table[data-value="4"] .energy-segment[data-level="4"] { background-color: var(--primary); }
 .energy-bar-table[data-value="5"] .energy-segment { background-color: var(--error); }
+
+/* Additional release info */
+.release-extra-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+
+.release-extra-info span {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+}
+
+.release-format {
+    border-left: 2px solid var(--primary) !important;
+}
+
+.release-genre {
+    border-left: 2px solid var(--success) !important;
+}
+
+.release-style {
+    border-left: 2px solid var(--warning) !important;
+}
 
 /* Responsive: stack notes below on smaller screens */
 @media (max-width: 1100px) {
