@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_icons.html" import pixel_icon, crate_icon %}
+{% from "_icons.html" import emoji_icon, crate_icon %}
 
 {% block title %}Crates - Asetate{% endblock %}
 
@@ -30,7 +30,7 @@
                 <!-- Crate body -->
                 <div class="crate-body">
                     <div class="crate-icon-container">
-                        {{ crate_icon(node.crate, scale=2.5) }}
+                        {{ crate_icon(node.crate, size=32) }}
                     </div>
                     <div class="crate-info">
                         <span class="crate-name">{{ node.crate.name }}</span>
@@ -101,18 +101,18 @@
                 <input type="text" id="crate-description" name="description" placeholder="e.g., Late night vibes">
             </div>
 
-            <!-- Pixel Icon Picker -->
+            <!-- Emoji Icon Picker -->
             <div class="form-group">
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="icon-preview">
-                            <span class="px-icon px-icon--folder" id="icon-preview-pixel" style="--px-scale: 2;"></span>
+                            <span class="emoji-icon emoji-icon--md" id="icon-preview-emoji" style="width: 32px; height: 32px; -webkit-mask-image: url('/static/emoji/1F4C1.svg'); mask-image: url('/static/emoji/1F4C1.svg');"></span>
                         </div>
                         <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Reset</button>
                     </div>
-                    <div class="pixel-icon-grid" id="icon-grid">
-                        <!-- Pixel icons loaded via JS -->
+                    <div class="emoji-icon-grid" id="icon-grid">
+                        <!-- Emoji icons loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="crate-icon" name="icon" value="">
@@ -153,7 +153,7 @@
 
 {% block scripts %}
 <script type="module">
-import { DEFAULT_ICON, renderPixelIconGrid, renderPixelIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
+import { DEFAULT_ICON, EMOJI_CODES, renderEmojiIconGrid, renderEmojiIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
 const modal = document.getElementById('new-crate-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -169,26 +169,33 @@ const clearIconBtn = document.getElementById('clear-icon');
 const cratePanel = document.getElementById('crate-panel');
 const cratePanelContent = document.getElementById('crate-panel-content');
 const cratesMain = document.getElementById('crates-main');
-const iconPreviewPixel = document.getElementById('icon-preview-pixel');
+const iconPreviewEmoji = document.getElementById('icon-preview-emoji');
 
-// Select pixel icon handler for modal
-function selectPixelIcon(iconName) {
+// Update emoji preview
+function updateEmojiPreview(iconName) {
+    const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
+    iconPreviewEmoji.style.setProperty('-webkit-mask-image', `url('/static/emoji/${code}.svg')`);
+    iconPreviewEmoji.style.setProperty('mask-image', `url('/static/emoji/${code}.svg')`);
+}
+
+// Select emoji icon handler for modal
+function selectEmojiIcon(iconName) {
     iconInput.value = formatIconForStorage(iconName);
-    iconPreviewPixel.className = `px-icon px-icon--${iconName}`;
-    iconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+    updateEmojiPreview(iconName);
+    iconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.icon === iconName);
     });
 }
 
-// Initialize pixel icon grid
-function initPixelIconGrid() {
-    renderPixelIconGrid(iconGrid, selectPixelIcon);
+// Initialize emoji icon grid
+function initEmojiIconGrid() {
+    renderEmojiIconGrid(iconGrid, selectEmojiIcon);
 }
 
 clearIconBtn.addEventListener('click', () => {
     iconInput.value = '';
-    iconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
-    iconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+    updateEmojiPreview(DEFAULT_ICON);
+    iconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
     });
 });
@@ -220,17 +227,17 @@ function openModal(parentId = null, parentCrateName = null) {
     }
     modal.classList.add('open');
     nameInput.focus();
-    initPixelIconGrid();
+    initEmojiIconGrid();
 }
 
 function closeModal() {
     modal.classList.remove('open');
     form.reset();
     iconInput.value = '';
-    iconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
+    updateEmojiPreview(DEFAULT_ICON);
     document.querySelectorAll('.color-option').forEach((b, i) => b.classList.toggle('selected', i === 0));
     colorInput.value = '';
-    iconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => btn.classList.remove('selected'));
+    iconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => btn.classList.remove('selected'));
 }
 
 document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
@@ -316,6 +323,7 @@ async function loadCrateForEdit(crateId) {
 
 function renderPanelForm(crate) {
     const currentIcon = getIconName(crate.icon);
+    const currentCode = EMOJI_CODES[currentIcon] || EMOJI_CODES[DEFAULT_ICON];
     cratePanelContent.innerHTML = `
         <form id="panel-edit-form">
             <div class="panel-form-group">
@@ -331,10 +339,10 @@ function renderPanelForm(crate) {
                 <div class="icon-picker-container panel-icon-picker">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="panel-icon-preview">
-                            <span class="px-icon px-icon--${currentIcon}" id="panel-icon-preview-pixel" style="--px-scale: 2;"></span>
+                            <span class="emoji-icon emoji-icon--md" id="panel-icon-preview-emoji" style="width: 32px; height: 32px; -webkit-mask-image: url('/static/emoji/${currentCode}.svg'); mask-image: url('/static/emoji/${currentCode}.svg');"></span>
                         </div>
                     </div>
-                    <div class="pixel-icon-grid" id="panel-icon-grid"></div>
+                    <div class="emoji-icon-grid" id="panel-icon-grid"></div>
                 </div>
                 <input type="hidden" id="panel-icon" value="${crate.icon || ''}">
             </div>
@@ -361,20 +369,26 @@ function renderPanelForm(crate) {
 
     // Setup panel form handlers
     const panelForm = document.getElementById('panel-edit-form');
-    const panelIconPreviewPixel = document.getElementById('panel-icon-preview-pixel');
+    const panelIconPreviewEmoji = document.getElementById('panel-icon-preview-emoji');
     const panelIconInput = document.getElementById('panel-icon');
     const panelIconGrid = document.getElementById('panel-icon-grid');
     const panelColorInput = document.getElementById('panel-color');
 
-    function selectPanelPixelIcon(iconName) {
+    function updatePanelEmojiPreview(iconName) {
+        const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
+        panelIconPreviewEmoji.style.setProperty('-webkit-mask-image', `url('/static/emoji/${code}.svg')`);
+        panelIconPreviewEmoji.style.setProperty('mask-image', `url('/static/emoji/${code}.svg')`);
+    }
+
+    function selectPanelEmojiIcon(iconName) {
         panelIconInput.value = formatIconForStorage(iconName);
-        panelIconPreviewPixel.className = `px-icon px-icon--${iconName}`;
-        panelIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        updatePanelEmojiPreview(iconName);
+        panelIconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
             btn.classList.toggle('selected', btn.dataset.icon === iconName);
         });
     }
 
-    renderPixelIconGrid(panelIconGrid, selectPanelPixelIcon, currentIcon);
+    renderEmojiIconGrid(panelIconGrid, selectPanelEmojiIcon, currentIcon);
 
     document.querySelectorAll('#panel-color-picker .color-option').forEach(btn => {
         if (btn.dataset.color === (crate.color || '')) {
