@@ -1,5 +1,5 @@
 {# Side panel partial for release details - loaded via AJAX #}
-{% from "_icons.html" import emoji_icon, crate_icon %}
+{% from "_icons.html" import emoji_icon, crate_icon, sync_icon %}
 <div class="panel-release" data-release-id="{{ release.id }}">
     <!-- Discogs Card - clickable to open full page, with action buttons on right -->
     <div class="panel-discogs-card" id="panel-discogs-card" data-href="{{ url_for('releases.view_release', release_id=release.id) }}">
@@ -43,7 +43,7 @@
             {% endif %}
             <button class="panel-discogs-btn" id="panel-btn-sync" title="Sync from Discogs" onclick="event.stopPropagation();">
                 <span class="activity-led"></span>
-                <img src="{{ url_for('static', filename='icons/sync.svg') }}" alt="Sync" class="sync-icon">
+                {{ sync_icon(size=18) }}
             </button>
         </div>
     </div>
@@ -77,51 +77,47 @@
             {% for track in tracks %}
             <div class="panel-track-row {% if not track.is_playable %}track-dimmed{% endif %}"
                  data-track-id="{{ track.id }}">
-                <!-- Left column: Toggle only -->
-                <div class="panel-track-left">
+                <!-- Row 1: Position + Title + Duration -->
+                <div class="panel-track-main">
+                    <span class="panel-track-pos">{{ track.display_position }}</span>
+                    <span class="panel-track-title">{{ track.title }}</span>
+                    <span class="panel-track-duration">{{ track.display_duration }}</span>
+                </div>
+                <!-- Row 2: Toggle + BPM + Key + Energy + Notes + Tags -->
+                <div class="panel-track-fields">
                     <label class="toggle toggle--mini" title="Playable">
                         <input type="checkbox" class="panel-track-playable"
                                {% if track.is_playable %}checked{% endif %}
                                data-field="is_playable">
                         <span class="toggle-slider"></span>
                     </label>
-                </div>
-                <!-- Right content: Position + Title, Duration, and fields -->
-                <div class="panel-track-right">
-                    <div class="panel-track-main">
-                        <span class="panel-track-pos">{{ track.display_position }}</span>
-                        <span class="panel-track-title">{{ track.title }}</span>
-                        <span class="panel-track-duration">{{ track.display_duration }}</span>
+                    <input type="number" class="panel-input panel-input--editable panel-bpm"
+                           value="{{ track.bpm or '' }}" placeholder="BPM"
+                           min="20" max="300" data-field="bpm" title="BPM">
+                    <input type="text" class="panel-input panel-input--editable panel-key"
+                           value="{{ track.camelot or track.musical_key or '' }}"
+                           placeholder="Key" data-field="camelot" list="panel-camelot-keys" title="Key">
+                    <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy: {{ track.energy or 3 }}/5">
+                        <div class="energy-segment" data-level="1"></div>
+                        <div class="energy-segment" data-level="2"></div>
+                        <div class="energy-segment" data-level="3"></div>
+                        <div class="energy-segment" data-level="4"></div>
+                        <div class="energy-segment" data-level="5"></div>
                     </div>
-                    <div class="panel-track-fields">
-                        <input type="number" class="panel-input panel-input--editable panel-bpm"
-                               value="{{ track.bpm or '' }}" placeholder="BPM"
-                               min="20" max="300" data-field="bpm" title="BPM">
-                        <input type="text" class="panel-input panel-input--editable panel-key"
-                               value="{{ track.camelot or track.musical_key or '' }}"
-                               placeholder="Key" data-field="camelot" list="panel-camelot-keys" title="Key">
-                        <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy: {{ track.energy or 3 }}/5">
-                            <div class="energy-segment" data-level="1"></div>
-                            <div class="energy-segment" data-level="2"></div>
-                            <div class="energy-segment" data-level="3"></div>
-                            <div class="energy-segment" data-level="4"></div>
-                            <div class="energy-segment" data-level="5"></div>
-                        </div>
-                        <div class="panel-track-actions">
-                            <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
-                                    data-track-id="{{ track.id }}"
-                                    data-track-notes="{{ track.notes or '' }}"
-                                    title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
-                                {{ emoji_icon('notes', size=12) }}
+                    <div class="panel-track-actions">
+                        <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
+                                data-track-id="{{ track.id }}"
+                                data-track-notes="{{ track.notes or '' }}"
+                                title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
+                            {{ emoji_icon('notes', size=12) }}
+                        </button>
+                        <div class="panel-track-tags" data-track-id="{{ track.id }}">
+                            {% for tag in track.tags %}
+                            <span class="tag-badge-sm" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
+                            {% endfor %}
+                            <button class="panel-tag-add-btn" title="Add tag">
+                                {{ emoji_icon('tag', size=12) }}
                             </button>
-                            <div class="panel-track-tags" data-track-id="{{ track.id }}">
-                                {% for tag in track.tags %}
-                                <span class="tag-badge-sm" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
-                                {% endfor %}
-                                <button class="panel-tag-add-btn" title="Add tag">
-                                    {{ emoji_icon('tag', size=12) }}
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>

@@ -34,8 +34,7 @@ def get_release_crate_data(release_ids, user_id):
         release_crates[release_id]["crates"].append({
             "id": crate.id,
             "name": crate.name,
-            "icon_url": crate.icon_url,
-            "icon_type": crate.icon_type,
+            "icon": crate.icon,
             "color_hex": crate.color_hex,
         })
         release_crates[release_id]["ids"].append(crate.id)

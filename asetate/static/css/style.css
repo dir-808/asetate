@@ -2807,10 +2807,12 @@ body.crate-panel-open .crates-main {
 /* Base emoji icon - uses Noto Emoji font (monochrome) */
 .emoji-icon {
     display: inline-block;
-    font-family: 'Noto Emoji', sans-serif;
+    font-family: 'Noto Emoji';
     font-weight: 500; /* Medium weight */
     font-style: normal;
     line-height: 1;
+    /* Force text/monochrome presentation */
+    font-variant-emoji: text;
     /* Centering within parent */
     vertical-align: middle;
     flex-shrink: 0;
@@ -4341,11 +4343,13 @@ body.panel-open .collection-page {
     overflow-y: auto;
 }
 
-/* Panel track row - base structure with flex layout */
+/* Panel track row - vertical stack of two rows */
 /* Note: border/opacity styles are in the Playable Highlighting section below */
 .panel-track-row {
     display: flex;
-    gap: var(--space-sm);
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-xs) var(--space-sm);
     cursor: default;
 }
 
@@ -4358,29 +4362,15 @@ body.panel-open .collection-page {
     background-color: rgba(74, 222, 128, 0.05);
 }
 
-/* Left column: Toggle only */
-.panel-track-left {
+/* Row 1: Position + Title + Duration */
+.panel-track-main {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    min-width: 32px;
-    padding: var(--space-xs) 0;
+    gap: var(--space-xs);
 }
 
-/* Right content area */
-.panel-track-right {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-    padding: var(--space-xs) 0;
-}
-
-/* Panel Track Row - title and duration row */
-.panel-track-main {
+/* Row 2: Toggle + BPM + Key + Energy + Notes + Tags */
+.panel-track-fields {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
@@ -4572,13 +4562,6 @@ body.panel-open .collection-page {
 
 .panel-expand-btn svg {
     stroke: var(--primary);
-}
-
-/* Panel track fields - row with editable fields + actions on right */
-.panel-track-fields {
-    display: flex;
-    gap: var(--space-xs);
-    align-items: center;
 }
 
 /* Actions container - notes + tags pushed to right */
