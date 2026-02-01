@@ -545,13 +545,14 @@
     }
 
     // Use centralized icon system (loaded from icons.js)
-    const renderCrateIcon = window.AsetateIcons?.renderCrateIcon || ((crate, scale = 1.2) => {
+    // Size is in pixels (not scale factor)
+    const renderCrateIcon = window.AsetateIcons?.renderCrateIcon || ((crate, size = 16) => {
         const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
         let iconName = 'folder';
-        if (crate.icon && crate.icon.startsWith('pixel:')) {
+        if (crate.icon && (crate.icon.startsWith('pixel:') || crate.icon.startsWith('emoji:'))) {
             iconName = crate.icon.slice(6);
         }
-        return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${scale}; ${colorStyle}"></span>`;
+        return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${size / 12}; ${colorStyle}"></span>`;
     });
 
     function updateCratesDisplay() {
@@ -561,7 +562,7 @@
             cratesContainer.innerHTML = inCrates.map(c => {
                 const bgStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40;` : '';
                 return `<a href="/crates/${c.id}" class="crate-badge-panel" style="${bgStyle}" onclick="event.stopPropagation();">
-                    ${renderCrateIcon(c)}
+                    ${renderCrateIcon(c, 16)}
                     <span class="crate-badge-name">${c.name}</span>
                 </a>`;
             }).join('');
@@ -576,7 +577,7 @@
             const isSelected = releaseCrateIds.includes(c.id);
             return `<label class="panel-crate-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
                 <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                ${renderCrateIcon(c, 1.2)}
+                ${renderCrateIcon(c, 14)}
                 <span class="panel-crate-item-name">${c.name}</span>
             </label>`;
         }).join('');

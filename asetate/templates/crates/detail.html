@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_icons.html" import pixel_icon, crate_icon %}
+{% from "_icons.html" import emoji_icon, crate_icon %}
 
 {% block title %}{{ crate.name }} - Crates - Asetate{% endblock %}
 
@@ -20,7 +20,7 @@
 
     <header class="crate-header">
         <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; border-color: {{ crate.color_hex }}40"{% endif %}>
-            {{ crate_icon(crate, scale=3) }}
+            {{ crate_icon(crate, size=36) }}
         </div>
         <div class="crate-info">
             <h1>{{ crate.name }}</h1>
