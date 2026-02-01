@@ -5,42 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Asetate{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Noto Emoji font (monochrome, variable weight 300-700) -->
+    <link rel="stylesheet" href="https://fontlibrary.org//face/noto-emoji" type="text/css">
     {% block head %}{% endblock %}
 </head>
 <body>
-    <!-- SVG Filters for MPC2000 pixel art aesthetic -->
-    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute; pointer-events: none;">
-        <defs>
-            <!--
-                Pixel art filter for monochrome OpenMoji icons
-                Uses downscale→upscale technique for true pixelation
-            -->
-
-            <!-- Small icons (16-20px): subtle stroke thickening -->
-            <filter id="emoji-pixel-sm" x="-25%" y="-25%" width="150%" height="150%">
-                <feMorphology operator="dilate" radius="0.4" in="SourceGraphic"/>
-            </filter>
-
-            <!-- Medium icons (24-32px): light pixelation -->
-            <filter id="emoji-pixel-md" x="-25%" y="-25%" width="150%" height="150%">
-                <feMorphology operator="dilate" radius="0.5" in="SourceGraphic"/>
-            </filter>
-
-            <!-- Large icons (36px+): moderate pixel effect -->
-            <filter id="emoji-pixel-lg" x="-25%" y="-25%" width="150%" height="150%">
-                <feMorphology operator="dilate" radius="0.7" in="SourceGraphic"/>
-            </filter>
-
-            <!-- Legacy filters (keep for backwards compat) -->
-            <filter id="icon-chunky" x="-50%" y="-50%" width="200%" height="200%">
-                <feMorphology operator="dilate" radius="1.2" in="SourceGraphic"/>
-            </filter>
-            <filter id="icon-chunky-lg" x="-50%" y="-50%" width="200%" height="200%">
-                <feMorphology operator="dilate" radius="1.8" in="SourceGraphic"/>
-            </filter>
-        </defs>
-    </svg>
-
     <nav class="nav">
         <div class="nav-brand">
             <a href="{{ url_for('main.index') }}">Asetate</a>

@@ -546,20 +546,14 @@
     }
 
     // Use centralized icon system (loaded from icons.js)
-    // Size is in pixels - uses emoji icons with SVG mask
-    const EMOJI_CODES_FALLBACK = {
-        folder: '1F4C1', vinyl: '1F4BF', headphones: '1F3A7', music: '1F3B5',
-        speaker: '1F50A', disco: '1FAA9', wave: '1F30A', fire: '1F525',
-        bolt: '26A1', star: '2B50', heart: '2764', diamond: '1F48E',
-        crown: '1F451', sun: '1F31E', moon: '1F319', globe: '1F30D',
-        clock: '1F570', skull: '1F480', box: '1F4E6', check: '2714', plus: '2795'
+    // Size is font-size in pixels - uses Noto Emoji font
+    const EMOJI_CHARS_FALLBACK = {
+        folder: '📁', vinyl: '💿', headphones: '🎧', music: '🎵',
+        speaker: '🔊', disco: '🪩', wave: '🌊', fire: '🔥',
+        bolt: '⚡', star: '⭐', heart: '❤', diamond: '💎',
+        crown: '👑', sun: '🌞', moon: '🌙', globe: '🌍',
+        clock: '🕰', skull: '💀', box: '📦', check: '✔', plus: '➕'
     };
-
-    function getFilterSize(size) {
-        if (size <= 20) return 'sm';
-        if (size >= 36) return 'lg';
-        return 'md';
-    }
 
     const renderCrateIcon = window.AsetateIcons?.renderCrateIcon || ((crate, size = 16) => {
         const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
@@ -567,9 +561,8 @@
         if (crate.icon && (crate.icon.startsWith('pixel:') || crate.icon.startsWith('emoji:'))) {
             iconName = crate.icon.slice(6);
         }
-        const code = EMOJI_CODES_FALLBACK[iconName] || EMOJI_CODES_FALLBACK.folder;
-        const filterSize = getFilterSize(size);
-        return `<span class="emoji-icon emoji-icon--${filterSize}" style="width: ${size}px; height: ${size}px;${colorStyle} -webkit-mask-image: url('/static/emoji/${code}.svg'); mask-image: url('/static/emoji/${code}.svg');"></span>`;
+        const char = EMOJI_CHARS_FALLBACK[iconName] || EMOJI_CHARS_FALLBACK.folder;
+        return `<span class="emoji-icon" style="font-size: ${size}px;${colorStyle}">${char}</span>`;
     });
 
     function updateCratesDisplay() {

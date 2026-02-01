@@ -140,7 +140,7 @@
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="edit-icon-preview">
                             {% set current_icon = crate.icon[6:] if crate.icon and (crate.icon.startswith('pixel:') or crate.icon.startswith('emoji:')) else 'folder' %}
-                            <span class="emoji-icon emoji-icon--md" id="edit-icon-preview-emoji" style="width: 32px; height: 32px;"></span>
+                            <span class="emoji-icon" id="edit-icon-preview-emoji" style="font-size: 32px;"></span>
                         </div>
                         <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Reset</button>
                     </div>
@@ -214,7 +214,7 @@
 
 {% block scripts %}
 <script type="module">
-import { DEFAULT_ICON, EMOJI_CODES, renderEmojiIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
+import { DEFAULT_ICON, EMOJI_CHARS, renderEmojiIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
 const crateId = document.querySelector('.crate-detail').dataset.crateId;
 
@@ -228,9 +228,8 @@ const editClearIconBtn = document.getElementById('edit-clear-icon');
 const editColorInput = document.getElementById('edit-crate-color');
 
 function updateEditEmojiPreview(iconName) {
-    const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
-    editIconPreviewEmoji.style.setProperty('-webkit-mask-image', `url('/static/emoji/${code}.svg')`);
-    editIconPreviewEmoji.style.setProperty('mask-image', `url('/static/emoji/${code}.svg')`);
+    const char = EMOJI_CHARS[iconName] || EMOJI_CHARS[DEFAULT_ICON];
+    editIconPreviewEmoji.textContent = char;
 }
 
 function selectEditEmojiIcon(iconName) {

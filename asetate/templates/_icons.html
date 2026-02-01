@@ -1,6 +1,6 @@
 {#
-    Centralized Icon System
-    =======================
+    Centralized Icon System (Noto Emoji Font)
+    =========================================
     All icon rendering logic in one place.
     Import this file in any template that needs icons.
 
@@ -12,58 +12,53 @@
 #}
 
 {#
-    Emoji code mapping - OpenMoji SVG filenames
-    Maps friendly icon names to OpenMoji unicode points
+    Emoji character mapping
+    Maps friendly icon names to Unicode emoji characters
+    Using Noto Emoji font (monochrome, medium weight)
 #}
-{%- set EMOJI_CODES = {
-    'folder': '1F4C1',
-    'vinyl': '1F4BF',
-    'headphones': '1F3A7',
-    'music': '1F3B5',
-    'speaker': '1F50A',
-    'disco': '1FAA9',
-    'wave': '1F30A',
-    'fire': '1F525',
-    'bolt': '26A1',
-    'star': '2B50',
-    'heart': '2764',
-    'diamond': '1F48E',
-    'crown': '1F451',
-    'sun': '1F31E',
-    'moon': '1F319',
-    'globe': '1F30D',
-    'clock': '1F570',
-    'skull': '1F480',
-    'box': '1F4E6',
-    'check': '2714',
-    'plus': '2795',
-    'link': '1F517',
-    'edit': '270F',
-    'sync': '1F504',
-    'notes': '1F4DD',
-    'tag': '1F3F7'
+{%- set EMOJI_CHARS = {
+    'folder': '📁',
+    'vinyl': '💿',
+    'headphones': '🎧',
+    'music': '🎵',
+    'speaker': '🔊',
+    'disco': '🪩',
+    'wave': '🌊',
+    'fire': '🔥',
+    'bolt': '⚡',
+    'star': '⭐',
+    'heart': '❤',
+    'diamond': '💎',
+    'crown': '👑',
+    'sun': '🌞',
+    'moon': '🌙',
+    'globe': '🌍',
+    'clock': '🕰',
+    'skull': '💀',
+    'box': '📦',
+    'check': '✔',
+    'plus': '➕',
+    'link': '🔗',
+    'edit': '✏',
+    'sync': '🔄',
+    'notes': '📝',
+    'tag': '🏷'
 } -%}
 
 {#
-    Render an emoji icon using OpenMoji SVG with pixel art filter
+    Render an emoji icon using Noto Emoji font
 
     Parameters:
         name: Icon name (e.g., 'vinyl', 'folder', 'fire')
-        size: Size in pixels (default 24)
+        size: Font size in pixels (default 24)
         color: Optional color override (hex or CSS color)
-
-    Sizes and filters:
-        16-20px → emoji-pixel-sm
-        24-32px → emoji-pixel-md
-        36px+   → emoji-pixel-lg
 
     Example:
         {{ emoji_icon('vinyl', size=32, color='#F97316') }}
 #}
 {% macro emoji_icon(name, size=24, color=None) -%}
-{%- set code = EMOJI_CODES.get(name, '1F4C1') -%}
-{%- set filter_size = 'sm' if size <= 20 else ('lg' if size >= 36 else 'md') -%}
-<span class="emoji-icon emoji-icon--{{ filter_size }}" style="width: {{ size }}px; height: {{ size }}px;{% if color %} color: {{ color }};{% endif %} -webkit-mask-image: url('/static/emoji/{{ code }}.svg'); mask-image: url('/static/emoji/{{ code }}.svg');"></span>
+{%- set char = EMOJI_CHARS.get(name, '📁') -%}
+<span class="emoji-icon" style="font-size: {{ size }}px;{% if color %} color: {{ color }};{% endif %}">{{ char }}</span>
 {%- endmacro %}
 
 
@@ -72,7 +67,7 @@
 
     Parameters:
         crate: Crate object with .icon and .color_hex attributes
-        size: Size in pixels (default 24)
+        size: Font size in pixels (default 24)
 
     The crate.icon should be in format "emoji:iconname" (e.g., "emoji:vinyl")
     Falls back to 'folder' icon if not set or invalid format.
@@ -82,54 +77,6 @@
 #}
 {% macro crate_icon(crate, size=24) -%}
 {%- set icon_name = crate.icon[6:] if crate.icon and (crate.icon.startswith('emoji:') or crate.icon.startswith('pixel:')) else 'folder' -%}
-{%- set code = EMOJI_CODES.get(icon_name, '1F4C1') -%}
-{%- set filter_size = 'sm' if size <= 20 else ('lg' if size >= 36 else 'md') -%}
-<span class="emoji-icon emoji-icon--{{ filter_size }}" style="width: {{ size }}px; height: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %} -webkit-mask-image: url('/static/emoji/{{ code }}.svg'); mask-image: url('/static/emoji/{{ code }}.svg');"></span>
+{%- set char = EMOJI_CHARS.get(icon_name, '📁') -%}
+<span class="emoji-icon" style="font-size: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}">{{ char }}</span>
 {%- endmacro %}
-
-
-{# ============================================
-   Legacy px-icon macros (for backwards compat)
-   ============================================ #}
-
-{#
-    Render a CSS pixel art icon (legacy)
-#}
-{% macro pixel_icon(name, scale=1.5, color=None) -%}
-<span class="px-icon px-icon--{{ name }}" style="--px-scale: {{ scale }};{% if color %} color: {{ color }};{% endif %}"></span>
-{%- endmacro %}
-
-
-{#
-    Available pixel icons (for reference):
-
-    Action icons:
-        - link        Chain link (View on Discogs)
-        - edit        Pencil (Edit on Discogs)
-        - sync        Circular arrows (Sync button)
-        - notes       Paper with lines (Track notes)
-        - tag         Price tag (Add tag)
-
-    Crate icons:
-        - folder      Folder (default)
-        - vinyl       Vinyl record
-        - headphones  Headphones
-        - music       Music note
-        - speaker     Speaker
-        - disco       Disco ball
-        - wave        Wave
-        - fire        Flame
-        - bolt        Lightning bolt
-        - star        Star
-        - heart       Heart
-        - diamond     Diamond
-        - crown       Crown
-        - sun         Sun
-        - moon        Moon
-        - globe       Globe
-        - clock       Clock
-        - skull       Skull
-        - box         Box
-        - check       Checkmark
-        - plus        Plus sign
-#}

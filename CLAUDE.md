@@ -73,7 +73,7 @@ These are used across multiple pages - changes apply everywhere:
 | **Energy Bar** | `.energy-bar`, `.energy-bar--sm` |
 | **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` |
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
-| **Emoji Icons** | `.emoji-icon`, `.emoji-icon--sm/md/lg` (OpenMoji SVG) |
+| **Emoji Icons** | `.emoji-icon` (Noto Emoji font) |
 | **Crate Badges** | `.crate-badge`, `.crate-badge-panel`, `.crate-badge-name` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
 | **Notes Textarea** | `.notes-textarea`, `.panel-notes-lcd` |
@@ -262,20 +262,19 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
 
-#### Emoji Icons (OpenMoji SVG System)
-All icons in Asetate use OpenMoji SVG icons with CSS mask-image for coloring and SVG filters for a pixel art effect. Icons are stored in the database as `emoji:ICONNAME` format (e.g., `emoji:vinyl`, `emoji:folder`). Legacy `pixel:` format is also supported.
+#### Emoji Icons (Noto Emoji Font)
+All icons in Asetate use Google's Noto Emoji font (monochrome, medium weight). Icons are stored in the database as `emoji:ICONNAME` format (e.g., `emoji:vinyl`, `emoji:folder`). Legacy `pixel:` format is also supported.
 
 **Centralized Icon Files:**
 - **`templates/_icons.html`** - Jinja2 macros for server-side rendering
 - **`static/js/icons.js`** - ES6 module for client-side rendering
-- **`static/emoji/*.svg`** - OpenMoji SVG icon files
 
 **Jinja2 Macros (templates/_icons.html):**
 ```jinja2
 {# Import at top of template #}
 {% from "_icons.html" import emoji_icon, crate_icon %}
 
-{# Render a basic emoji icon (size in pixels) #}
+{# Render a basic emoji icon (size = font-size in pixels) #}
 {{ emoji_icon('vinyl', size=24, color='#F97316') }}
 
 {# Render a crate's icon with its color #}
@@ -285,7 +284,7 @@ All icons in Asetate use OpenMoji SVG icons with CSS mask-image for coloring and
 **JavaScript Module (static/js/icons.js):**
 ```javascript
 // ES6 module import (for type="module" scripts)
-import { renderEmojiIcon, renderCrateIcon, renderEmojiIconGrid, EMOJI_ICONS, EMOJI_CODES } from '/static/js/icons.js';
+import { renderEmojiIcon, renderCrateIcon, renderEmojiIconGrid, EMOJI_ICONS, EMOJI_CHARS } from '/static/js/icons.js';
 
 // Or use global (for AJAX-loaded content)
 const icon = window.AsetateIcons.renderCrateIcon(crate, 24);
@@ -294,7 +293,7 @@ const icon = window.AsetateIcons.renderCrateIcon(crate, 24);
 **Available functions:**
 | Function | Description |
 |----------|-------------|
-| `renderEmojiIcon(name, size, color)` | Render icon by name (size in px) |
+| `renderEmojiIcon(name, size, color)` | Render icon by name (size = font-size in px) |
 | `renderCrateIcon(crate, size)` | Render crate's icon with color |
 | `renderEmojiIconGrid(container, onSelect, selected)` | Render icon picker grid |
 | `getIconName(iconField)` | Extract icon name from `emoji:name` or `pixel:name` format |
@@ -303,48 +302,44 @@ const icon = window.AsetateIcons.renderCrateIcon(crate, 24);
 **Common size values:**
 | Size | Usage |
 |------|-------|
+| 12px | Small action icons (notes, tag buttons) |
 | 14px | Crate badges on release cards |
 | 16px | Crate badges in panel |
+| 18px | Discogs action buttons |
 | 24px | Icon grid picker, default |
 | 32px | Icon preview in forms, crate cards |
 | 36px | Crate detail header |
 
-**SVG Filter Sizes:**
-Icons automatically get size-appropriate filters via CSS classes:
-- `.emoji-icon--sm` (16-20px) - subtle stroke thickening
-- `.emoji-icon--md` (24-32px) - light pixelation
-- `.emoji-icon--lg` (36px+) - moderate pixel effect
-
 **Available icons:**
 
-| Name | OpenMoji Code | Description |
-|------|---------------|-------------|
-| `folder` | 1F4C1 | Default crate icon |
-| `vinyl` | 1F4BF | Optical disc (records) |
-| `headphones` | 1F3A7 | Listening |
-| `music` | 1F3B5 | Musical note |
-| `speaker` | 1F50A | Sound/audio |
-| `disco` | 1FAA9 | Mirror ball (party) |
-| `wave` | 1F30A | Water wave (ambient) |
-| `fire` | 1F525 | Flame (hot/trending) |
-| `bolt` | 26A1 | Lightning (energy) |
-| `star` | 2B50 | Favorites |
-| `heart` | 2764 | Loved |
-| `diamond` | 1F48E | Premium/special |
-| `crown` | 1F451 | Top/best |
-| `sun` | 1F31E | Daytime/upbeat |
-| `moon` | 1F319 | Nighttime/moody |
-| `globe` | 1F30D | World/international |
-| `clock` | 1F570 | Time-based |
-| `skull` | 1F480 | Dark/heavy |
-| `box` | 1F4E6 | Archive/storage |
-| `check` | 2714 | Complete/verified |
-| `plus` | 2795 | Add/new |
-| `link` | 1F517 | View on Discogs |
-| `edit` | 270F | Edit on Discogs |
-| `sync` | 1F504 | Sync button |
-| `notes` | 1F4DD | Track notes |
-| `tag` | 1F3F7 | Add tag |
+| Name | Character | Description |
+|------|-----------|-------------|
+| `folder` | 📁 | Default crate icon |
+| `vinyl` | 💿 | Optical disc (records) |
+| `headphones` | 🎧 | Listening |
+| `music` | 🎵 | Musical note |
+| `speaker` | 🔊 | Sound/audio |
+| `disco` | 🪩 | Mirror ball (party) |
+| `wave` | 🌊 | Water wave (ambient) |
+| `fire` | 🔥 | Flame (hot/trending) |
+| `bolt` | ⚡ | Lightning (energy) |
+| `star` | ⭐ | Favorites |
+| `heart` | ❤ | Loved |
+| `diamond` | 💎 | Premium/special |
+| `crown` | 👑 | Top/best |
+| `sun` | 🌞 | Daytime/upbeat |
+| `moon` | 🌙 | Nighttime/moody |
+| `globe` | 🌍 | World/international |
+| `clock` | 🕰 | Time-based |
+| `skull` | 💀 | Dark/heavy |
+| `box` | 📦 | Archive/storage |
+| `check` | ✔ | Complete/verified |
+| `plus` | ➕ | Add/new |
+| `link` | 🔗 | View on Discogs |
+| `edit` | ✏ | Edit on Discogs |
+| `sync` | 🔄 | Sync button |
+| `notes` | 📝 | Track notes |
+| `tag` | 🏷 | Add tag |
 
 **Icon picker grid:**
 Use `.emoji-icon-grid` class for icon selection interfaces:
@@ -365,10 +360,10 @@ renderEmojiIconGrid(document.getElementById('icon-grid'), onIconSelect, 'folder'
 ```
 
 **How it works:**
-1. Icons use CSS `mask-image` with OpenMoji SVG URLs
-2. `background-color: currentColor` allows color inheritance
-3. SVG `feMorphology dilate` filter thickens strokes for pixel art effect
-4. `image-rendering: crisp-edges` prevents anti-aliasing
+1. Icons render as Unicode emoji characters using Noto Emoji font
+2. CSS `color` property controls the icon color (monochrome font)
+3. `font-size` controls the icon size
+4. Font loaded from Font Library CDN in base.html
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:

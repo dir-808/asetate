@@ -107,7 +107,7 @@
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="icon-preview">
-                            <span class="emoji-icon emoji-icon--md" id="icon-preview-emoji" style="width: 32px; height: 32px; -webkit-mask-image: url('/static/emoji/1F4C1.svg'); mask-image: url('/static/emoji/1F4C1.svg');"></span>
+                            <span class="emoji-icon" id="icon-preview-emoji" style="font-size: 32px;">📁</span>
                         </div>
                         <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Reset</button>
                     </div>
@@ -153,7 +153,7 @@
 
 {% block scripts %}
 <script type="module">
-import { DEFAULT_ICON, EMOJI_CODES, renderEmojiIconGrid, renderEmojiIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
+import { DEFAULT_ICON, EMOJI_CHARS, renderEmojiIconGrid, renderEmojiIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
 const modal = document.getElementById('new-crate-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -173,9 +173,8 @@ const iconPreviewEmoji = document.getElementById('icon-preview-emoji');
 
 // Update emoji preview
 function updateEmojiPreview(iconName) {
-    const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
-    iconPreviewEmoji.style.setProperty('-webkit-mask-image', `url('/static/emoji/${code}.svg')`);
-    iconPreviewEmoji.style.setProperty('mask-image', `url('/static/emoji/${code}.svg')`);
+    const char = EMOJI_CHARS[iconName] || EMOJI_CHARS[DEFAULT_ICON];
+    iconPreviewEmoji.textContent = char;
 }
 
 // Select emoji icon handler for modal
@@ -323,7 +322,7 @@ async function loadCrateForEdit(crateId) {
 
 function renderPanelForm(crate) {
     const currentIcon = getIconName(crate.icon);
-    const currentCode = EMOJI_CODES[currentIcon] || EMOJI_CODES[DEFAULT_ICON];
+    const currentChar = EMOJI_CHARS[currentIcon] || EMOJI_CHARS[DEFAULT_ICON];
     cratePanelContent.innerHTML = `
         <form id="panel-edit-form">
             <div class="panel-form-group">
@@ -339,7 +338,7 @@ function renderPanelForm(crate) {
                 <div class="icon-picker-container panel-icon-picker">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="panel-icon-preview">
-                            <span class="emoji-icon emoji-icon--md" id="panel-icon-preview-emoji" style="width: 32px; height: 32px; -webkit-mask-image: url('/static/emoji/${currentCode}.svg'); mask-image: url('/static/emoji/${currentCode}.svg');"></span>
+                            <span class="emoji-icon" id="panel-icon-preview-emoji" style="font-size: 32px;">${currentChar}</span>
                         </div>
                     </div>
                     <div class="emoji-icon-grid" id="panel-icon-grid"></div>
@@ -375,9 +374,8 @@ function renderPanelForm(crate) {
     const panelColorInput = document.getElementById('panel-color');
 
     function updatePanelEmojiPreview(iconName) {
-        const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
-        panelIconPreviewEmoji.style.setProperty('-webkit-mask-image', `url('/static/emoji/${code}.svg')`);
-        panelIconPreviewEmoji.style.setProperty('mask-image', `url('/static/emoji/${code}.svg')`);
+        const char = EMOJI_CHARS[iconName] || EMOJI_CHARS[DEFAULT_ICON];
+        panelIconPreviewEmoji.textContent = char;
     }
 
     function selectPanelEmojiIcon(iconName) {
