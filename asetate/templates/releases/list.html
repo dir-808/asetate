@@ -73,13 +73,17 @@
                         <span>No Cover</span>
                     </div>
                     {% endif %}
-                    {% if release.crate_icons %}
+                    {% if release.crate_info %}
                     <div class="release-crate-icons">
-                        {% for icon in release.crate_icons[:3] %}
-                        <img src="/static/icons/{{ icon }}.png" alt="" class="release-crate-icon">
+                        {% for crate in release.crate_info[:3] %}
+                        {% if crate.icon_type == 'emoji' %}
+                        <span class="emoji-icon release-crate-icon" style="-webkit-mask-image: url('{{ crate.icon_url }}'); mask-image: url('{{ crate.icon_url }}');{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
+                        {% else %}
+                        <img src="{{ crate.icon_url }}" alt="" class="release-crate-icon">
+                        {% endif %}
                         {% endfor %}
-                        {% if release.crate_icons|length > 3 %}
-                        <span class="release-crate-more">+{{ release.crate_icons|length - 3 }}</span>
+                        {% if release.crate_info|length > 3 %}
+                        <span class="release-crate-more">+{{ release.crate_info|length - 3 }}</span>
                         {% endif %}
                     </div>
                     {% endif %}
