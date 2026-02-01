@@ -358,6 +358,8 @@ def api_list_crates():
                     "parent_id": c.parent_id,
                     "depth": c.depth,
                     "icon": c.display_icon,
+                    "icon_url": c.icon_url,
+                    "icon_type": c.icon_type,
                     "color_hex": c.color_hex,
                 }
                 for c in crates

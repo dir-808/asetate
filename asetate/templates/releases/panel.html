@@ -545,12 +545,23 @@
         }
     }
 
+    // Helper to render crate icon HTML
+    function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
+        if (crate.icon_type === 'emoji') {
+            const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
+            return `<span class="emoji-icon ${sizeClass}" style="-webkit-mask-image: url('${crate.icon_url}'); mask-image: url('${crate.icon_url}'); ${colorStyle}"></span>`;
+        } else {
+            return `<img src="${crate.icon_url}" alt="" class="${sizeClass}">`;
+        }
+    }
+
     function updateCratesDisplay() {
         const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
         if (inCrates.length > 0) {
             cratesContainer.innerHTML = inCrates.map(c => {
-                return `<a href="/crates/${c.id}" class="crate-badge-panel">
-                    <span class="crate-badge-icon">${c.icon || '📁'}</span>
+                const bgStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40;` : '';
+                return `<a href="/crates/${c.id}" class="crate-badge-panel" style="${bgStyle}">
+                    ${renderCrateIcon(c)}
                     <span class="crate-badge-name">${c.name}</span>
                 </a>`;
             }).join('');
@@ -564,7 +575,7 @@
             const isSelected = releaseCrateIds.includes(c.id);
             return `<label class="panel-crate-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
                 <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                <span class="panel-crate-item-icon">${c.icon || '📁'}</span>
+                ${renderCrateIcon(c, 'crate-dropdown-emoji')}
                 <span class="panel-crate-item-name">${c.name}</span>
             </label>`;
         }).join('');

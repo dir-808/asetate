@@ -1215,7 +1215,7 @@ input::placeholder, textarea::placeholder {
     background-color: var(--bg-elevated);
 }
 
-/* Crate icons overlay on release cards */
+/* Crate icons overlay on release cards - square MPC style */
 .release-crate-icons {
     position: absolute;
     bottom: 4px;
@@ -1224,6 +1224,7 @@ input::placeholder, textarea::placeholder {
     gap: 2px;
 }
 
+/* Base icon container - works for both emoji and pixel icons */
 .release-crate-icon {
     width: 20px;
     height: 20px;
@@ -1232,6 +1233,13 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     justify-content: center;
     font-size: 0.7rem;
+    color: var(--text-primary); /* Default color for emoji icons */
+}
+
+/* Emoji icons on release cards - sized within container */
+.release-crate-icon.emoji-icon {
+    /* Override emoji-icon background since parent has dark bg */
+    padding: 2px;
 }
 
 .release-crate-more {
@@ -2724,6 +2732,20 @@ body.crate-panel-open .crates-main {
 .release-emoji-icon {
     width: 14px;
     height: 14px;
+}
+
+/* Emoji in crate badges (release page, panel) - square MPC style */
+.crate-badge-emoji {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Emoji in crate dropdown items */
+.crate-dropdown-emoji {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
 }
 
 /* Emoji in icon picker grid */

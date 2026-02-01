@@ -73,7 +73,9 @@ These are used across multiple pages - changes apply everywhere:
 | **Energy Bar** | `.energy-bar`, `.energy-bar--sm` |
 | **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` |
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
-| **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper` |
+| **Crate Icons** | `.emoji-icon`, `.crate-emoji-icon`, `.crate-badge-emoji`, `.release-crate-icon` |
+| **Crate Badges** | `.crate-badge`, `.crate-badge-panel`, `.crate-badge-name` |
+| **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
 | **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` |
 | **Side Panel** | `.release-panel`, `.panel-content`, `.panel-discogs-card` |
 | **Buttons** | `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm` |
@@ -256,6 +258,59 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Cards: 2px border, grid layout for covers + info
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
+
+#### Crate Icons (OpenMoji Emoji)
+Crate icons use OpenMoji outline emoji SVGs with CSS `mask-image` for color inheritance. Icons are stored in the database as `emoji:HEXCODE` format.
+
+**Rendering pattern (HTML):**
+```html
+<!-- Emoji icon - uses mask-image for color control -->
+<span class="emoji-icon crate-badge-emoji"
+      style="-webkit-mask-image: url('/static/emoji/1F30A.svg');
+             mask-image: url('/static/emoji/1F30A.svg');
+             color: #448361;"></span>
+
+<!-- Pixel icon fallback (legacy) -->
+<img src="/static/icons/folder.png" alt="" class="crate-badge-emoji">
+```
+
+**JavaScript helper for dynamic rendering:**
+```javascript
+function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
+    if (crate.icon_type === 'emoji') {
+        const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
+        return `<span class="emoji-icon ${sizeClass}"
+                      style="-webkit-mask-image: url('${crate.icon_url}');
+                             mask-image: url('${crate.icon_url}');
+                             ${colorStyle}"></span>`;
+    } else {
+        return `<img src="${crate.icon_url}" alt="" class="${sizeClass}">`;
+    }
+}
+```
+
+**Size variants:**
+| Class | Size | Usage |
+|-------|------|-------|
+| `.crate-emoji-icon` | 32px | Crate list cards |
+| `.crate-emoji-icon-lg` | 40px | Crate detail header |
+| `.crate-badge-emoji` | 14px | Crate badges on release page |
+| `.crate-dropdown-emoji` | 16px | Crate dropdown items |
+| `.release-crate-icon` | 20px | Crate icons on release cards |
+
+**API response format (`/crates/api/list`):**
+```json
+{
+  "crates": [{
+    "id": 1,
+    "name": "Deep House",
+    "icon": "emoji:1F30A",
+    "icon_url": "/static/emoji/1F30A.svg",
+    "icon_type": "emoji",
+    "color_hex": "#448361"
+  }]
+}
+```
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:

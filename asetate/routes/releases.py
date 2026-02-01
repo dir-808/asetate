@@ -16,26 +16,29 @@ def get_release_crate_data(release_ids, user_id):
         return {}
 
     from asetate.models.crate import crate_releases
-    from asetate.models.pixel_icons import DEFAULT_ICON
 
-    # Query crates for these releases
+    # Query crates for these releases with color info
     crate_data = db.session.query(
         crate_releases.c.release_id,
-        Crate.id,
-        Crate.icon,
-        Crate.name
+        Crate
     ).join(Crate).filter(
         crate_releases.c.release_id.in_(release_ids),
         Crate.user_id == user_id
     ).all()
 
-    # Group by release - icons are now icon names (for pixel icons)
+    # Group by release with full crate info for icon rendering
     release_crates = {}
-    for release_id, crate_id, icon, name in crate_data:
+    for release_id, crate in crate_data:
         if release_id not in release_crates:
-            release_crates[release_id] = {"icons": [], "ids": []}
-        release_crates[release_id]["icons"].append(icon or DEFAULT_ICON)
-        release_crates[release_id]["ids"].append(crate_id)
+            release_crates[release_id] = {"crates": [], "ids": []}
+        release_crates[release_id]["crates"].append({
+            "id": crate.id,
+            "name": crate.name,
+            "icon_url": crate.icon_url,
+            "icon_type": crate.icon_type,
+            "color_hex": crate.color_hex,
+        })
+        release_crates[release_id]["ids"].append(crate.id)
 
     return release_crates
 
@@ -120,8 +123,8 @@ def list_releases():
 
     # Add crate info to releases
     for release in pagination.items:
-        release_info = crate_data.get(release.id, {"icons": [], "ids": []})
-        release.crate_icons = release_info["icons"]
+        release_info = crate_data.get(release.id, {"crates": [], "ids": []})
+        release.crate_info = release_info["crates"]
         release.crate_ids = release_info["ids"]
 
     # Get stats for the header (user-scoped)
