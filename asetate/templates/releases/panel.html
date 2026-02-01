@@ -72,51 +72,38 @@
             {% for track in tracks %}
             <div class="panel-track-row {% if not track.is_playable %}track-dimmed{% endif %}"
                  data-track-id="{{ track.id }}">
+                <!-- Row 1: Position, Title, Duration, Playable toggle -->
                 <div class="panel-track-main">
                     <span class="panel-track-pos">{{ track.display_position }}</span>
-                    <div class="panel-track-info">
-                        <span class="panel-track-title">{{ track.title }}</span>
-                        <span class="panel-track-duration">{{ track.display_duration }}</span>
-                    </div>
-                    <div class="panel-playable-toggle">
-                        <label class="toggle toggle-sm" title="Playable">
-                            <input type="checkbox" class="panel-track-playable"
-                                   {% if track.is_playable %}checked{% endif %}
-                                   data-field="is_playable">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
+                    <span class="panel-track-title">{{ track.title }}</span>
+                    <span class="panel-track-duration">{{ track.display_duration }}</span>
+                    <label class="toggle" title="Playable">
+                        <input type="checkbox" class="panel-track-playable"
+                               {% if track.is_playable %}checked{% endif %}
+                               data-field="is_playable">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
+                <!-- Row 2: Editable fields (BPM, Key, Energy) + Notes + Tags -->
                 <div class="panel-track-fields">
-                    <div class="panel-field panel-field-bpm">
-                        <label>BPM</label>
-                        <input type="number" class="panel-input panel-bpm"
-                               value="{{ track.bpm or '' }}" placeholder="—"
-                               min="20" max="300" data-field="bpm">
+                    <input type="number" class="panel-input panel-input--editable panel-bpm"
+                           value="{{ track.bpm or '' }}" placeholder="BPM"
+                           min="20" max="300" data-field="bpm" title="BPM">
+                    <input type="text" class="panel-input panel-input--editable panel-key"
+                           value="{{ track.camelot or track.musical_key or '' }}"
+                           placeholder="Key" data-field="camelot" list="panel-camelot-keys" title="Key">
+                    <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy">
+                        <div class="energy-segment" data-level="1"></div>
+                        <div class="energy-segment" data-level="2"></div>
+                        <div class="energy-segment" data-level="3"></div>
+                        <div class="energy-segment" data-level="4"></div>
+                        <div class="energy-segment" data-level="5"></div>
                     </div>
-                    <div class="panel-field panel-field-key">
-                        <label>Key</label>
-                        <input type="text" class="panel-input panel-key"
-                               value="{{ track.camelot or track.musical_key or '' }}"
-                               placeholder="—" data-field="camelot" list="panel-camelot-keys">
-                    </div>
-                    <div class="panel-field panel-field-energy">
-                        <label>NRG</label>
-                        <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}">
-                            <div class="energy-segment" data-level="1"></div>
-                            <div class="energy-segment" data-level="2"></div>
-                            <div class="energy-segment" data-level="3"></div>
-                            <div class="energy-segment" data-level="4"></div>
-                            <div class="energy-segment" data-level="5"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel-track-extras">
                     <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
                             data-track-id="{{ track.id }}"
                             data-track-notes="{{ track.notes or '' }}"
                             title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
-                        {% if track.notes %}📝{% else %}+Note{% endif %}
+                        {% if track.notes %}📝{% else %}+{% endif %}
                     </button>
                     <div class="panel-track-tags" data-track-id="{{ track.id }}">
                         {% for tag in track.tags %}

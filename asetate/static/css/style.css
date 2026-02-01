@@ -4144,6 +4144,7 @@ body.panel-open .collection-page {
     border-bottom: none;
 }
 
+/* Panel Track Row - Compact 2-row layout */
 .panel-track-main {
     display: flex;
     align-items: center;
@@ -4151,19 +4152,16 @@ body.panel-open .collection-page {
 }
 
 .panel-track-pos {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--primary);
-    min-width: 30px;
-}
-
-.panel-track-info {
-    flex: 1;
-    min-width: 0;
+    min-width: 24px;
+    flex-shrink: 0;
 }
 
 .panel-track-title {
-    display: block;
+    flex: 1;
+    min-width: 0;
     font-size: 0.8rem;
     font-weight: 500;
     white-space: nowrap;
@@ -4174,22 +4172,13 @@ body.panel-open .collection-page {
 .panel-track-duration {
     font-size: 0.7rem;
     color: var(--text-muted);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
 }
 
-.toggle-sm {
-    width: 32px;
-    height: 18px;
-}
-
-.toggle-sm .toggle-slider::before {
-    height: 14px;
-    width: 14px;
-    left: 2px;
-    bottom: 2px;
-}
-
-.toggle-sm input:checked + .toggle-slider::before {
-    transform: translateX(14px);
+/* Panel toggle - uses standard toggle size for consistency */
+.panel-track-main .toggle {
+    flex-shrink: 0;
 }
 
 .panel-track-meta {
@@ -4199,8 +4188,9 @@ body.panel-open .collection-page {
     padding-left: calc(30px + var(--space-sm));
 }
 
+/* Panel Inputs - Editable fields with visual distinction */
 .panel-input {
-    width: 55px;
+    width: 42px;
     padding: 2px 4px;
     font-family: var(--font-mono);
     font-size: 0.7rem;
@@ -4208,17 +4198,37 @@ body.panel-open .collection-page {
     background: transparent;
     border: 1px solid transparent;
     color: var(--text-primary);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.panel-input:hover {
-    background: var(--bg-input);
-    border-color: var(--border);
+/* Editable variant - shows it's interactive */
+.panel-input--editable {
+    border: 1px dashed var(--border);
+    color: var(--primary);
 }
 
-.panel-input:focus {
+.panel-input--editable::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.panel-input--editable:hover {
     background: var(--bg-input);
+    border-style: solid;
+    border-color: var(--primary-dim);
+}
+
+.panel-input--editable:focus {
+    background: var(--bg-input);
+    border-style: solid;
     border-color: var(--primary);
     outline: none;
+}
+
+/* When input has value, show solid border */
+.panel-input--editable:not(:placeholder-shown) {
+    border-style: solid;
+    border-color: var(--primary-dim);
 }
 
 .panel-energy-wrap {
@@ -4263,12 +4273,12 @@ body.panel-open .collection-page {
     text-align: center;
 }
 
+/* Panel track tags - now inline in fields row */
 .panel-track-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    margin-top: var(--space-xs);
-    padding-left: calc(30px + var(--space-sm));
+    gap: 3px;
+    align-items: center;
 }
 
 .tag-badge-sm {
@@ -4320,57 +4330,27 @@ body.panel-open .collection-page {
     stroke: var(--primary);
 }
 
-/* Panel playable toggle */
-.panel-playable-toggle {
-    flex-shrink: 0;
-}
-
-/* Panel track fields */
+/* Panel track fields - compact row with editable fields, notes, and tags */
 .panel-track-fields {
     display: flex;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     margin-top: var(--space-xs);
-    padding-left: 28px;
+    padding-left: 24px;
     align-items: center;
-}
-
-.panel-field {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.panel-field label {
-    font-size: 0.55rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.panel-field-bpm .panel-input,
-.panel-field-key .panel-input {
-    width: 45px;
-}
-
-/* Panel track extras row */
-.panel-track-extras {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-xs);
-    padding-left: 28px;
     flex-wrap: wrap;
 }
 
+/* Panel notes button - compact version */
 .panel-notes-btn {
-    font-size: 0.6rem;
-    padding: 2px 6px;
+    font-size: 0.65rem;
+    padding: 2px 5px;
     background: transparent;
     border: 1px dashed var(--border);
     color: var(--text-muted);
     cursor: pointer;
     font-family: var(--font-mono);
     transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    line-height: 1;
 }
 
 .panel-notes-btn:hover {

@@ -78,8 +78,10 @@ These are used across multiple pages - changes apply everywhere:
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
 | **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` |
 | **Side Panel** | `.release-panel`, `.panel-content`, `.panel-discogs-card` |
+| **Panel Track Row** | `.panel-track-row`, `.panel-track-main`, `.panel-track-fields` |
+| **Editable Inputs** | `.panel-input`, `.panel-input--editable` |
 | **Buttons** | `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm` |
-| **Playable Toggle** | `.toggle`, `.toggle-slider`, `.toggle-sm` |
+| **Playable Toggle** | `.toggle`, `.toggle-slider` |
 | **Toggle Button (Settings)** | `.toggle-btn`, `.toggle-btn .led` |
 
 ---
@@ -392,6 +394,58 @@ Key points:
 - Uses `data-href` attribute for the destination URL
 - LCD-style background and text colors
 - Orange border on hover indicates interactivity
+
+**Panel Track Row (compact 2-row layout):**
+The sidebar track list uses a space-efficient 2-row layout per track:
+
+```
+┌────────────────────────────────────────────┐
+│ A1 │ Track Title                  3:45 [□]│  ← Row 1
+├────────────────────────────────────────────┤
+│    BPM [120] Key [8A] [█████] 📝 [tags]  │  ← Row 2
+└────────────────────────────────────────────┘
+```
+
+Structure:
+```html
+<div class="panel-track-row">
+    <!-- Row 1: Position, Title, Duration, Toggle -->
+    <div class="panel-track-main">
+        <span class="panel-track-pos">A1</span>
+        <span class="panel-track-title">Track Title</span>
+        <span class="panel-track-duration">3:45</span>
+        <label class="toggle">...</label>
+    </div>
+    <!-- Row 2: Editable fields + Notes + Tags -->
+    <div class="panel-track-fields">
+        <input class="panel-input panel-input--editable panel-bpm" ...>
+        <input class="panel-input panel-input--editable panel-key" ...>
+        <div class="energy-bar energy-bar--sm">...</div>
+        <button class="panel-notes-btn">...</button>
+        <div class="panel-track-tags">...</div>
+    </div>
+</div>
+```
+
+Key design decisions:
+- **Row 1**: Read-only info (position, title, duration) + playable toggle
+- **Row 2**: Editable fields (BPM, Key, Energy) + notes + tags
+- **Visual distinction**: Editable inputs use `.panel-input--editable` with dashed orange border
+- **Toggle consistency**: Uses standard `.toggle` (not `.toggle-sm`) for visual consistency with detail page
+- **Compact**: No labels - inputs use placeholder text (e.g., "BPM", "Key")
+
+Editable input styling:
+```css
+.panel-input--editable {
+    border: 1px dashed var(--border);  /* Dashed = editable/empty */
+    color: var(--primary);             /* Orange text for values */
+}
+
+.panel-input--editable:not(:placeholder-shown) {
+    border-style: solid;               /* Solid = has value */
+    border-color: var(--primary-dim);
+}
+```
 
 #### Inputs & Forms
 - Minimal styling - transparent background until hover/focus
