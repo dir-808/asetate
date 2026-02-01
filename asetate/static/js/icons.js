@@ -98,6 +98,31 @@ export function renderEmojiIcon(name, size = 24, color = null) {
 }
 
 /**
+ * Convert a hexcode (like "1F4BF" or "1F441-FE0F") to an emoji character
+ *
+ * @param {string} hexcode - Unicode hexcode(s) separated by dashes
+ * @returns {string} The emoji character
+ */
+function hexcodeToEmoji(hexcode) {
+    try {
+        const codepoints = hexcode.split('-').map(cp => parseInt(cp, 16));
+        return String.fromCodePoint(...codepoints);
+    } catch {
+        return EMOJI_CHARS[DEFAULT_ICON];
+    }
+}
+
+/**
+ * Check if a string looks like a hexcode (uppercase hex characters, possibly with dashes)
+ *
+ * @param {string} value - String to check
+ * @returns {boolean} True if it looks like a hexcode
+ */
+function isHexcode(value) {
+    return /^[0-9A-F]+(-[0-9A-F]+)*$/i.test(value);
+}
+
+/**
  * Render a crate's icon with its color
  *
  * @param {Object} crate - Crate object with icon and color_hex properties
@@ -106,16 +131,27 @@ export function renderEmojiIcon(name, size = 24, color = null) {
  */
 export function renderCrateIcon(crate, size = 24) {
     const colorStyle = crate.color_hex ? ` color: ${crate.color_hex};` : '';
-    let iconName = DEFAULT_ICON;
-    // Support both 'emoji:name' and legacy 'pixel:name' formats
+    let char = EMOJI_CHARS[DEFAULT_ICON];
+
     if (crate.icon) {
+        let iconValue = '';
         if (crate.icon.startsWith('emoji:')) {
-            iconName = crate.icon.slice(6);
+            iconValue = crate.icon.slice(6);
         } else if (crate.icon.startsWith('pixel:')) {
-            iconName = crate.icon.slice(6);
+            iconValue = crate.icon.slice(6);
+        }
+
+        if (iconValue) {
+            if (isHexcode(iconValue)) {
+                // New format: emoji:HEXCODE (e.g., "emoji:1F4BF")
+                char = hexcodeToEmoji(iconValue);
+            } else {
+                // Legacy format: emoji:iconname (e.g., "emoji:vinyl")
+                char = EMOJI_CHARS[iconValue] || EMOJI_CHARS[DEFAULT_ICON];
+            }
         }
     }
-    const char = EMOJI_CHARS[iconName] || EMOJI_CHARS[DEFAULT_ICON];
+
     return `<span class="emoji-icon" style="font-size: ${size}px;${colorStyle}">${char}</span>`;
 }
 
@@ -197,5 +233,10 @@ if (typeof window !== 'undefined') {
         renderPixelIcon,
         getIconName,
         formatIconForStorage,
+        hexcodeToEmoji,
+        isHexcode,
     };
 }
+
+// Export helper functions for direct use
+export { hexcodeToEmoji, isHexcode };

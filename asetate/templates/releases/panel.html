@@ -556,13 +556,42 @@
         clock: '🕰', skull: '💀', box: '📦', check: '✔', plus: '➕'
     };
 
+    // Helper to convert hexcode to emoji character
+    function hexcodeToEmoji(hexcode) {
+        try {
+            const codepoints = hexcode.split('-').map(cp => parseInt(cp, 16));
+            return String.fromCodePoint(...codepoints);
+        } catch {
+            return EMOJI_CHARS_FALLBACK.folder;
+        }
+    }
+
+    // Check if value looks like a hexcode
+    function isHexcode(value) {
+        return /^[0-9A-F]+(-[0-9A-F]+)*$/i.test(value);
+    }
+
     const renderCrateIcon = window.AsetateIcons?.renderCrateIcon || ((crate, size = 16) => {
         const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
-        let iconName = 'folder';
-        if (crate.icon && (crate.icon.startsWith('pixel:') || crate.icon.startsWith('emoji:'))) {
-            iconName = crate.icon.slice(6);
+        let char = EMOJI_CHARS_FALLBACK.folder;
+
+        if (crate.icon) {
+            let iconValue = '';
+            if (crate.icon.startsWith('emoji:') || crate.icon.startsWith('pixel:')) {
+                iconValue = crate.icon.slice(6);
+            }
+
+            if (iconValue) {
+                if (isHexcode(iconValue)) {
+                    // New format: emoji:HEXCODE (e.g., "emoji:1F4BF")
+                    char = hexcodeToEmoji(iconValue);
+                } else {
+                    // Legacy format: emoji:iconname (e.g., "emoji:vinyl")
+                    char = EMOJI_CHARS_FALLBACK[iconValue] || EMOJI_CHARS_FALLBACK.folder;
+                }
+            }
         }
-        const char = EMOJI_CHARS_FALLBACK[iconName] || EMOJI_CHARS_FALLBACK.folder;
+
         return `<span class="emoji-icon" style="font-size: ${size}px;${colorStyle}">${char}</span>`;
     });
 
