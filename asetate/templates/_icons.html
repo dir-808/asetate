@@ -81,17 +81,7 @@
 {% macro crate_icon(crate, size=24) -%}
 {%- set icon_value = crate.icon[6:] if crate.icon and (crate.icon.startswith('emoji:') or crate.icon.startswith('pixel:')) else '' -%}
 {%- if icon_value and icon_value[0:1] in '0123456789ABCDEF' -%}
-{# Hexcode format - convert to emoji character #}
-{%- set codepoints = icon_value.split('-') -%}
-{%- set char = '' -%}
-{%- for cp in codepoints -%}
-{%- set char = char ~ (cp | int(base=16)) | string | replace(cp | int(base=16) | string, '') -%}
-{%- endfor -%}
-{# Use namespace to build character from codepoints #}
-{%- set ns = namespace(emoji='') -%}
-{%- for cp in codepoints -%}
-{%- set ns.emoji = ns.emoji ~ ('\U' ~ cp.zfill(8)) | replace('\\U', '\U') -%}
-{%- endfor -%}
+{# Hexcode format - render using HTML entity #}
 <span class="emoji-icon" data-hexcode="{{ icon_value }}" style="font-size: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}">&#x{{ icon_value.split('-')[0] }};</span>
 {%- elif icon_value -%}
 {# Icon name format - lookup in EMOJI_CHARS #}
