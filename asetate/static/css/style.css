@@ -2810,6 +2810,9 @@ body.crate-panel-open .crates-main {
     image-rendering: crisp-edges;
     /* Crisp SVG edges */
     shape-rendering: crispEdges;
+    /* Centering within parent */
+    vertical-align: middle;
+    flex-shrink: 0;
 }
 
 /* Size-based filters for consistent visual weight at different sizes */
