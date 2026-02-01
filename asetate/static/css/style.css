@@ -3971,9 +3971,9 @@ body.panel-open .collection-page {
 
 /* Discogs Card - LCD screen style, clickable to open full page */
 .panel-discogs-card {
+    display: flex;
     background-color: var(--lcd-bg);
     border: 2px solid var(--border);
-    padding: var(--space-md);
     cursor: pointer;
     /* Functional shadow for recessed LCD screen effect */
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -3982,6 +3982,70 @@ body.panel-open .collection-page {
 
 .panel-discogs-card:hover {
     border-color: var(--primary);
+}
+
+/* Main content area (cover + info) */
+.panel-discogs-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-md);
+}
+
+/* Vertical button column on right side */
+.panel-discogs-buttons {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.panel-discogs-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    padding: var(--space-sm);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--lcd-text);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.panel-discogs-btn:last-child {
+    border-bottom: none;
+}
+
+.panel-discogs-btn:hover {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: var(--primary);
+}
+
+.panel-discogs-btn .emoji-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.panel-discogs-btn .activity-led {
+    position: absolute;
+}
+
+.panel-discogs-btn.is-loading .btn-icon {
+    animation: spin 1s linear infinite;
+}
+
+.panel-discogs-btn.has-error {
+    color: var(--error);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .panel-discogs-card .panel-info h2,
@@ -3997,19 +4061,6 @@ body.panel-open .collection-page {
 
 .panel-discogs-card .panel-meta {
     opacity: 0.7;
-}
-
-.panel-discogs-actions {
-    display: flex;
-    gap: var(--space-xs);
-    margin-top: var(--space-sm);
-    padding-top: var(--space-sm);
-    border-top: 1px solid var(--border);
-}
-
-.panel-header {
-    display: flex;
-    gap: var(--space-md);
 }
 
 .panel-cover {
@@ -4488,6 +4539,32 @@ body.panel-open .collection-page {
 
 .panel-notes-textarea::placeholder {
     color: var(--text-muted);
+}
+
+/* LCD variant - sits below Discogs card, matches LCD aesthetic */
+.panel-notes-lcd {
+    background-color: var(--lcd-bg);
+    border: 2px solid var(--border);
+    border-top: none;
+    color: var(--lcd-text);
+    min-height: 60px;
+    max-height: 100px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    caret-color: var(--success);
+    /* Functional shadow for recessed effect, matching card above */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.panel-notes-lcd:focus {
+    border-color: var(--border);
+    border-top: none;
+    /* Keep subtle green glow on focus to indicate active input */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--success);
+}
+
+.panel-notes-lcd::placeholder {
+    color: var(--lcd-dim);
 }
 
 /* Panel crate dropdown */
