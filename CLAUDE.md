@@ -33,30 +33,79 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 - **`static/css/style.css`** - Single source of truth for ALL CSS
 - Templates should have **no** `<style>` blocks (legacy ones are being migrated)
 
-### Organization in style.css
-style.css is organized into sections:
-- **NAVIGATION** - Nav bar styles
-- **BUTTONS** - All button variants
-- **FORMS** - Inputs, selects, textareas
-- **COLLECTION PAGE** - Grid, cards, filters
-- **RELEASE DETAIL PAGE** - Track table, header layout
-- **SIDE PANEL** - Panel positioning, content
-- **SHARED COMPONENTS** - Components used across multiple pages
-- **UTILITIES** - Common helper classes (spacing, text)
+### Organization (CUBE CSS)
+style.css is organized using the CUBE CSS methodology:
 
-When adding new styles, find the appropriate section or create a new one.
+1. **DESIGN TOKENS** - CSS custom properties (colors, spacing, borders)
+2. **COMPOSITION** - Layout primitives (navigation, grids, page structure)
+3. **BLOCKS** - Component styles (buttons, cards, panels, forms)
+4. **UTILITIES** - Single-purpose helpers (spacing, text, flex, display)
+5. **EXCEPTIONS** - State variations (.is-loading, .has-error)
+
+When adding new styles, find the appropriate CUBE layer and section within it.
+
+### Design Tokens Quick Reference
+
+**ALWAYS use design tokens. NEVER hardcode pixel values for spacing.**
+
+#### Spacing (8pt grid)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--space-2xs` | 2px | Fine detail: segment gaps, icon spacing |
+| `--space-xs` | 4px | Tight: tag gaps, inline spacing |
+| `--space-sm` | 8px | Standard: component padding, gaps |
+| `--space-md` | 16px | Section: card padding, form groups |
+| `--space-lg` | 24px | Major: section gaps, large padding |
+| `--space-xl` | 32px | Page: main content padding |
+| `--space-2xl` | 48px | Hero: dashboard spacing |
+
+#### Borders
+| Context | Width | Token |
+|---------|-------|-------|
+| Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
+| Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
+
+#### Font Sizes
+| Token | Size | Usage |
+|-------|------|-------|
+| `--text-2xs` | 0.65rem | Tiny labels |
+| `--text-xs` | 0.75rem | Small text, badges |
+| `--text-sm` | 0.85rem | Secondary text |
+| `--text-base` | 1rem | Body text |
+| `--text-lg` | 1.125rem | Emphasis |
+| `--text-xl` | 1.5rem | Headings |
 
 ### Utility Classes
-Use utility classes instead of inline styles for common patterns:
+Use utility classes instead of inline styles. Full list available in style.css.
 
-| Class | CSS |
-|-------|-----|
-| `.mt-sm`, `.mt-md`, `.mt-lg` | `margin-top: var(--space-*)` |
-| `.mb-sm`, `.mb-md`, `.mb-lg` | `margin-bottom: var(--space-*)` |
-| `.pt-sm`, `.pt-md` | `padding-top: var(--space-*)` |
-| `.pl-lg` | `padding-left: var(--space-lg)` |
-| `.text-sm`, `.text-xs` | `font-size: 0.75rem / 0.65rem` |
-| `.cursor-pointer` | `cursor: pointer` |
+**Spacing:**
+```
+.m{t|b|l|r|x|y}-{2xs|xs|sm|md|lg|xl}  /* margin */
+.p{t|b|l|r|x|y}-{2xs|xs|sm|md|lg|xl}  /* padding */
+.gap-{2xs|xs|sm|md|lg}                 /* flex/grid gap */
+```
+
+**Flexbox:**
+```
+.flex, .flex-col, .flex-row
+.items-{start|center|end|stretch}
+.justify-{start|center|end|between}
+.flex-center, .flex-between  /* common patterns */
+```
+
+**Text:**
+```
+.text-{2xs|xs|sm|base|lg|xl}   /* size */
+.text-{primary|secondary|muted|accent|success|warning|error|lcd}  /* color */
+.font-{normal|medium|semibold|bold}
+.truncate, .uppercase
+```
+
+**Display & Position:**
+```
+.hidden, .block, .inline-flex
+.relative, .absolute, .fixed
+```
 
 **Prefer utility classes over inline styles** for spacing and text. Keep `style="display: none;"` for JS-toggled elements.
 
@@ -64,6 +113,23 @@ Use utility classes instead of inline styles for common patterns:
 - **Base class**: `.component` (e.g., `.energy-bar`)
 - **Size variants**: `.component--sm`, `.component--lg`
 - **State variants**: `.component.active`, `.component.selected`
+
+### When to Use What
+
+| Need | Use | Example |
+|------|-----|---------|
+| Spacing (margin, padding, gap) | Utility class OR token | `.mt-md` or `margin-top: var(--space-md)` |
+| Text color | Utility class | `.text-muted`, `.text-lcd` |
+| Flex container | Utility class | `.flex`, `.flex-center`, `.items-center` |
+| Display toggle | Utility class | `.hidden` |
+| Component-specific layout | Component class | `.panel-track-row`, `.energy-bar` |
+| Interactive element | Component class + state | `.btn.is-loading`, `.track-row.track-playable` |
+| One-off styling | Inline style (rarely) | Only for JS-computed values |
+
+**Decision flow:**
+1. Can a utility class do this? → Use utility class
+2. Is this a reusable component pattern? → Create/use component class
+3. Is this computed by JavaScript? → Use inline style
 
 ### Key Shared Components
 These are used across multiple pages - changes apply everywhere:
