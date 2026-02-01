@@ -94,6 +94,8 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--icon-xl` | 24px | Large icon display |
 | `--icon-2xl` | 32px | Icon buttons, emoji grid items |
 | `--icon-3xl` | 40px | Icon previews |
+| `--icon-4xl` | 64px | Large icons, avatars |
+| `--swatch-size` | 22px | Color picker swatches, small buttons |
 
 #### Component Sizes
 | Token | Value | Usage |
@@ -151,6 +153,7 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 |-------|-------|-------|
 | `--cover-lg` | 250px | Large cover (release detail) |
 | `--cover-sm` | 100px | Small cover (sidebar) |
+| `--cover-xs` | 50px | Mini cover (list items) |
 
 #### Font Sizes
 | Token | Size | Usage |

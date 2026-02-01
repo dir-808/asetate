@@ -100,6 +100,7 @@
     --icon-xl: 24px;             /* Large icon display */
     --icon-2xl: 32px;            /* Large icon buttons, emoji grid */
     --icon-3xl: 40px;            /* Icon previews */
+    --icon-4xl: 64px;            /* Large icons, avatars */
 
     /* Button/control sizes */
     --btn-sm-size: 28px;         /* Small square buttons (toggle, mini actions) */
@@ -123,6 +124,10 @@
     /* Cover sizes */
     --cover-lg: 250px;            /* Large cover (release detail) */
     --cover-sm: 100px;            /* Small cover (sidebar) */
+    --cover-xs: 50px;             /* Mini cover (list items) */
+
+    /* Color swatch sizes */
+    --swatch-size: 22px;          /* Color picker swatches */
 
     /* Slider/control sizes */
     --slider-width: 50px;         /* Energy slider width */
@@ -837,8 +842,8 @@ input::placeholder, textarea::placeholder {
 }
 
 .status-indicator {
-    width: 10px;
-    height: 10px;
+    width: var(--slider-thumb);
+    height: var(--slider-thumb);
     background-color: var(--text-muted);
 }
 
@@ -870,7 +875,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .progress-bar {
-    height: 6px;
+    height: var(--led-size-sm);
     background-color: var(--bg-input);
     border: var(--border-width-sm) solid var(--border);
     overflow: hidden;
@@ -1918,13 +1923,13 @@ input::placeholder, textarea::placeholder {
 .energy-value {
     font-family: var(--font-mono);
     font-size: 0.8rem;
-    min-width: 16px;
+    min-width: var(--icon-base);
     text-align: center;
     color: var(--text-muted);
 }
 
 .col-energy {
-    width: 100px;
+    width: var(--cover-sm);
 }
 
 .track-input::placeholder {
@@ -2301,8 +2306,8 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-cover-small {
-    width: 50px;
-    height: 50px;
+    width: var(--cover-xs);
+    height: var(--cover-xs);
     flex-shrink: 0;
     overflow: hidden;
     background-color: var(--bg-surface);
@@ -2737,8 +2742,8 @@ body.crate-panel-open .crates-main {
 }
 
 .icon-preview {
-    width: 36px;
-    height: 36px;
+    width: var(--input-sm-width);
+    height: var(--input-sm-width);
     border: var(--border-width-md) solid var(--border);
     /* No border-radius - MPC style */
     background: var(--bg-elevated);
@@ -2768,8 +2773,8 @@ body.crate-panel-open .crates-main {
 }
 
 .icon-suggestion {
-    width: 26px;
-    height: 26px;
+    width: var(--btn-sm-size);
+    height: var(--btn-sm-size);
     border: var(--border-width-sm) solid transparent;
     /* No border-radius - MPC style */
     background: var(--bg-elevated);
@@ -2786,8 +2791,8 @@ body.crate-panel-open .crates-main {
 
 /* Emoji Icon Picker */
 .icon-preview-box {
-    width: 48px;
-    height: 48px;
+    width: var(--space-2xl);
+    height: var(--space-2xl);
     border: var(--border-width-md) solid var(--border);
     /* No border-radius - MPC style */
     background: var(--bg-elevated);
@@ -2880,8 +2885,8 @@ body.crate-panel-open .crates-main {
 }
 
 .pixel-icon-grid-item {
-    width: 36px;
-    height: 36px;
+    width: var(--input-sm-width);
+    height: var(--input-sm-width);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3061,8 +3066,8 @@ body.crate-panel-open .crates-main {
 }
 
 .color-option {
-    width: 22px;
-    height: 22px;
+    width: var(--swatch-size);
+    height: var(--swatch-size);
     border: var(--border-width-md) solid transparent;
     /* Square color swatches - MPC style */
     cursor: pointer;
@@ -3081,8 +3086,8 @@ body.crate-panel-open .crates-main {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: var(--swatch-size);
+    height: var(--swatch-size);
     cursor: pointer;
     border: var(--border-width-md) solid var(--border);
     /* Square - MPC style */
@@ -3153,13 +3158,13 @@ body.crate-panel-open .crates-main {
 
 /* Crate detail page - large icon */
 .crate-icon-large {
-    width: 64px;
-    height: 64px;
+    width: var(--icon-4xl);
+    height: var(--icon-4xl);
     /* No border-radius - MPC style */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: var(--text-2xl);
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
     flex-shrink: 0;
@@ -3317,8 +3322,8 @@ body.crate-panel-open .crates-main {
 }
 
 .tag-add-btn {
-    width: 22px;
-    height: 22px;
+    width: var(--swatch-size);
+    height: var(--swatch-size);
     padding: 0;
     border: var(--border-width-sm) dashed var(--border-light);
     background: transparent;
@@ -3670,12 +3675,12 @@ body.crate-panel-open .crates-main {
 }
 
 .preview-table .row-checkbox {
-    width: 20px;
+    width: var(--icon-lg);
     cursor: pointer;
 }
 
 .row-checkbox-col {
-    width: 30px;
+    width: var(--track-toggle-width);
     text-align: center;
 }
 
@@ -3783,8 +3788,8 @@ body.crate-panel-open .crates-main {
 }
 
 .account-avatar {
-    width: 64px;
-    height: 64px;
+    width: var(--icon-4xl);
+    height: var(--icon-4xl);
     object-fit: cover;
     border: var(--border-width-md) solid var(--border);
 }
