@@ -77,6 +77,12 @@
     --border-width-md: 2px;   /* Containers: cards, panels, buttons, modals */
 
     /* -----------------------------------------
+       LAYOUT - Fixed dimensions
+       ----------------------------------------- */
+    --sidebar-width: 450px;      /* Release panel sidebar */
+    --crate-panel-width: 420px;  /* Crate edit panel */
+
+    /* -----------------------------------------
        TYPOGRAPHY
        ----------------------------------------- */
     --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
@@ -196,6 +202,10 @@ a:hover {
     border: 2px solid var(--border);
     background: transparent;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    /* Prevent layout shift on state change */
+    min-width: max-content;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* LED indicator inside nav link */
@@ -236,11 +246,15 @@ a:hover {
     color: var(--text-secondary);
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;  /* Match nav-links for consistency */
     text-transform: uppercase;
     padding: var(--space-sm) var(--space-md);
     border: 2px solid var(--border);
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    /* Prevent layout shift on state change */
+    min-width: max-content;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* LED indicator inside user link */
@@ -1133,7 +1147,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .collection-page.panel-open {
-    margin-right: 450px;
+    margin-right: var(--sidebar-width);
 }
 
 .collection-header {
@@ -2414,7 +2428,7 @@ input::placeholder, textarea::placeholder {
 }
 
 body.crate-panel-open .crates-main {
-    padding-right: 420px;
+    padding-right: var(--crate-panel-width);
 }
 
 /* Crate grid - square cards with fixed max-width so items reflow but don't resize */
@@ -2531,7 +2545,7 @@ body.crate-panel-open .crates-main {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 120px;
-    margin-bottom: 2px;
+    margin-bottom: var(--space-2xs);
 }
 
 .crate-box .crate-stats {
@@ -3215,7 +3229,7 @@ body.crate-panel-open .crates-main {
     color: inherit;
     cursor: pointer;
     padding: 0;
-    margin-left: 2px;
+    margin-left: var(--space-2xs);
     font-size: 0.85rem;
     line-height: 1;
     opacity: 0;
@@ -3864,7 +3878,7 @@ body.crate-panel-open .crates-main {
 }
 
 .form-check-input {
-    margin-top: 4px;
+    margin-top: var(--space-xs);
     flex-shrink: 0;
 }
 
@@ -4085,7 +4099,7 @@ body.panel-open .collection-page {
     position: fixed;
     top: 0;
     right: 0;
-    width: 450px;
+    width: var(--sidebar-width);
     height: 100vh;
     background-color: var(--bg-surface);
     border-left: 2px solid var(--border);
@@ -4504,7 +4518,7 @@ body.panel-open .collection-page {
 /* Panel Inputs - Editable fields with visual distinction */
 .panel-input {
     width: 36px;
-    padding: 1px 3px;
+    padding: var(--space-2xs) var(--space-xs);
     font-family: var(--font-mono);
     font-size: 0.65rem;
     text-align: center;
@@ -4516,7 +4530,8 @@ body.panel-open .collection-page {
 
 /* Editable variant - shows it's interactive */
 .panel-input--editable {
-    border: 1px dashed var(--lcd-dim);
+    /* Always solid border to prevent layout shift - use subtle color for empty state */
+    border: 1px solid rgba(34, 84, 61, 0.5);  /* --lcd-dim at 50% opacity */
     color: var(--lcd-text);
 }
 
@@ -4540,20 +4555,17 @@ body.panel-open .collection-page {
 
 .panel-input--editable:hover {
     background: rgba(74, 222, 128, 0.1);
-    border-style: solid;
     border-color: var(--lcd-text);
 }
 
 .panel-input--editable:focus {
     background: rgba(74, 222, 128, 0.15);
-    border-style: solid;
     border-color: var(--success);
     outline: none;
 }
 
-/* When input has value, show solid border */
+/* When input has value, show full-opacity border */
 .panel-input--editable:not(:placeholder-shown) {
-    border-style: solid;
     border-color: var(--lcd-text);
 }
 
@@ -4609,7 +4621,7 @@ body.panel-open .collection-page {
 
 .tag-badge-sm {
     display: inline-block;
-    padding: 0px 4px;
+    padding: 0 var(--space-xs);
     font-size: 0.55rem;
     font-weight: 600;
     background-color: var(--tag-color, var(--primary));
@@ -4715,7 +4727,7 @@ body.panel-open .collection-page {
 
 .panel-tag-input {
     width: 50px;
-    padding: 1px 3px;
+    padding: var(--space-2xs) var(--space-xs);
     font-size: 0.55rem;
     background-color: rgba(74, 222, 128, 0.1);
     border: 1px solid var(--lcd-text);
@@ -4729,7 +4741,7 @@ body.panel-open .collection-page {
     color: inherit;
     cursor: pointer;
     padding: 0;
-    margin-left: 2px;
+    margin-left: var(--space-2xs);
     font-size: 0.7rem;
     line-height: 1;
     opacity: 0;
@@ -4935,7 +4947,7 @@ body.panel-open .collection-page {
     position: fixed;
     top: 0;
     right: 0;
-    width: 450px;
+    width: var(--sidebar-width);
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 1000;
@@ -5592,7 +5604,9 @@ body.panel-open .collection-page {
 /* -----------------------------------------
    Transition utilities
    ----------------------------------------- */
-.transition { transition: all 0.15s ease; }
+/* DEPRECATED: .transition uses 'all' which can cause performance issues
+   Prefer specific transition utilities below */
+.transition { transition: opacity 0.15s ease, transform 0.15s ease; }
 .transition-colors { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
 .transition-opacity { transition: opacity 0.15s ease; }
 .transition-transform { transition: transform 0.15s ease; }
