@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import pixel_icon, crate_icon %}
 
 {% block title %}{{ release.display_artist }} - {{ release.display_title }} - Asetate{% endblock %}
 
@@ -270,9 +271,10 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function() {
-    const releaseId = document.querySelector('.release-detail').dataset.releaseId;
+<script type="module">
+import { renderCrateIcon } from '/static/js/icons.js';
+
+const releaseId = document.querySelector('.release-detail').dataset.releaseId;
 
     async function updateTrack(trackId, field, value) {
         const data = {};
@@ -502,16 +504,6 @@
         }
     }
 
-    // Helper to render crate icon HTML
-    function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
-        if (crate.icon_type === 'emoji') {
-            const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
-            return `<span class="emoji-icon ${sizeClass}" style="-webkit-mask-image: url('${crate.icon_url}'); mask-image: url('${crate.icon_url}'); ${colorStyle}"></span>`;
-        } else {
-            return `<img src="${crate.icon_url}" alt="" class="${sizeClass}">`;
-        }
-    }
-
     function updateReleaseCratesDisplay() {
         const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
         if (inCrates.length > 0) {
@@ -537,7 +529,7 @@
             const isSelected = releaseCrateIds.includes(c.id);
             return `<label class="crate-dropdown-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
                 <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                ${renderCrateIcon(c, 'crate-dropdown-emoji')}
+                ${renderCrateIcon(c, 1.2)}
                 <span class="crate-dropdown-item-name">${c.name}</span>
             </label>`;
         }).join('');
@@ -1008,13 +1000,12 @@
         }
     });
 
-    // Close on Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && columnSettingsModal.classList.contains('open')) {
-            closeColumnSettingsModal();
-        }
-    });
-})();
+// Close on Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && columnSettingsModal.classList.contains('open')) {
+        closeColumnSettingsModal();
+    }
+});
 </script>
 
 <!-- Global datalist for tag autocomplete -->

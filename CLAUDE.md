@@ -73,7 +73,7 @@ These are used across multiple pages - changes apply everywhere:
 | **Energy Bar** | `.energy-bar`, `.energy-bar--sm` |
 | **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` |
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
-| **Crate Icons** | `.emoji-icon`, `.crate-emoji-icon`, `.crate-badge-emoji`, `.release-crate-icon` |
+| **Pixel Icons** | `.px-icon`, `.px-icon--*` (vinyl, folder, music, etc.) |
 | **Crate Badges** | `.crate-badge`, `.crate-badge-panel`, `.crate-badge-name` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
 | **Notes Textarea** | `.notes-textarea`, `.panel-notes-lcd` |
@@ -262,91 +262,130 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
 
-#### Crate Icons (OpenMoji Emoji)
-Crate icons use OpenMoji outline emoji SVGs with CSS `mask-image` for color inheritance. Icons are stored in the database as `emoji:HEXCODE` format.
+#### Pixel Art Icons (Unified System)
+All icons in Asetate use a unified CSS pixel art system for consistent MPC2000 aesthetic. Icons are stored in the database as `pixel:ICONNAME` format (e.g., `pixel:vinyl`, `pixel:folder`).
 
-**Rendering pattern (HTML):**
-```html
-<!-- Emoji icon - uses mask-image for color control -->
-<span class="emoji-icon crate-badge-emoji"
-      style="-webkit-mask-image: url('/static/emoji/1F30A.svg');
-             mask-image: url('/static/emoji/1F30A.svg');
-             color: #448361;"></span>
+**Centralized Icon Files:**
+- **`templates/_icons.html`** - Jinja2 macros for server-side rendering
+- **`static/js/icons.js`** - ES6 module for client-side rendering
 
-<!-- Pixel icon fallback (legacy) -->
-<img src="/static/icons/folder.png" alt="" class="crate-badge-emoji">
+**Jinja2 Macros (templates/_icons.html):**
+```jinja2
+{# Import at top of template #}
+{% from "_icons.html" import pixel_icon, crate_icon %}
+
+{# Render a basic pixel icon #}
+{{ pixel_icon('vinyl', scale=2, color='#F97316') }}
+
+{# Render a crate's icon with its color #}
+{{ crate_icon(crate, scale=2.5) }}
 ```
 
-**JavaScript helper for dynamic rendering:**
+**JavaScript Module (static/js/icons.js):**
 ```javascript
-function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
-    if (crate.icon_type === 'emoji') {
-        const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
-        return `<span class="emoji-icon ${sizeClass}"
-                      style="-webkit-mask-image: url('${crate.icon_url}');
-                             mask-image: url('${crate.icon_url}');
-                             ${colorStyle}"></span>`;
-    } else {
-        return `<img src="${crate.icon_url}" alt="" class="${sizeClass}">`;
-    }
-}
+// ES6 module import (for type="module" scripts)
+import { renderCrateIcon, renderPixelIconGrid, PIXEL_ICONS } from '/static/js/icons.js';
+
+// Or use global (for AJAX-loaded content)
+const icon = window.AsetateIcons.renderCrateIcon(crate, 1.2);
 ```
 
-**Size variants:**
-| Class | Size | Usage |
+**Available functions:**
+| Function | Description |
+|----------|-------------|
+| `renderPixelIcon(name, scale, color)` | Render icon by name |
+| `renderCrateIcon(crate, scale)` | Render crate's icon with color |
+| `renderPixelIconGrid(container, onSelect, selected)` | Render icon picker grid |
+| `getIconName(iconField)` | Extract icon name from `pixel:name` format |
+| `formatIconForStorage(name)` | Format name as `pixel:name` for storage |
+
+**Common scale values:**
+| Scale | Size (approx) | Usage |
+|-------|---------------|-------|
+| 1.0 | 12px | Inline with small text |
+| 1.2 | 14px | Crate badges, dropdown items |
+| 1.5 | 18px | Default, icon grid picker |
+| 2.0 | 24px | Icon preview in forms |
+| 2.5 | 30px | Crate cards |
+| 3.0 | 36px | Crate detail header |
+
+**Available icons:**
+
+*Action icons:*
+| Class | Icon | Usage |
 |-------|------|-------|
-| `.crate-emoji-icon` | 32px | Crate list cards |
-| `.crate-emoji-icon-lg` | 40px | Crate detail header |
-| `.crate-badge-emoji` | 14px | Crate badges on release page |
-| `.crate-dropdown-emoji` | 16px | Crate dropdown items |
-| `.release-crate-icon` | 20px | Crate icons on release cards |
+| `.px-icon--link` | Chain link | View on Discogs |
+| `.px-icon--edit` | Pencil | Edit on Discogs |
+| `.px-icon--sync` | Circular arrows | Sync button |
+| `.px-icon--notes` | Paper with lines | Track notes |
+| `.px-icon--tag` | Price tag | Add tag |
 
-**API response format (`/crates/api/list`):**
-```json
-{
-  "crates": [{
-    "id": 1,
-    "name": "Deep House",
-    "icon": "emoji:1F30A",
-    "icon_url": "/static/emoji/1F30A.svg",
-    "icon_type": "emoji",
-    "color_hex": "#448361"
-  }]
-}
-```
+*Crate icons:*
+| Class | Icon | Description |
+|-------|------|-------------|
+| `.px-icon--folder` | Folder | Default crate icon |
+| `.px-icon--vinyl` | Vinyl record | Music/records |
+| `.px-icon--headphones` | Headphones | Listening |
+| `.px-icon--music` | Music note | General music |
+| `.px-icon--speaker` | Speaker | Sound/audio |
+| `.px-icon--disco` | Disco ball | Dance/party |
+| `.px-icon--wave` | Wave | Ambient/chill |
+| `.px-icon--fire` | Flame | Hot/trending |
+| `.px-icon--bolt` | Lightning bolt | Energy/power |
+| `.px-icon--star` | Star | Favorites |
+| `.px-icon--heart` | Heart | Loved |
+| `.px-icon--diamond` | Diamond | Premium/special |
+| `.px-icon--crown` | Crown | Top/best |
+| `.px-icon--sun` | Sun | Daytime/upbeat |
+| `.px-icon--moon` | Moon | Nighttime/moody |
+| `.px-icon--globe` | Globe | World/international |
+| `.px-icon--clock` | Clock | Time-based |
+| `.px-icon--skull` | Skull | Dark/heavy |
+| `.px-icon--box` | Box | Archive/storage |
+| `.px-icon--check` | Checkmark | Complete/verified |
+| `.px-icon--plus` | Plus sign | Add/new |
 
-**MPC2000 Chunky Icon Styling:**
-Icons use SVG filters defined in `base.html` to achieve thicker, chunkier lines that match the hardware aesthetic:
-
-```html
-<!-- In base.html - hidden SVG filter definitions -->
-<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute;">
-    <defs>
-        <filter id="icon-chunky" x="-25%" y="-25%" width="150%" height="150%">
-            <feMorphology operator="dilate" radius="0.4" in="SourceGraphic"/>
-        </filter>
-        <filter id="icon-chunky-lg" x="-25%" y="-25%" width="150%" height="150%">
-            <feMorphology operator="dilate" radius="0.6" in="SourceGraphic"/>
-        </filter>
-    </defs>
-</svg>
-```
-
-CSS applies the filter automatically:
+**Creating new pixel art icons:**
 ```css
-.emoji-icon {
-    filter: url(#icon-chunky);
-    image-rendering: pixelated;  /* Stepped/aliased edges */
-}
-
-/* Larger icons use stronger dilation */
-.crate-emoji-icon,
-.crate-emoji-icon-lg {
-    filter: url(#icon-chunky-lg);
+.px-icon--example {
+    color: currentColor;
+    box-shadow:
+        /* Each value is: Xpx Ypx (coordinates on 12x12 grid) */
+        3px 1px, 4px 1px, 5px 1px,  /* Row 1 */
+        2px 2px, 6px 2px,            /* Row 2 */
+        /* ... etc */;
 }
 ```
 
-The `feMorphology` filter with `dilate` operator expands the shape outward, effectively thickening all lines. The `radius` value controls thickness (0.4 for small icons, 0.6 for larger ones).
+**Icon picker grid:**
+Use `.pixel-icon-grid` class for icon selection interfaces:
+```html
+<div class="pixel-icon-grid" id="icon-grid">
+    <!-- Populated via JavaScript -->
+</div>
+```
+
+```javascript
+const PIXEL_ICONS = [
+    { name: 'folder', label: 'Folder' },
+    { name: 'vinyl', label: 'Vinyl' },
+    // ... etc
+];
+
+function renderPixelIconGrid(container, onSelect, selectedIcon = null) {
+    container.innerHTML = '';
+    PIXEL_ICONS.forEach(icon => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pixel-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
+        btn.dataset.icon = icon.name;
+        btn.title = icon.label;
+        btn.innerHTML = `<span class="px-icon px-icon--${icon.name}" style="--px-scale: 1.5;"></span>`;
+        btn.addEventListener('click', () => onSelect(icon.name));
+        container.appendChild(btn);
+    });
+}
+```
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:

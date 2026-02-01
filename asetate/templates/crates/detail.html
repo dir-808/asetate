@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import pixel_icon, crate_icon %}
 
 {% block title %}{{ crate.name }} - Crates - Asetate{% endblock %}
 
@@ -19,11 +20,7 @@
 
     <header class="crate-header">
         <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; border-color: {{ crate.color_hex }}40"{% endif %}>
-            {% if crate.icon_type == 'emoji' %}
-            <span class="emoji-icon crate-emoji-icon-lg" style="-webkit-mask-image: url('{{ crate.icon_url }}'); mask-image: url('{{ crate.icon_url }}');{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
-            {% else %}
-            <img src="{{ crate.icon_url }}" alt="" class="crate-pixel-icon-lg">
-            {% endif %}
+            {{ crate_icon(crate, scale=3) }}
         </div>
         <div class="crate-info">
             <h1>{{ crate.name }}</h1>
@@ -136,22 +133,19 @@
                 <input type="text" id="edit-crate-description" value="{{ crate.description or '' }}" placeholder="Optional">
             </div>
 
-            <!-- Emoji Picker -->
+            <!-- Pixel Icon Picker -->
             <div class="form-group">
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="edit-icon-preview">
-                            <span class="emoji-icon crate-emoji-icon" id="edit-icon-preview-emoji" style="-webkit-mask-image: url('{{ crate.icon_url }}'); mask-image: url('{{ crate.icon_url }}');"></span>
+                            {% set current_icon = crate.icon[6:] if crate.icon and crate.icon.startswith('pixel:') else 'folder' %}
+                            <span class="px-icon px-icon--{{ current_icon }}" id="edit-icon-preview-pixel" style="--px-scale: 2;"></span>
                         </div>
-                        <input type="text"
-                               id="edit-icon-search"
-                               class="icon-search-input"
-                               placeholder="Search emoji...">
-                        <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Clear</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Reset</button>
                     </div>
-                    <div class="icon-grid" id="edit-icon-grid">
-                        <!-- Emoji loaded via JS -->
+                    <div class="pixel-icon-grid" id="edit-icon-grid">
+                        <!-- Icons loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="edit-crate-icon" name="icon" value="{{ crate.icon or '' }}">
@@ -219,222 +213,161 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function() {
-    const crateId = document.querySelector('.crate-detail').dataset.crateId;
-    const DEFAULT_EMOJI = '1F4C1';  // Folder emoji
-    let allEmoji = [];
-    let searchTimeout = null;
+<script type="module">
+import { DEFAULT_ICON, renderPixelIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
-    // Load emoji from API
-    async function loadEmoji(query = '') {
-        try {
-            const response = await fetch(`/crates/api/emoji?q=${encodeURIComponent(query)}&limit=60`);
-            const data = await response.json();
-            return data.emoji;
-        } catch (err) {
-            console.error('Failed to load emoji:', err);
-            return [];
-        }
-    }
+const crateId = document.querySelector('.crate-detail').dataset.crateId;
 
-    // Render emoji grid
-    function renderEmojiGrid(emoji, container, onSelect) {
-        container.innerHTML = '';
-        emoji.forEach(e => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'emoji-grid-item';
-            btn.dataset.hexcode = e.hexcode;
-            btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
-            btn.innerHTML = `<img src="${e.url}" alt="${e.name}">`;
-            btn.addEventListener('click', () => onSelect(e.hexcode, e.url));
-            container.appendChild(btn);
-        });
-    }
+// Edit modal
+const editModal = document.getElementById('edit-crate-modal');
+const editForm = document.getElementById('edit-crate-form');
+const editIconInput = document.getElementById('edit-crate-icon');
+const editIconPreviewPixel = document.getElementById('edit-icon-preview-pixel');
+const editIconGrid = document.getElementById('edit-icon-grid');
+const editClearIconBtn = document.getElementById('edit-clear-icon');
+const editColorInput = document.getElementById('edit-crate-color');
 
-    // Edit modal
-    const editModal = document.getElementById('edit-crate-modal');
-    const editForm = document.getElementById('edit-crate-form');
-
-    document.getElementById('btn-edit-crate').addEventListener('click', async () => {
-        editModal.classList.add('open');
-        // Load emoji when modal opens
-        if (allEmoji.length === 0) {
-            allEmoji = await loadEmoji('');
-        }
-        renderEmojiGrid(allEmoji, editIconGrid, selectEditEmoji);
-        // Highlight current emoji
-        const currentIcon = editIconInput.value;
-        if (currentIcon && currentIcon.startsWith('emoji:')) {
-            const hexcode = currentIcon.slice(6);
-            editIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
-            });
-        }
+function selectEditPixelIcon(iconName) {
+    editIconInput.value = formatIconForStorage(iconName);
+    editIconPreviewPixel.className = `px-icon px-icon--${iconName}`;
+    editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.icon === iconName);
     });
+}
 
-    document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
-    document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
-    editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
+document.getElementById('btn-edit-crate').addEventListener('click', () => {
+    editModal.classList.add('open');
+    const iconName = getIconName(editIconInput.value);
+    renderPixelIconGrid(editIconGrid, selectEditPixelIcon, iconName);
+});
 
-    // Emoji picker for edit modal
-    const editIconInput = document.getElementById('edit-crate-icon');
-    const editIconPreviewEmoji = document.getElementById('edit-icon-preview-emoji');
-    const editIconSearch = document.getElementById('edit-icon-search');
-    const editIconGrid = document.getElementById('edit-icon-grid');
-    const editClearIconBtn = document.getElementById('edit-clear-icon');
-    const editColorInput = document.getElementById('edit-crate-color');
+document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
+document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
+editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
 
-    function selectEditEmoji(hexcode, url) {
-        editIconInput.value = `emoji:${hexcode}`;
-        editIconPreviewEmoji.style.webkitMaskImage = `url('${url}')`;
-        editIconPreviewEmoji.style.maskImage = `url('${url}')`;
-        editIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
-            btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
-        });
-    }
-
-    // Search emoji with debounce
-    editIconSearch.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(async () => {
-            const query = editIconSearch.value.trim();
-            if (query) {
-                const results = await loadEmoji(query);
-                renderEmojiGrid(results, editIconGrid, selectEditEmoji);
-            } else {
-                renderEmojiGrid(allEmoji, editIconGrid, selectEditEmoji);
-            }
-        }, 200);
+editClearIconBtn.addEventListener('click', () => {
+    editIconInput.value = '';
+    editIconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
+    editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
     });
+});
 
-    editClearIconBtn.addEventListener('click', () => {
-        editIconInput.value = '';
-        const defaultUrl = `/static/emoji/${DEFAULT_EMOJI}.svg`;
-        editIconPreviewEmoji.style.webkitMaskImage = `url('${defaultUrl}')`;
-        editIconPreviewEmoji.style.maskImage = `url('${defaultUrl}')`;
-        editIconSearch.value = '';
-        renderEmojiGrid(allEmoji, editIconGrid, selectEditEmoji);
-        editIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => btn.classList.remove('selected'));
-    });
-
-    // Color picker for edit modal
-    document.querySelectorAll('#edit-color-picker .color-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            editColorInput.value = btn.dataset.color;
-        });
-    });
-
-    document.getElementById('edit-custom-color').addEventListener('input', (e) => {
+// Color picker for edit modal
+document.querySelectorAll('#edit-color-picker .color-option').forEach(btn => {
+    btn.addEventListener('click', () => {
         document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
-        editColorInput.value = e.target.value;
+        btn.classList.add('selected');
+        editColorInput.value = btn.dataset.color;
     });
+});
 
-    editForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const parentVal = document.getElementById('edit-crate-parent').value;
-        const data = {
-            name: document.getElementById('edit-crate-name').value.trim(),
-            description: document.getElementById('edit-crate-description').value.trim(),
-            icon: editIconInput.value || null,
-            color: editColorInput.value || null,
-            parent_id: parentVal ? parseInt(parentVal) : null,
-        };
+document.getElementById('edit-custom-color').addEventListener('input', (e) => {
+    document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
+    editColorInput.value = e.target.value;
+});
+
+editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const parentVal = document.getElementById('edit-crate-parent').value;
+    const data = {
+        name: document.getElementById('edit-crate-name').value.trim(),
+        description: document.getElementById('edit-crate-description').value.trim(),
+        icon: editIconInput.value || null,
+        color: editColorInput.value || null,
+        parent_id: parentVal ? parseInt(parentVal) : null,
+    };
+
+    try {
+        const response = await fetch(`/crates/${crateId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const result = await response.json();
+            alert(result.error || 'Failed to update crate');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+
+// Delete modal
+const deleteModal = document.getElementById('delete-crate-modal');
+
+document.getElementById('btn-delete-crate').addEventListener('click', () => {
+    deleteModal.classList.add('open');
+});
+
+document.getElementById('delete-modal-close').addEventListener('click', () => deleteModal.classList.remove('open'));
+document.getElementById('delete-btn-cancel').addEventListener('click', () => deleteModal.classList.remove('open'));
+deleteModal.querySelector('.modal-backdrop').addEventListener('click', () => deleteModal.classList.remove('open'));
+
+document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+    try {
+        const response = await fetch(`/crates/${crateId}`, { method: 'DELETE' });
+        if (response.ok) {
+            window.location.href = '/crates/';
+        } else {
+            alert('Failed to delete crate');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+
+// Remove release from crate
+document.querySelectorAll('.btn-remove[data-release-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const releaseId = btn.dataset.releaseId;
+        if (!confirm('Remove this release from the crate?')) return;
 
         try {
-            const response = await fetch(`/crates/${crateId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+            const response = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
+                method: 'DELETE',
             });
-
             if (response.ok) {
-                window.location.reload();
+                btn.closest('.crate-release-card').remove();
             } else {
-                const result = await response.json();
-                alert(result.error || 'Failed to update crate');
+                alert('Failed to remove release');
             }
         } catch (err) {
             alert('Error: ' + err.message);
         }
     });
+});
 
-    // Delete modal
-    const deleteModal = document.getElementById('delete-crate-modal');
+// Remove track from crate
+document.querySelectorAll('.btn-remove[data-track-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const trackId = btn.dataset.trackId;
+        if (!confirm('Remove this track from the crate?')) return;
 
-    document.getElementById('btn-delete-crate').addEventListener('click', () => {
-        deleteModal.classList.add('open');
-    });
-
-    document.getElementById('delete-modal-close').addEventListener('click', () => deleteModal.classList.remove('open'));
-    document.getElementById('delete-btn-cancel').addEventListener('click', () => deleteModal.classList.remove('open'));
-    deleteModal.querySelector('.modal-backdrop').addEventListener('click', () => deleteModal.classList.remove('open'));
-
-    document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
         try {
-            const response = await fetch(`/crates/${crateId}`, { method: 'DELETE' });
+            const response = await fetch(`/crates/${crateId}/tracks/${trackId}`, {
+                method: 'DELETE',
+            });
             if (response.ok) {
-                window.location.href = '/crates/';
+                btn.closest('.crate-track-item').remove();
             } else {
-                alert('Failed to delete crate');
+                alert('Failed to remove track');
             }
         } catch (err) {
             alert('Error: ' + err.message);
         }
     });
+});
 
-    // Remove release from crate
-    document.querySelectorAll('.btn-remove[data-release-id]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const releaseId = btn.dataset.releaseId;
-            if (!confirm('Remove this release from the crate?')) return;
-
-            try {
-                const response = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) {
-                    btn.closest('.crate-release-card').remove();
-                } else {
-                    alert('Failed to remove release');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        });
-    });
-
-    // Remove track from crate
-    document.querySelectorAll('.btn-remove[data-track-id]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const trackId = btn.dataset.trackId;
-            if (!confirm('Remove this track from the crate?')) return;
-
-            try {
-                const response = await fetch(`/crates/${crateId}/tracks/${trackId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) {
-                    btn.closest('.crate-track-item').remove();
-                } else {
-                    alert('Failed to remove track');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        });
-    });
-
-    // Close modals on escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            editModal.classList.remove('open');
-            deleteModal.classList.remove('open');
-        }
-    });
-})();
+// Close modals on escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        editModal.classList.remove('open');
+        deleteModal.classList.remove('open');
+    }
+});
 </script>
 {% endblock %}

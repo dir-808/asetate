@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import pixel_icon, crate_icon %}
 
 {% block title %}Crates - Asetate{% endblock %}
 
@@ -29,11 +30,7 @@
                 <!-- Crate body -->
                 <div class="crate-body">
                     <div class="crate-icon-container">
-                        {% if node.crate.icon_type == 'emoji' %}
-                        <span class="emoji-icon crate-emoji-icon" style="-webkit-mask-image: url('{{ node.crate.icon_url }}'); mask-image: url('{{ node.crate.icon_url }}');"></span>
-                        {% else %}
-                        <img src="{{ node.crate.icon_url }}" alt="" class="crate-pixel-icon">
-                        {% endif %}
+                        {{ crate_icon(node.crate, scale=2.5) }}
                     </div>
                     <div class="crate-info">
                         <span class="crate-name">{{ node.crate.name }}</span>
@@ -104,22 +101,18 @@
                 <input type="text" id="crate-description" name="description" placeholder="e.g., Late night vibes">
             </div>
 
-            <!-- Emoji Picker -->
+            <!-- Pixel Icon Picker -->
             <div class="form-group">
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="icon-preview">
-                            <span class="emoji-icon crate-emoji-icon" id="icon-preview-emoji" style="-webkit-mask-image: url('/static/emoji/1F4C1.svg'); mask-image: url('/static/emoji/1F4C1.svg');"></span>
+                            <span class="px-icon px-icon--folder" id="icon-preview-pixel" style="--px-scale: 2;"></span>
                         </div>
-                        <input type="text"
-                               id="crate-icon-search"
-                               class="icon-search-input"
-                               placeholder="Search emoji...">
-                        <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Clear</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Reset</button>
                     </div>
-                    <div class="icon-grid" id="icon-grid">
-                        <!-- Emoji loaded via JS -->
+                    <div class="pixel-icon-grid" id="icon-grid">
+                        <!-- Pixel icons loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="crate-icon" name="icon" value="">
@@ -159,390 +152,294 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function() {
-    const modal = document.getElementById('new-crate-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const form = document.getElementById('new-crate-form');
-    const nameInput = document.getElementById('crate-name');
-    const parentIdInput = document.getElementById('crate-parent-id');
-    const parentDisplay = document.getElementById('parent-display');
-    const parentName = document.getElementById('parent-name');
-    const iconInput = document.getElementById('crate-icon');
-    const colorInput = document.getElementById('crate-color');
-    const iconPreviewImg = document.getElementById('icon-preview-img');
-    const iconSearchInput = document.getElementById('crate-icon-search');
-    const iconGrid = document.getElementById('icon-grid');
-    const clearIconBtn = document.getElementById('clear-icon');
-    const cratePanel = document.getElementById('crate-panel');
-    const cratePanelContent = document.getElementById('crate-panel-content');
-    const cratesMain = document.getElementById('crates-main');
+<script type="module">
+import { DEFAULT_ICON, renderPixelIconGrid, renderPixelIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
-    const DEFAULT_EMOJI = '1F4C1';  // Folder emoji
-    const iconPreviewEmoji = document.getElementById('icon-preview-emoji');
-    let searchTimeout = null;
-    let allEmoji = []; // Cache all emoji for faster filtering
+const modal = document.getElementById('new-crate-modal');
+const modalTitle = document.getElementById('modal-title');
+const form = document.getElementById('new-crate-form');
+const nameInput = document.getElementById('crate-name');
+const parentIdInput = document.getElementById('crate-parent-id');
+const parentDisplay = document.getElementById('parent-display');
+const parentName = document.getElementById('parent-name');
+const iconInput = document.getElementById('crate-icon');
+const colorInput = document.getElementById('crate-color');
+const iconGrid = document.getElementById('icon-grid');
+const clearIconBtn = document.getElementById('clear-icon');
+const cratePanel = document.getElementById('crate-panel');
+const cratePanelContent = document.getElementById('crate-panel-content');
+const cratesMain = document.getElementById('crates-main');
+const iconPreviewPixel = document.getElementById('icon-preview-pixel');
 
-    // Load emoji from API
-    async function loadEmoji(query = '') {
-        try {
-            const response = await fetch(`/crates/api/emoji?q=${encodeURIComponent(query)}&limit=60`);
-            const data = await response.json();
-            return data.emoji;
-        } catch (err) {
-            console.error('Failed to load emoji:', err);
-            return [];
-        }
-    }
-
-    // Render emoji grid
-    function renderEmojiGrid(emoji, container, onSelect) {
-        container.innerHTML = '';
-        emoji.forEach(e => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'emoji-grid-item';
-            btn.dataset.hexcode = e.hexcode;
-            btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
-            btn.innerHTML = `<img src="${e.url}" alt="${e.name}">`;
-            btn.addEventListener('click', () => onSelect(e.hexcode, e.url));
-            container.appendChild(btn);
-        });
-    }
-
-    // Select emoji handler for modal
-    function selectEmoji(hexcode, url) {
-        iconInput.value = `emoji:${hexcode}`;
-        // Update preview using mask
-        iconPreviewEmoji.style.webkitMaskImage = `url('${url}')`;
-        iconPreviewEmoji.style.maskImage = `url('${url}')`;
-        // Highlight selected
-        iconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
-            btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
-        });
-    }
-
-    // Initialize emoji grid
-    async function initEmojiGrid() {
-        allEmoji = await loadEmoji('');
-        renderEmojiGrid(allEmoji, iconGrid, selectEmoji);
-    }
-
-    // Search emoji with debounce
-    iconSearchInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(async () => {
-            const query = iconSearchInput.value.trim();
-            if (query) {
-                const results = await loadEmoji(query);
-                renderEmojiGrid(results, iconGrid, selectEmoji);
-            } else {
-                renderEmojiGrid(allEmoji, iconGrid, selectEmoji);
-            }
-        }, 200);
+// Select pixel icon handler for modal
+function selectPixelIcon(iconName) {
+    iconInput.value = formatIconForStorage(iconName);
+    iconPreviewPixel.className = `px-icon px-icon--${iconName}`;
+    iconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.icon === iconName);
     });
+}
 
-    clearIconBtn.addEventListener('click', () => {
-        iconInput.value = '';
-        // Reset preview to default folder emoji
-        const defaultUrl = `/static/emoji/${DEFAULT_EMOJI}.svg`;
-        iconPreviewEmoji.style.webkitMaskImage = `url('${defaultUrl}')`;
-        iconPreviewEmoji.style.maskImage = `url('${defaultUrl}')`;
-        iconSearchInput.value = '';
-        renderEmojiGrid(allEmoji, iconGrid, selectEmoji);
-        iconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => btn.classList.remove('selected'));
+// Initialize pixel icon grid
+function initPixelIconGrid() {
+    renderPixelIconGrid(iconGrid, selectPixelIcon);
+}
+
+clearIconBtn.addEventListener('click', () => {
+    iconInput.value = '';
+    iconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
+    iconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
     });
+});
 
-    document.querySelectorAll('.color-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            colorInput.value = btn.dataset.color;
-        });
-    });
-
-    const customColorInput = document.getElementById('custom-color');
-    customColorInput.addEventListener('input', () => {
+document.querySelectorAll('.color-option').forEach(btn => {
+    btn.addEventListener('click', () => {
         document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-        colorInput.value = customColorInput.value;
+        btn.classList.add('selected');
+        colorInput.value = btn.dataset.color;
     });
+});
 
-    function openModal(parentId = null, parentCrateName = null) {
-        if (parentId) {
-            modalTitle.textContent = 'New Sub-Crate';
-            parentIdInput.value = parentId;
-            parentName.textContent = parentCrateName;
-            parentDisplay.style.display = 'block';
+const customColorInput = document.getElementById('custom-color');
+customColorInput.addEventListener('input', () => {
+    document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+    colorInput.value = customColorInput.value;
+});
+
+function openModal(parentId = null, parentCrateName = null) {
+    if (parentId) {
+        modalTitle.textContent = 'New Sub-Crate';
+        parentIdInput.value = parentId;
+        parentName.textContent = parentCrateName;
+        parentDisplay.style.display = 'block';
+    } else {
+        modalTitle.textContent = 'New Crate';
+        parentIdInput.value = '';
+        parentDisplay.style.display = 'none';
+    }
+    modal.classList.add('open');
+    nameInput.focus();
+    initPixelIconGrid();
+}
+
+function closeModal() {
+    modal.classList.remove('open');
+    form.reset();
+    iconInput.value = '';
+    iconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
+    document.querySelectorAll('.color-option').forEach((b, i) => b.classList.toggle('selected', i === 0));
+    colorInput.value = '';
+    iconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => btn.classList.remove('selected'));
+}
+
+document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
+document.getElementById('btn-new-crate-empty')?.addEventListener('click', () => openModal());
+
+document.querySelectorAll('.crate-subcrate-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal(btn.dataset.crateId, btn.dataset.crateName);
+    });
+});
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('btn-cancel').addEventListener('click', closeModal);
+document.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (modal.classList.contains('open')) closeModal();
+        if (cratePanel.classList.contains('open')) closePanel();
+    }
+});
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+        name: nameInput.value.trim(),
+        description: document.getElementById('crate-description').value.trim(),
+        parent_id: parentIdInput.value ? parseInt(parentIdInput.value) : null,
+        icon: iconInput.value || null,
+        color: colorInput.value || null,
+    };
+
+    try {
+        const response = await fetch('/crates/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            window.location.href = '/crates/' + result.crate.id;
         } else {
-            modalTitle.textContent = 'New Crate';
-            parentIdInput.value = '';
-            parentDisplay.style.display = 'none';
+            alert(result.error || 'Failed to create crate');
         }
-        modal.classList.add('open');
-        nameInput.focus();
-        // Load emoji when modal opens
-        if (allEmoji.length === 0) {
-            initEmojiGrid();
+    } catch (err) {
+        alert('Error creating crate: ' + err.message);
+    }
+});
+
+// Crate edit panel
+function openPanel(crateId) {
+    cratePanel.classList.add('open');
+    document.body.classList.add('crate-panel-open');
+    loadCrateForEdit(crateId);
+}
+
+function closePanel() {
+    cratePanel.classList.remove('open');
+    document.body.classList.remove('crate-panel-open');
+}
+
+document.getElementById('crate-panel-close').addEventListener('click', closePanel);
+
+async function loadCrateForEdit(crateId) {
+    try {
+        const response = await fetch(`/crates/api/${crateId}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            renderPanelForm(data.crate);
+        } else {
+            cratePanelContent.innerHTML = '<p class="text-muted">Failed to load crate</p>';
         }
+    } catch (err) {
+        cratePanelContent.innerHTML = '<p class="text-muted">Error loading crate</p>';
+    }
+}
+
+function renderPanelForm(crate) {
+    const currentIcon = getIconName(crate.icon);
+    cratePanelContent.innerHTML = `
+        <form id="panel-edit-form">
+            <div class="panel-form-group">
+                <label>Name</label>
+                <input type="text" id="panel-name" value="${crate.name || ''}" required>
+            </div>
+            <div class="panel-form-group">
+                <label>Description</label>
+                <input type="text" id="panel-description" value="${crate.description || ''}" placeholder="Optional description">
+            </div>
+            <div class="panel-form-group">
+                <label>Icon</label>
+                <div class="icon-picker-container panel-icon-picker">
+                    <div class="icon-input-row">
+                        <div class="icon-preview-box" id="panel-icon-preview">
+                            <span class="px-icon px-icon--${currentIcon}" id="panel-icon-preview-pixel" style="--px-scale: 2;"></span>
+                        </div>
+                    </div>
+                    <div class="pixel-icon-grid" id="panel-icon-grid"></div>
+                </div>
+                <input type="hidden" id="panel-icon" value="${crate.icon || ''}">
+            </div>
+            <div class="panel-form-group">
+                <label>Color</label>
+                <div class="color-picker" id="panel-color-picker">
+                    <button type="button" class="color-option ${!crate.color_hex ? 'selected' : ''}" data-color="" style="background: var(--border)"></button>
+                    {% for color in crate_colors %}
+                    <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}"></button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="panel-color" value="${crate.color || ''}">
+            </div>
+            <div class="panel-actions">
+                <button type="button" class="btn btn-secondary" id="panel-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+        <div class="panel-danger-zone">
+            <h4>Danger Zone</h4>
+            <button class="btn btn-danger" id="panel-delete">Delete Crate</button>
+        </div>
+    `;
+
+    // Setup panel form handlers
+    const panelForm = document.getElementById('panel-edit-form');
+    const panelIconPreviewPixel = document.getElementById('panel-icon-preview-pixel');
+    const panelIconInput = document.getElementById('panel-icon');
+    const panelIconGrid = document.getElementById('panel-icon-grid');
+    const panelColorInput = document.getElementById('panel-color');
+
+    function selectPanelPixelIcon(iconName) {
+        panelIconInput.value = formatIconForStorage(iconName);
+        panelIconPreviewPixel.className = `px-icon px-icon--${iconName}`;
+        panelIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        });
     }
 
-    function closeModal() {
-        modal.classList.remove('open');
-        form.reset();
-        iconInput.value = '';
-        // Reset emoji preview
-        const defaultUrl = `/static/emoji/${DEFAULT_EMOJI}.svg`;
-        iconPreviewEmoji.style.webkitMaskImage = `url('${defaultUrl}')`;
-        iconPreviewEmoji.style.maskImage = `url('${defaultUrl}')`;
-        iconSearchInput.value = '';
-        document.querySelectorAll('.color-option').forEach((b, i) => b.classList.toggle('selected', i === 0));
-        colorInput.value = '';
-        iconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => btn.classList.remove('selected'));
-    }
+    renderPixelIconGrid(panelIconGrid, selectPanelPixelIcon, currentIcon);
 
-    document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
-    document.getElementById('btn-new-crate-empty')?.addEventListener('click', () => openModal());
-
-    // Stop propagation on action buttons so clicking them doesn't navigate to crate
-    document.querySelectorAll('.crate-subcrate-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openModal(btn.dataset.crateId, btn.dataset.crateName);
+    document.querySelectorAll('#panel-color-picker .color-option').forEach(btn => {
+        if (btn.dataset.color === (crate.color || '')) {
+            btn.classList.add('selected');
+        }
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#panel-color-picker .color-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            panelColorInput.value = btn.dataset.color;
         });
     });
 
-    document.getElementById('modal-close').addEventListener('click', closeModal);
-    document.getElementById('btn-cancel').addEventListener('click', closeModal);
-    document.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+    document.getElementById('panel-cancel').addEventListener('click', closePanel);
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (modal.classList.contains('open')) closeModal();
-            if (cratePanel.classList.contains('open')) closePanel();
-        }
-    });
-
-    form.addEventListener('submit', async (e) => {
+    panelForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const data = {
-            name: nameInput.value.trim(),
-            description: document.getElementById('crate-description').value.trim(),
-            parent_id: parentIdInput.value ? parseInt(parentIdInput.value) : null,
-            icon: iconInput.value || null,
-            color: colorInput.value || null,
+        const updateData = {
+            name: document.getElementById('panel-name').value.trim(),
+            description: document.getElementById('panel-description').value.trim(),
+            icon: panelIconInput.value || null,
+            color: panelColorInput.value || null,
         };
 
         try {
-            const response = await fetch('/crates/', {
-                method: 'POST',
+            const response = await fetch(`/crates/${crate.id}`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body: JSON.stringify(updateData),
             });
 
-            const result = await response.json();
-
             if (response.ok) {
-                window.location.href = '/crates/' + result.crate.id;
+                window.location.reload();
             } else {
-                alert(result.error || 'Failed to create crate');
+                const result = await response.json();
+                alert(result.error || 'Failed to update crate');
             }
         } catch (err) {
-            alert('Error creating crate: ' + err.message);
+            alert('Error updating crate');
         }
     });
 
-    // Crate edit panel
-    function openPanel(crateId) {
-        cratePanel.classList.add('open');
-        document.body.classList.add('crate-panel-open');
-        loadCrateForEdit(crateId);
-    }
+    document.getElementById('panel-delete').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to delete this crate? This cannot be undone.')) return;
 
-    function closePanel() {
-        cratePanel.classList.remove('open');
-        document.body.classList.remove('crate-panel-open');
-    }
-
-    document.getElementById('crate-panel-close').addEventListener('click', closePanel);
-
-    async function loadCrateForEdit(crateId) {
         try {
-            const response = await fetch(`/crates/api/${crateId}`);
-            const data = await response.json();
-
+            const response = await fetch(`/crates/${crate.id}`, { method: 'DELETE' });
             if (response.ok) {
-                renderPanelForm(data.crate);
+                window.location.reload();
             } else {
-                cratePanelContent.innerHTML = '<p class="text-muted">Failed to load crate</p>';
+                const result = await response.json();
+                alert(result.error || 'Failed to delete crate');
             }
         } catch (err) {
-            cratePanelContent.innerHTML = '<p class="text-muted">Error loading crate</p>';
+            alert('Error deleting crate');
         }
-    }
-
-    async function renderPanelForm(crate) {
-        // Get current emoji hexcode (strip "emoji:" prefix if present)
-        let currentHexcode = DEFAULT_EMOJI;
-        if (crate.icon && crate.icon.startsWith('emoji:')) {
-            currentHexcode = crate.icon.slice(6);
-        }
-        cratePanelContent.innerHTML = `
-            <form id="panel-edit-form">
-                <div class="panel-form-group">
-                    <label>Name</label>
-                    <input type="text" id="panel-name" value="${crate.name || ''}" required>
-                </div>
-                <div class="panel-form-group">
-                    <label>Description</label>
-                    <input type="text" id="panel-description" value="${crate.description || ''}" placeholder="Optional description">
-                </div>
-                <div class="panel-form-group">
-                    <label>Icon</label>
-                    <div class="icon-picker-container panel-icon-picker">
-                        <div class="icon-input-row">
-                            <div class="icon-preview-box" id="panel-icon-preview">
-                                <span class="emoji-icon crate-emoji-icon" id="panel-icon-preview-emoji" style="-webkit-mask-image: url('/static/emoji/${currentHexcode}.svg'); mask-image: url('/static/emoji/${currentHexcode}.svg');"></span>
-                            </div>
-                            <input type="text" id="panel-icon-search" class="icon-search-input" placeholder="Search emoji...">
-                        </div>
-                        <div class="icon-grid icon-grid-sm" id="panel-icon-grid"></div>
-                    </div>
-                    <input type="hidden" id="panel-icon" value="${crate.icon || ''}">
-                </div>
-                <div class="panel-form-group">
-                    <label>Color</label>
-                    <div class="color-picker" id="panel-color-picker">
-                        <button type="button" class="color-option ${!crate.color_hex ? 'selected' : ''}" data-color="" style="background: var(--border)"></button>
-                        {% for color in crate_colors %}
-                        <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}"></button>
-                        {% endfor %}
-                    </div>
-                    <input type="hidden" id="panel-color" value="${crate.color || ''}">
-                </div>
-                <div class="panel-actions">
-                    <button type="button" class="btn btn-secondary" id="panel-cancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-            <div class="panel-danger-zone">
-                <h4>Danger Zone</h4>
-                <button class="btn btn-danger" id="panel-delete">Delete Crate</button>
-            </div>
-        `;
-
-        // Setup panel form handlers
-        const panelForm = document.getElementById('panel-edit-form');
-        const panelIconPreviewEmoji = document.getElementById('panel-icon-preview-emoji');
-        const panelIconInput = document.getElementById('panel-icon');
-        const panelIconSearch = document.getElementById('panel-icon-search');
-        const panelIconGrid = document.getElementById('panel-icon-grid');
-        const panelColorInput = document.getElementById('panel-color');
-        let panelSearchTimeout = null;
-
-        // Panel emoji selection handler
-        function selectPanelEmoji(hexcode, url) {
-            panelIconInput.value = `emoji:${hexcode}`;
-            panelIconPreviewEmoji.style.webkitMaskImage = `url('${url}')`;
-            panelIconPreviewEmoji.style.maskImage = `url('${url}')`;
-            panelIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
-            });
-        }
-
-        // Load and render panel emoji grid
-        const panelEmoji = allEmoji.length > 0 ? allEmoji : await loadEmoji('');
-        if (allEmoji.length === 0) allEmoji = panelEmoji;
-        renderEmojiGrid(panelEmoji.slice(0, 40), panelIconGrid, selectPanelEmoji);
-
-        // Highlight current emoji if set
-        if (crate.icon && crate.icon.startsWith('emoji:')) {
-            const hexcode = crate.icon.slice(6);
-            panelIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
-            });
-        }
-
-        // Panel emoji search
-        panelIconSearch.addEventListener('input', () => {
-            clearTimeout(panelSearchTimeout);
-            panelSearchTimeout = setTimeout(async () => {
-                const query = panelIconSearch.value.trim();
-                if (query) {
-                    const results = await loadEmoji(query);
-                    renderEmojiGrid(results.slice(0, 40), panelIconGrid, selectPanelEmoji);
-                } else {
-                    renderEmojiGrid(allEmoji.slice(0, 40), panelIconGrid, selectPanelEmoji);
-                }
-            }, 200);
-        });
-
-        document.querySelectorAll('#panel-color-picker .color-option').forEach(btn => {
-            if (btn.dataset.color === (crate.color || '')) {
-                btn.classList.add('selected');
-            }
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#panel-color-picker .color-option').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                panelColorInput.value = btn.dataset.color;
-            });
-        });
-
-        document.getElementById('panel-cancel').addEventListener('click', closePanel);
-
-        panelForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const updateData = {
-                name: document.getElementById('panel-name').value.trim(),
-                description: document.getElementById('panel-description').value.trim(),
-                icon: panelIconInput.value || null,
-                color: panelColorInput.value || null,
-            };
-
-            try {
-                const response = await fetch(`/crates/${crate.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updateData),
-                });
-
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    const result = await response.json();
-                    alert(result.error || 'Failed to update crate');
-                }
-            } catch (err) {
-                alert('Error updating crate');
-            }
-        });
-
-        document.getElementById('panel-delete').addEventListener('click', async () => {
-            if (!confirm('Are you sure you want to delete this crate? This cannot be undone.')) return;
-
-            try {
-                const response = await fetch(`/crates/${crate.id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    const result = await response.json();
-                    alert(result.error || 'Failed to delete crate');
-                }
-            } catch (err) {
-                alert('Error deleting crate');
-            }
-        });
-    }
-
-    // Edit button click handlers - stop navigation
-    document.querySelectorAll('.crate-edit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openPanel(btn.dataset.crateId);
-        });
     });
-})();
+}
+
+// Edit button click handlers - stop navigation
+document.querySelectorAll('.crate-edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openPanel(btn.dataset.crateId);
+    });
+});
 </script>
 {% endblock %}
