@@ -4096,6 +4096,22 @@ body.panel-open .collection-page {
 
 .panel-stat {
     font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.panel-stat .stat-icon {
+    font-size: 0.6rem;
+    opacity: 0.7;
+}
+
+.panel-stat .stat-label {
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+    margin-left: 1px;
 }
 
 /* Notes indicator on title */
@@ -4216,10 +4232,11 @@ body.panel-open .collection-page {
     overflow-y: auto;
 }
 
+/* Panel track row - base structure with flex layout */
+/* Note: border/opacity styles are in the Playable Highlighting section below */
 .panel-track-row {
-    padding: var(--space-xs) var(--space-sm);
-    border-bottom: 1px solid var(--border);
-    transition: background-color 0.15s ease, opacity 0.15s ease;
+    display: flex;
+    gap: var(--space-sm);
     cursor: default;
 }
 
@@ -4232,24 +4249,48 @@ body.panel-open .collection-page {
     background-color: rgba(74, 222, 128, 0.05);
 }
 
-/* Panel Track Row - Compact 2-row layout with LCD colors */
+/* Left column: Position + Toggle stacked vertically */
+.panel-track-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+    min-width: 32px;
+    padding: var(--space-xs) 0;
+}
+
+/* Right content area */
+.panel-track-right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--space-xs) 0;
+}
+
+/* Panel Track Row - title and duration row */
 .panel-track-main {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
 }
 
-.panel-track-main .toggle--mini {
-    flex-shrink: 0;
+/* Position indicator - more prominent, orange when playable */
+.panel-track-pos {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--lcd-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
-.panel-track-pos {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--lcd-dim);
-    min-width: 20px;
-    flex-shrink: 0;
-    text-transform: uppercase;
+/* Position turns orange when track is playable */
+.panel-track-row:not(.track-dimmed) .panel-track-pos {
+    color: var(--primary);
 }
 
 .panel-track-title {
@@ -4294,6 +4335,19 @@ body.panel-open .collection-page {
 .panel-input--editable {
     border: 1px dashed var(--lcd-dim);
     color: var(--lcd-text);
+}
+
+/* Hide number input spinner arrows (BPM field) */
+.panel-bpm {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.panel-bpm::-webkit-outer-spin-button,
+.panel-bpm::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .panel-input--editable::placeholder {
@@ -4411,27 +4465,39 @@ body.panel-open .collection-page {
     stroke: var(--primary);
 }
 
-/* Panel track fields - compact row with editable fields, notes, and tags */
+/* Panel track fields - row with editable fields + actions on right */
 .panel-track-fields {
     display: flex;
     gap: var(--space-xs);
-    margin-top: 2px;
-    padding-left: 32px; /* Align with title (toggle 28px + gap 4px) */
     align-items: center;
-    flex-wrap: wrap;
 }
 
-/* Panel notes button - compact version for LCD background */
+/* Actions container - notes + tags pushed to right */
+.panel-track-actions {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+    margin-left: auto;
+}
+
+/* Panel notes button - icon button for LCD background */
 .panel-notes-btn {
-    font-size: 0.6rem;
-    padding: 1px 4px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
     background: transparent;
     border: 1px dashed var(--lcd-dim);
     color: var(--lcd-dim);
     cursor: pointer;
-    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
-    line-height: 1;
+}
+
+.panel-notes-btn .emoji-icon {
+    width: 12px;
+    height: 12px;
 }
 
 .panel-notes-btn:hover {
@@ -4446,21 +4512,24 @@ body.panel-open .collection-page {
     background-color: rgba(251, 191, 36, 0.15);
 }
 
-/* Panel tag add - LCD background */
+/* Panel tag add - icon button for LCD background */
 .panel-tag-add-btn {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     padding: 0;
     border: 1px dashed var(--lcd-dim);
     background: transparent;
     color: var(--lcd-dim);
     cursor: pointer;
-    font-size: 0.6rem;
-    font-family: var(--font-mono);
-    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.panel-tag-add-btn .emoji-icon {
+    width: 12px;
+    height: 12px;
 }
 
 .panel-tag-add-btn:hover {
@@ -4578,10 +4647,12 @@ body.panel-open .collection-page {
 }
 
 /* LCD variant - sits below Discogs card, matches LCD aesthetic */
+/* Notes LCD - connects visually to Discogs card above */
 .panel-notes-lcd {
     background-color: var(--lcd-bg);
     border: 2px solid var(--border);
-    border-top: none;
+    border-top: 1px solid var(--lcd-dim);  /* Subtle separator within LCD area */
+    margin-top: -2px;  /* Overlap border to create seamless connection */
     color: var(--lcd-text);
     min-height: 60px;
     max-height: 100px;
@@ -4593,8 +4664,8 @@ body.panel-open .collection-page {
 }
 
 .panel-notes-lcd:focus {
-    border-color: var(--border);
-    border-top: none;
+    border-color: var(--success);
+    border-top-color: var(--lcd-dim);
     /* Keep subtle green glow on focus to indicate active input */
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--success);
 }
