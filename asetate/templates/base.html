@@ -16,19 +16,19 @@
                 Uses downscale→upscale technique for true pixelation
             -->
 
-            <!-- Small icons (16-20px): thicken strokes only -->
+            <!-- Small icons (16-20px): subtle stroke thickening -->
             <filter id="emoji-pixel-sm" x="-25%" y="-25%" width="150%" height="150%">
-                <feMorphology operator="dilate" radius="0.8" in="SourceGraphic"/>
+                <feMorphology operator="dilate" radius="0.4" in="SourceGraphic"/>
             </filter>
 
-            <!-- Medium icons (24-32px): moderate pixelation -->
+            <!-- Medium icons (24-32px): light pixelation -->
             <filter id="emoji-pixel-md" x="-25%" y="-25%" width="150%" height="150%">
-                <feMorphology operator="dilate" radius="1.0" in="SourceGraphic"/>
+                <feMorphology operator="dilate" radius="0.5" in="SourceGraphic"/>
             </filter>
 
-            <!-- Large icons (36px+): chunky pixel effect -->
+            <!-- Large icons (36px+): moderate pixel effect -->
             <filter id="emoji-pixel-lg" x="-25%" y="-25%" width="150%" height="150%">
-                <feMorphology operator="dilate" radius="1.4" in="SourceGraphic"/>
+                <feMorphology operator="dilate" radius="0.7" in="SourceGraphic"/>
             </filter>
 
             <!-- Legacy filters (keep for backwards compat) -->

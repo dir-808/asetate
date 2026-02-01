@@ -73,7 +73,7 @@ These are used across multiple pages - changes apply everywhere:
 | **Energy Bar** | `.energy-bar`, `.energy-bar--sm` |
 | **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` |
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
-| **Pixel Icons** | `.px-icon`, `.px-icon--*` (vinyl, folder, music, etc.) |
+| **Emoji Icons** | `.emoji-icon`, `.emoji-icon--sm/md/lg` (OpenMoji SVG) |
 | **Crate Badges** | `.crate-badge`, `.crate-badge-panel`, `.crate-badge-name` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
 | **Notes Textarea** | `.notes-textarea`, `.panel-notes-lcd` |
@@ -262,130 +262,113 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
 
-#### Pixel Art Icons (Unified System)
-All icons in Asetate use a unified CSS pixel art system for consistent MPC2000 aesthetic. Icons are stored in the database as `pixel:ICONNAME` format (e.g., `pixel:vinyl`, `pixel:folder`).
+#### Emoji Icons (OpenMoji SVG System)
+All icons in Asetate use OpenMoji SVG icons with CSS mask-image for coloring and SVG filters for a pixel art effect. Icons are stored in the database as `emoji:ICONNAME` format (e.g., `emoji:vinyl`, `emoji:folder`). Legacy `pixel:` format is also supported.
 
 **Centralized Icon Files:**
 - **`templates/_icons.html`** - Jinja2 macros for server-side rendering
 - **`static/js/icons.js`** - ES6 module for client-side rendering
+- **`static/emoji/*.svg`** - OpenMoji SVG icon files
 
 **Jinja2 Macros (templates/_icons.html):**
 ```jinja2
 {# Import at top of template #}
-{% from "_icons.html" import pixel_icon, crate_icon %}
+{% from "_icons.html" import emoji_icon, crate_icon %}
 
-{# Render a basic pixel icon #}
-{{ pixel_icon('vinyl', scale=2, color='#F97316') }}
+{# Render a basic emoji icon (size in pixels) #}
+{{ emoji_icon('vinyl', size=24, color='#F97316') }}
 
 {# Render a crate's icon with its color #}
-{{ crate_icon(crate, scale=2.5) }}
+{{ crate_icon(crate, size=32) }}
 ```
 
 **JavaScript Module (static/js/icons.js):**
 ```javascript
 // ES6 module import (for type="module" scripts)
-import { renderCrateIcon, renderPixelIconGrid, PIXEL_ICONS } from '/static/js/icons.js';
+import { renderEmojiIcon, renderCrateIcon, renderEmojiIconGrid, EMOJI_ICONS, EMOJI_CODES } from '/static/js/icons.js';
 
 // Or use global (for AJAX-loaded content)
-const icon = window.AsetateIcons.renderCrateIcon(crate, 1.2);
+const icon = window.AsetateIcons.renderCrateIcon(crate, 24);
 ```
 
 **Available functions:**
 | Function | Description |
 |----------|-------------|
-| `renderPixelIcon(name, scale, color)` | Render icon by name |
-| `renderCrateIcon(crate, scale)` | Render crate's icon with color |
-| `renderPixelIconGrid(container, onSelect, selected)` | Render icon picker grid |
-| `getIconName(iconField)` | Extract icon name from `pixel:name` format |
-| `formatIconForStorage(name)` | Format name as `pixel:name` for storage |
+| `renderEmojiIcon(name, size, color)` | Render icon by name (size in px) |
+| `renderCrateIcon(crate, size)` | Render crate's icon with color |
+| `renderEmojiIconGrid(container, onSelect, selected)` | Render icon picker grid |
+| `getIconName(iconField)` | Extract icon name from `emoji:name` or `pixel:name` format |
+| `formatIconForStorage(name)` | Format name as `emoji:name` for storage |
 
-**Common scale values:**
-| Scale | Size (approx) | Usage |
-|-------|---------------|-------|
-| 1.0 | 12px | Inline with small text |
-| 1.2 | 14px | Crate badges, dropdown items |
-| 1.5 | 18px | Default, icon grid picker |
-| 2.0 | 24px | Icon preview in forms |
-| 2.5 | 30px | Crate cards |
-| 3.0 | 36px | Crate detail header |
+**Common size values:**
+| Size | Usage |
+|------|-------|
+| 14px | Crate badges on release cards |
+| 16px | Crate badges in panel |
+| 24px | Icon grid picker, default |
+| 32px | Icon preview in forms, crate cards |
+| 36px | Crate detail header |
+
+**SVG Filter Sizes:**
+Icons automatically get size-appropriate filters via CSS classes:
+- `.emoji-icon--sm` (16-20px) - subtle stroke thickening
+- `.emoji-icon--md` (24-32px) - light pixelation
+- `.emoji-icon--lg` (36px+) - moderate pixel effect
 
 **Available icons:**
 
-*Action icons:*
-| Class | Icon | Usage |
-|-------|------|-------|
-| `.px-icon--link` | Chain link | View on Discogs |
-| `.px-icon--edit` | Pencil | Edit on Discogs |
-| `.px-icon--sync` | Circular arrows | Sync button |
-| `.px-icon--notes` | Paper with lines | Track notes |
-| `.px-icon--tag` | Price tag | Add tag |
-
-*Crate icons:*
-| Class | Icon | Description |
-|-------|------|-------------|
-| `.px-icon--folder` | Folder | Default crate icon |
-| `.px-icon--vinyl` | Vinyl record | Music/records |
-| `.px-icon--headphones` | Headphones | Listening |
-| `.px-icon--music` | Music note | General music |
-| `.px-icon--speaker` | Speaker | Sound/audio |
-| `.px-icon--disco` | Disco ball | Dance/party |
-| `.px-icon--wave` | Wave | Ambient/chill |
-| `.px-icon--fire` | Flame | Hot/trending |
-| `.px-icon--bolt` | Lightning bolt | Energy/power |
-| `.px-icon--star` | Star | Favorites |
-| `.px-icon--heart` | Heart | Loved |
-| `.px-icon--diamond` | Diamond | Premium/special |
-| `.px-icon--crown` | Crown | Top/best |
-| `.px-icon--sun` | Sun | Daytime/upbeat |
-| `.px-icon--moon` | Moon | Nighttime/moody |
-| `.px-icon--globe` | Globe | World/international |
-| `.px-icon--clock` | Clock | Time-based |
-| `.px-icon--skull` | Skull | Dark/heavy |
-| `.px-icon--box` | Box | Archive/storage |
-| `.px-icon--check` | Checkmark | Complete/verified |
-| `.px-icon--plus` | Plus sign | Add/new |
-
-**Creating new pixel art icons:**
-```css
-.px-icon--example {
-    color: currentColor;
-    box-shadow:
-        /* Each value is: Xpx Ypx (coordinates on 12x12 grid) */
-        3px 1px, 4px 1px, 5px 1px,  /* Row 1 */
-        2px 2px, 6px 2px,            /* Row 2 */
-        /* ... etc */;
-}
-```
+| Name | OpenMoji Code | Description |
+|------|---------------|-------------|
+| `folder` | 1F4C1 | Default crate icon |
+| `vinyl` | 1F4BF | Optical disc (records) |
+| `headphones` | 1F3A7 | Listening |
+| `music` | 1F3B5 | Musical note |
+| `speaker` | 1F50A | Sound/audio |
+| `disco` | 1FAA9 | Mirror ball (party) |
+| `wave` | 1F30A | Water wave (ambient) |
+| `fire` | 1F525 | Flame (hot/trending) |
+| `bolt` | 26A1 | Lightning (energy) |
+| `star` | 2B50 | Favorites |
+| `heart` | 2764 | Loved |
+| `diamond` | 1F48E | Premium/special |
+| `crown` | 1F451 | Top/best |
+| `sun` | 1F31E | Daytime/upbeat |
+| `moon` | 1F319 | Nighttime/moody |
+| `globe` | 1F30D | World/international |
+| `clock` | 1F570 | Time-based |
+| `skull` | 1F480 | Dark/heavy |
+| `box` | 1F4E6 | Archive/storage |
+| `check` | 2714 | Complete/verified |
+| `plus` | 2795 | Add/new |
+| `link` | 1F517 | View on Discogs |
+| `edit` | 270F | Edit on Discogs |
+| `sync` | 1F504 | Sync button |
+| `notes` | 1F4DD | Track notes |
+| `tag` | 1F3F7 | Add tag |
 
 **Icon picker grid:**
-Use `.pixel-icon-grid` class for icon selection interfaces:
+Use `.emoji-icon-grid` class for icon selection interfaces:
 ```html
-<div class="pixel-icon-grid" id="icon-grid">
+<div class="emoji-icon-grid" id="icon-grid">
     <!-- Populated via JavaScript -->
 </div>
 ```
 
 ```javascript
-const PIXEL_ICONS = [
-    { name: 'folder', label: 'Folder' },
-    { name: 'vinyl', label: 'Vinyl' },
-    // ... etc
-];
+import { renderEmojiIconGrid } from '/static/js/icons.js';
 
-function renderPixelIconGrid(container, onSelect, selectedIcon = null) {
-    container.innerHTML = '';
-    PIXEL_ICONS.forEach(icon => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pixel-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
-        btn.dataset.icon = icon.name;
-        btn.title = icon.label;
-        btn.innerHTML = `<span class="px-icon px-icon--${icon.name}" style="--px-scale: 1.5;"></span>`;
-        btn.addEventListener('click', () => onSelect(icon.name));
-        container.appendChild(btn);
-    });
+function onIconSelect(iconName) {
+    console.log('Selected:', iconName);
 }
+
+renderEmojiIconGrid(document.getElementById('icon-grid'), onIconSelect, 'folder');
 ```
+
+**How it works:**
+1. Icons use CSS `mask-image` with OpenMoji SVG URLs
+2. `background-color: currentColor` allows color inheritance
+3. SVG `feMorphology dilate` filter thickens strokes for pixel art effect
+4. `image-rendering: crisp-edges` prevents anti-aliasing
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:

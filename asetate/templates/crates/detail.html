@@ -133,18 +133,18 @@
                 <input type="text" id="edit-crate-description" value="{{ crate.description or '' }}" placeholder="Optional">
             </div>
 
-            <!-- Pixel Icon Picker -->
+            <!-- Emoji Icon Picker -->
             <div class="form-group">
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="edit-icon-preview">
-                            {% set current_icon = crate.icon[6:] if crate.icon and crate.icon.startswith('pixel:') else 'folder' %}
-                            <span class="px-icon px-icon--{{ current_icon }}" id="edit-icon-preview-pixel" style="--px-scale: 2;"></span>
+                            {% set current_icon = crate.icon[6:] if crate.icon and (crate.icon.startswith('pixel:') or crate.icon.startswith('emoji:')) else 'folder' %}
+                            <span class="emoji-icon emoji-icon--md" id="edit-icon-preview-emoji" style="width: 32px; height: 32px;"></span>
                         </div>
                         <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Reset</button>
                     </div>
-                    <div class="pixel-icon-grid" id="edit-icon-grid">
+                    <div class="emoji-icon-grid" id="edit-icon-grid">
                         <!-- Icons loaded via JS -->
                     </div>
                 </div>
@@ -214,7 +214,7 @@
 
 {% block scripts %}
 <script type="module">
-import { DEFAULT_ICON, renderPixelIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
+import { DEFAULT_ICON, EMOJI_CODES, renderEmojiIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
 const crateId = document.querySelector('.crate-detail').dataset.crateId;
 
@@ -222,15 +222,21 @@ const crateId = document.querySelector('.crate-detail').dataset.crateId;
 const editModal = document.getElementById('edit-crate-modal');
 const editForm = document.getElementById('edit-crate-form');
 const editIconInput = document.getElementById('edit-crate-icon');
-const editIconPreviewPixel = document.getElementById('edit-icon-preview-pixel');
+const editIconPreviewEmoji = document.getElementById('edit-icon-preview-emoji');
 const editIconGrid = document.getElementById('edit-icon-grid');
 const editClearIconBtn = document.getElementById('edit-clear-icon');
 const editColorInput = document.getElementById('edit-crate-color');
 
-function selectEditPixelIcon(iconName) {
+function updateEditEmojiPreview(iconName) {
+    const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
+    editIconPreviewEmoji.style.setProperty('-webkit-mask-image', `url('/static/emoji/${code}.svg')`);
+    editIconPreviewEmoji.style.setProperty('mask-image', `url('/static/emoji/${code}.svg')`);
+}
+
+function selectEditEmojiIcon(iconName) {
     editIconInput.value = formatIconForStorage(iconName);
-    editIconPreviewPixel.className = `px-icon px-icon--${iconName}`;
-    editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+    updateEditEmojiPreview(iconName);
+    editIconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.icon === iconName);
     });
 }
@@ -238,7 +244,8 @@ function selectEditPixelIcon(iconName) {
 document.getElementById('btn-edit-crate').addEventListener('click', () => {
     editModal.classList.add('open');
     const iconName = getIconName(editIconInput.value);
-    renderPixelIconGrid(editIconGrid, selectEditPixelIcon, iconName);
+    updateEditEmojiPreview(iconName);
+    renderEmojiIconGrid(editIconGrid, selectEditEmojiIcon, iconName);
 });
 
 document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
@@ -247,8 +254,8 @@ editModal.querySelector('.modal-backdrop').addEventListener('click', () => editM
 
 editClearIconBtn.addEventListener('click', () => {
     editIconInput.value = '';
-    editIconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
-    editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+    updateEditEmojiPreview(DEFAULT_ICON);
+    editIconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
     });
 });
