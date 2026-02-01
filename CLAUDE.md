@@ -73,7 +73,7 @@ These are used across multiple pages - changes apply everywhere:
 | **Energy Bar** | `.energy-bar`, `.energy-bar--sm` |
 | **Track Row Highlighting** | `.track-row.track-playable`, `.panel-track-row.track-dimmed` |
 | **Action Groups** | `.action-group`, `.action-group--discogs` |
-| **Crate Icons** | `.emoji-icon`, `.crate-emoji-icon`, `.crate-badge-emoji`, `.release-crate-icon` |
+| **Pixel Icons** | `.px-icon`, `.px-icon--*` (vinyl, folder, music, etc.) |
 | **Crate Badges** | `.crate-badge`, `.crate-badge-panel`, `.crate-badge-name` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
 | **Notes Textarea** | `.notes-textarea`, `.panel-notes-lcd` |
@@ -262,84 +262,52 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
 
-#### Crate Icons (OpenMoji Emoji)
-Crate icons use OpenMoji outline emoji SVGs with CSS `mask-image` for color inheritance. Icons are stored in the database as `emoji:HEXCODE` format.
+#### Pixel Art Icons (Unified System)
+All icons in Asetate use a unified CSS pixel art system for consistent MPC2000 aesthetic. Icons are stored in the database as `pixel:ICONNAME` format (e.g., `pixel:vinyl`, `pixel:folder`).
 
 **Rendering pattern (HTML):**
 ```html
-<!-- Emoji icon - uses mask-image for color control -->
-<span class="emoji-icon crate-badge-emoji"
-      style="-webkit-mask-image: url('/static/emoji/1F30A.svg');
-             mask-image: url('/static/emoji/1F30A.svg');
-             color: #448361;"></span>
+<!-- Standard pixel icon -->
+<span class="px-icon px-icon--vinyl" style="--px-scale: 1.5;"></span>
 
-<!-- Pixel icon fallback (legacy) -->
-<img src="/static/icons/folder.png" alt="" class="crate-badge-emoji">
+<!-- With custom color (for crate icons) -->
+<span class="px-icon px-icon--heart" style="--px-scale: 2; color: #448361;"></span>
 ```
 
 **JavaScript helper for dynamic rendering:**
 ```javascript
-function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
-    if (crate.icon_type === 'emoji') {
-        const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
-        return `<span class="emoji-icon ${sizeClass}"
-                      style="-webkit-mask-image: url('${crate.icon_url}');
-                             mask-image: url('${crate.icon_url}');
-                             ${colorStyle}"></span>`;
-    } else {
-        return `<img src="${crate.icon_url}" alt="" class="${sizeClass}">`;
+function renderCrateIcon(crate, scale = 1.2) {
+    const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
+    let iconName = 'folder';
+    if (crate.icon && crate.icon.startsWith('pixel:')) {
+        iconName = crate.icon.slice(6);
     }
+    return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${scale}; ${colorStyle}"></span>`;
 }
 ```
 
-**Size variants:**
-| Class | Size | Usage |
-|-------|------|-------|
-| `.crate-emoji-icon` | 32px | Crate list cards |
-| `.crate-emoji-icon-lg` | 40px | Crate detail header |
-| `.crate-badge-emoji` | 14px | Crate badges on release page |
-| `.crate-dropdown-emoji` | 16px | Crate dropdown items |
-| `.release-crate-icon` | 20px | Crate icons on release cards |
-
-**API response format (`/crates/api/list`):**
-```json
-{
-  "crates": [{
-    "id": 1,
-    "name": "Deep House",
-    "icon": "emoji:1F30A",
-    "icon_url": "/static/emoji/1F30A.svg",
-    "icon_type": "emoji",
-    "color_hex": "#448361"
-  }]
-}
+**Jinja2 template pattern:**
+```jinja2
+{% if crate.icon and crate.icon.startswith('pixel:') %}
+<span class="px-icon px-icon--{{ crate.icon[6:] }}" style="--px-scale: 2;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
+{% else %}
+<span class="px-icon px-icon--folder" style="--px-scale: 2;"></span>
+{% endif %}
 ```
 
-**MPC2000 Icon System - Two Approaches:**
+**Common scale values:**
+| Scale | Size (approx) | Usage |
+|-------|---------------|-------|
+| 1.0 | 12px | Inline with small text |
+| 1.2 | 14px | Crate badges, dropdown items |
+| 1.5 | 18px | Default, icon grid picker |
+| 2.0 | 24px | Icon preview in forms |
+| 2.5 | 30px | Crate cards |
+| 3.0 | 36px | Crate detail header |
 
-The app uses two icon systems for different purposes:
+**Available icons:**
 
-1. **CSS Pixel Art Icons (`.px-icon`)** - For fixed UI action icons (link, edit, sync, notes, tag)
-2. **SVG Mask Icons (`.emoji-icon`)** - For user-selectable crate emoji icons
-
----
-
-**CSS Pixel Art Icons:**
-Pure CSS icons using box-shadow technique. Each shadow = 1 pixel on a 12x12 grid, scaled up for display.
-
-```html
-<!-- Usage -->
-<span class="px-icon px-icon--link"></span>
-<span class="px-icon px-icon--edit"></span>
-<span class="px-icon px-icon--sync"></span>
-<span class="px-icon px-icon--notes"></span>
-<span class="px-icon px-icon--tag"></span>
-
-<!-- Custom size via CSS variable -->
-<span class="px-icon px-icon--link" style="--px-scale: 2;"></span>
-```
-
-Available icons:
+*Action icons:*
 | Class | Icon | Usage |
 |-------|------|-------|
 | `.px-icon--link` | Chain link | View on Discogs |
@@ -347,6 +315,31 @@ Available icons:
 | `.px-icon--sync` | Circular arrows | Sync button |
 | `.px-icon--notes` | Paper with lines | Track notes |
 | `.px-icon--tag` | Price tag | Add tag |
+
+*Crate icons:*
+| Class | Icon | Description |
+|-------|------|-------------|
+| `.px-icon--folder` | Folder | Default crate icon |
+| `.px-icon--vinyl` | Vinyl record | Music/records |
+| `.px-icon--headphones` | Headphones | Listening |
+| `.px-icon--music` | Music note | General music |
+| `.px-icon--speaker` | Speaker | Sound/audio |
+| `.px-icon--disco` | Disco ball | Dance/party |
+| `.px-icon--wave` | Wave | Ambient/chill |
+| `.px-icon--fire` | Flame | Hot/trending |
+| `.px-icon--bolt` | Lightning bolt | Energy/power |
+| `.px-icon--star` | Star | Favorites |
+| `.px-icon--heart` | Heart | Loved |
+| `.px-icon--diamond` | Diamond | Premium/special |
+| `.px-icon--crown` | Crown | Top/best |
+| `.px-icon--sun` | Sun | Daytime/upbeat |
+| `.px-icon--moon` | Moon | Nighttime/moody |
+| `.px-icon--globe` | Globe | World/international |
+| `.px-icon--clock` | Clock | Time-based |
+| `.px-icon--skull` | Skull | Dark/heavy |
+| `.px-icon--box` | Box | Archive/storage |
+| `.px-icon--check` | Checkmark | Complete/verified |
+| `.px-icon--plus` | Plus sign | Add/new |
 
 **Creating new pixel art icons:**
 ```css
@@ -360,32 +353,34 @@ Available icons:
 }
 ```
 
----
-
-**SVG Mask Icons (Crate Emoji):**
-For crate icons where users choose from 3000+ OpenMoji emoji. Uses CSS `mask-image` with SVG filter for chunky lines.
-
+**Icon picker grid:**
+Use `.pixel-icon-grid` class for icon selection interfaces:
 ```html
-<span class="emoji-icon crate-emoji-icon"
-      style="-webkit-mask-image: url('/static/emoji/1F30A.svg');
-             mask-image: url('/static/emoji/1F30A.svg');
-             color: #448361;"></span>
+<div class="pixel-icon-grid" id="icon-grid">
+    <!-- Populated via JavaScript -->
+</div>
 ```
 
-SVG filters in `base.html` thicken lines:
-```html
-<filter id="icon-chunky" x="-50%" y="-50%" width="200%" height="200%">
-    <feMorphology operator="dilate" radius="1.2" in="SourceGraphic"/>
-</filter>
-<filter id="icon-chunky-lg" x="-50%" y="-50%" width="200%" height="200%">
-    <feMorphology operator="dilate" radius="1.8" in="SourceGraphic"/>
-</filter>
-```
+```javascript
+const PIXEL_ICONS = [
+    { name: 'folder', label: 'Folder' },
+    { name: 'vinyl', label: 'Vinyl' },
+    // ... etc
+];
 
-CSS applies filter automatically:
-```css
-.emoji-icon { filter: url(#icon-chunky); }
-.crate-emoji-icon, .crate-emoji-icon-lg { filter: url(#icon-chunky-lg); }
+function renderPixelIconGrid(container, onSelect, selectedIcon = null) {
+    container.innerHTML = '';
+    PIXEL_ICONS.forEach(icon => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pixel-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
+        btn.dataset.icon = icon.name;
+        btn.title = icon.label;
+        btn.innerHTML = `<span class="px-icon px-icon--${icon.name}" style="--px-scale: 1.5;"></span>`;
+        btn.addEventListener('click', () => onSelect(icon.name));
+        container.appendChild(btn);
+    });
+}
 ```
 
 #### Sidebar Panel (Master-Detail Pattern)

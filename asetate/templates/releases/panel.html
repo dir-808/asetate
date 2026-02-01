@@ -545,13 +545,13 @@
     }
 
     // Helper to render crate icon HTML
-    function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
-        if (crate.icon_type === 'emoji') {
-            const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
-            return `<span class="emoji-icon ${sizeClass}" style="-webkit-mask-image: url('${crate.icon_url}'); mask-image: url('${crate.icon_url}'); ${colorStyle}"></span>`;
-        } else {
-            return `<img src="${crate.icon_url}" alt="" class="${sizeClass}">`;
+    function renderCrateIcon(crate, scale = 1.2) {
+        const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
+        let iconName = 'folder';
+        if (crate.icon && crate.icon.startsWith('pixel:')) {
+            iconName = crate.icon.slice(6);
         }
+        return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${scale}; ${colorStyle}"></span>`;
     }
 
     function updateCratesDisplay() {
@@ -576,7 +576,7 @@
             const isSelected = releaseCrateIds.includes(c.id);
             return `<label class="panel-crate-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
                 <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                ${renderCrateIcon(c, 'crate-dropdown-emoji')}
+                ${renderCrateIcon(c, 1.2)}
                 <span class="panel-crate-item-name">${c.name}</span>
             </label>`;
         }).join('');
