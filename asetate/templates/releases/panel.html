@@ -43,7 +43,7 @@
             {% endif %}
             <button class="panel-discogs-btn" id="panel-btn-sync" title="Sync from Discogs" onclick="event.stopPropagation();">
                 <span class="activity-led"></span>
-                {{ emoji_icon('sync', size=18) }}
+                <img src="{{ url_for('static', filename='icons/sync.svg') }}" alt="Sync" class="sync-icon">
             </button>
         </div>
     </div>

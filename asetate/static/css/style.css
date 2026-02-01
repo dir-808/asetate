@@ -4146,7 +4146,28 @@ body.panel-open .collection-page {
     position: absolute;
 }
 
-.panel-discogs-btn.is-loading .emoji-icon {
+/* Sync icon - custom SVG */
+.sync-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+    flex-shrink: 0;
+}
+
+/* Sync icon in buttons with text needs spacing */
+.btn .sync-icon {
+    margin-right: var(--space-xs);
+}
+
+/* Panel discogs button has larger icon, no margin */
+.panel-discogs-btn .sync-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
+}
+
+.panel-discogs-btn.is-loading .sync-icon,
+.btn.is-loading .sync-icon {
     animation: spin 1s linear infinite;
 }
 
