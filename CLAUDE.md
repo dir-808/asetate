@@ -368,7 +368,7 @@ renderEmojiIconGrid(document.getElementById('icon-grid'), onIconSelect, 'folder'
 1. Icons render as Unicode emoji characters using Noto Emoji font
 2. CSS `color` property controls the icon color (monochrome font)
 3. `font-size` controls the icon size
-4. Font loaded from Font Library CDN in base.html
+4. Font loaded from Google Fonts CDN in base.html (`font-family: 'Noto Emoji'`)
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:

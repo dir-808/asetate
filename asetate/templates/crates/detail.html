@@ -142,6 +142,10 @@
                             {% set current_icon = crate.icon[6:] if crate.icon and (crate.icon.startswith('pixel:') or crate.icon.startswith('emoji:')) else 'folder' %}
                             <span class="emoji-icon" id="edit-icon-preview-emoji" style="font-size: 32px;"></span>
                         </div>
+                        <input type="text"
+                               id="edit-icon-search"
+                               class="icon-search-input"
+                               placeholder="Search icons...">
                         <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Reset</button>
                     </div>
                     <div class="emoji-icon-grid" id="edit-icon-grid">
@@ -214,7 +218,7 @@
 
 {% block scripts %}
 <script type="module">
-import { DEFAULT_ICON, EMOJI_CHARS, renderEmojiIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
+import { DEFAULT_ICON, EMOJI_CHARS, EMOJI_ICONS, renderEmojiIconGrid, renderEmojiIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
 const crateId = document.querySelector('.crate-detail').dataset.crateId;
 
@@ -226,6 +230,7 @@ const editIconPreviewEmoji = document.getElementById('edit-icon-preview-emoji');
 const editIconGrid = document.getElementById('edit-icon-grid');
 const editClearIconBtn = document.getElementById('edit-clear-icon');
 const editColorInput = document.getElementById('edit-crate-color');
+const editIconSearch = document.getElementById('edit-icon-search');
 
 function updateEditEmojiPreview(iconName) {
     const char = EMOJI_CHARS[iconName] || EMOJI_CHARS[DEFAULT_ICON];
@@ -240,11 +245,43 @@ function selectEditEmojiIcon(iconName) {
     });
 }
 
+// Render filtered icon grid
+function renderEditFilteredGrid(query = '', selectedIcon = null) {
+    const lowerQuery = query.toLowerCase().trim();
+    const filtered = lowerQuery
+        ? EMOJI_ICONS.filter(icon =>
+            icon.name.toLowerCase().includes(lowerQuery) ||
+            icon.label.toLowerCase().includes(lowerQuery))
+        : EMOJI_ICONS;
+
+    editIconGrid.innerHTML = '';
+    filtered.forEach(icon => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'emoji-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
+        btn.dataset.icon = icon.name;
+        btn.title = icon.label;
+        btn.innerHTML = renderEmojiIcon(icon.name, 24);
+        btn.addEventListener('click', () => selectEditEmojiIcon(icon.name));
+        editIconGrid.appendChild(btn);
+    });
+}
+
 document.getElementById('btn-edit-crate').addEventListener('click', () => {
     editModal.classList.add('open');
     const iconName = getIconName(editIconInput.value);
     updateEditEmojiPreview(iconName);
-    renderEmojiIconGrid(editIconGrid, selectEditEmojiIcon, iconName);
+    editIconSearch.value = '';
+    renderEditFilteredGrid('', iconName);
+});
+
+// Icon search with debounce
+let editSearchTimeout = null;
+editIconSearch.addEventListener('input', () => {
+    clearTimeout(editSearchTimeout);
+    editSearchTimeout = setTimeout(() => {
+        renderEditFilteredGrid(editIconSearch.value, getIconName(editIconInput.value));
+    }, 150);
 });
 
 document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
@@ -254,9 +291,8 @@ editModal.querySelector('.modal-backdrop').addEventListener('click', () => editM
 editClearIconBtn.addEventListener('click', () => {
     editIconInput.value = '';
     updateEditEmojiPreview(DEFAULT_ICON);
-    editIconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
-    });
+    editIconSearch.value = '';
+    renderEditFilteredGrid('', DEFAULT_ICON);
 });
 
 // Color picker for edit modal

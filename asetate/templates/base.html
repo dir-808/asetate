@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Asetate{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Noto Emoji font (monochrome, variable weight 300-700) -->
-    <link rel="stylesheet" href="https://fontlibrary.org//face/noto-emoji" type="text/css">
+    <!-- Noto Emoji font (monochrome) from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@500&display=swap" rel="stylesheet">
     {% block head %}{% endblock %}
 </head>
 <body>
