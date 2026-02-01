@@ -263,11 +263,16 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 - Info sections should `flex: 1` to fill remaining space (no gaps)
 
 #### Emoji Icons (Noto Emoji Font)
+
+> ⚠️ **ALWAYS render icons via centralized files** - never hardcode emoji characters directly in templates or JS. This ensures all icons update from a single source.
+
 All icons in Asetate use Google's Noto Emoji font (monochrome, medium weight). Icons are stored in the database as `emoji:ICONNAME` format (e.g., `emoji:vinyl`, `emoji:folder`). Legacy `pixel:` format is also supported.
 
-**Centralized Icon Files:**
+**Centralized Icon Files (Single Source of Truth):**
 - **`templates/_icons.html`** - Jinja2 macros for server-side rendering
 - **`static/js/icons.js`** - ES6 module for client-side rendering
+
+**Adding a new icon:** Update BOTH files with the new icon name and Unicode character. Also update the fallback in `releases/panel.html` (EMOJI_CHARS_FALLBACK).
 
 **Jinja2 Macros (templates/_icons.html):**
 ```jinja2
