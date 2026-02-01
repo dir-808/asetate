@@ -1,4 +1,5 @@
 {# Side panel partial for release details - loaded via AJAX #}
+{% from "_icons.html" import emoji_icon, crate_icon %}
 <div class="panel-release" data-release-id="{{ release.id }}">
     <!-- Discogs Card - clickable to open full page, with action buttons on right -->
     <div class="panel-discogs-card" id="panel-discogs-card" data-href="{{ url_for('releases.view_release', release_id=release.id) }}">
@@ -32,17 +33,17 @@
         <div class="panel-discogs-buttons">
             <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener"
                class="panel-discogs-btn" title="View on Discogs" onclick="event.stopPropagation();">
-                <span class="px-icon px-icon--link"></span>
+                {{ emoji_icon('link', size=18) }}
             </a>
             {% if release.discogs_edit_url %}
             <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener"
                class="panel-discogs-btn" title="Edit on Discogs" onclick="event.stopPropagation();">
-                <span class="px-icon px-icon--edit"></span>
+                {{ emoji_icon('edit', size=18) }}
             </a>
             {% endif %}
             <button class="panel-discogs-btn" id="panel-btn-sync" title="Sync from Discogs" onclick="event.stopPropagation();">
                 <span class="activity-led"></span>
-                <span class="px-icon px-icon--sync"></span>
+                {{ emoji_icon('sync', size=18) }}
             </button>
         </div>
     </div>
@@ -111,14 +112,14 @@
                                     data-track-id="{{ track.id }}"
                                     data-track-notes="{{ track.notes or '' }}"
                                     title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
-                                <span class="px-icon px-icon--notes" style="--px-scale: 1;"></span>
+                                {{ emoji_icon('notes', size=12) }}
                             </button>
                             <div class="panel-track-tags" data-track-id="{{ track.id }}">
                                 {% for tag in track.tags %}
                                 <span class="tag-badge-sm" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
                                 {% endfor %}
                                 <button class="panel-tag-add-btn" title="Add tag">
-                                    <span class="px-icon px-icon--tag" style="--px-scale: 1;"></span>
+                                    {{ emoji_icon('tag', size=12) }}
                                 </button>
                             </div>
                         </div>
@@ -545,14 +546,30 @@
     }
 
     // Use centralized icon system (loaded from icons.js)
-    // Size is in pixels (not scale factor)
+    // Size is in pixels - uses emoji icons with SVG mask
+    const EMOJI_CODES_FALLBACK = {
+        folder: '1F4C1', vinyl: '1F4BF', headphones: '1F3A7', music: '1F3B5',
+        speaker: '1F50A', disco: '1FAA9', wave: '1F30A', fire: '1F525',
+        bolt: '26A1', star: '2B50', heart: '2764', diamond: '1F48E',
+        crown: '1F451', sun: '1F31E', moon: '1F319', globe: '1F30D',
+        clock: '1F570', skull: '1F480', box: '1F4E6', check: '2714', plus: '2795'
+    };
+
+    function getFilterSize(size) {
+        if (size <= 20) return 'sm';
+        if (size >= 36) return 'lg';
+        return 'md';
+    }
+
     const renderCrateIcon = window.AsetateIcons?.renderCrateIcon || ((crate, size = 16) => {
         const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
         let iconName = 'folder';
         if (crate.icon && (crate.icon.startsWith('pixel:') || crate.icon.startsWith('emoji:'))) {
             iconName = crate.icon.slice(6);
         }
-        return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${size / 12}; ${colorStyle}"></span>`;
+        const code = EMOJI_CODES_FALLBACK[iconName] || EMOJI_CODES_FALLBACK.folder;
+        const filterSize = getFilterSize(size);
+        return `<span class="emoji-icon emoji-icon--${filterSize}" style="width: ${size}px; height: ${size}px;${colorStyle} -webkit-mask-image: url('/static/emoji/${code}.svg'); mask-image: url('/static/emoji/${code}.svg');"></span>`;
     });
 
     function updateCratesDisplay() {
