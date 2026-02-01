@@ -2789,50 +2789,26 @@ body.crate-panel-open .crates-main {
 }
 
 /* ============================================
-   EMOJI ICONS (OpenMoji SVG)
-   Using mask-image for color inheritance
-   MPC2000 pixel art aesthetic via filters
+   EMOJI ICONS (Noto Emoji Font)
+   Google's monochrome emoji font with variable weight
+   Color inheritance via CSS color property
    ============================================ */
 
-/* Base emoji icon - uses mask for color control */
+/* Base emoji icon - uses Noto Emoji font */
 .emoji-icon {
     display: inline-block;
-    background-color: currentColor;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    /* Force pixelated/aliased rendering */
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    /* Crisp SVG edges */
-    shape-rendering: crispEdges;
+    font-family: 'NotoEmojiRegular', 'Noto Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+    font-weight: 500; /* Medium weight */
+    font-style: normal;
+    line-height: 1;
     /* Centering within parent */
     vertical-align: middle;
     flex-shrink: 0;
-}
-
-/* Size-based filters for consistent visual weight at different sizes */
-.emoji-icon--sm {
-    filter: url(#emoji-pixel-sm);
-}
-
-.emoji-icon--md {
-    filter: url(#emoji-pixel-md);
-}
-
-.emoji-icon--lg {
-    filter: url(#emoji-pixel-lg);
-}
-
-/* Legacy size classes (backwards compat) */
-.crate-emoji-icon,
-.crate-emoji-icon-lg,
-.emoji-grid-item .emoji-icon {
-    filter: url(#emoji-pixel-lg);
+    /* Prevent text selection */
+    user-select: none;
+    /* Smooth rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================
