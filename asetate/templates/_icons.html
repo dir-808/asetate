@@ -81,7 +81,7 @@
         {{ crate_icon(crate, size=32) }}
 #}
 {% macro crate_icon(crate, size=24) -%}
-{%- set icon_name = crate.icon[6:] if crate.icon and crate.icon.startswith('emoji:') else 'folder' -%}
+{%- set icon_name = crate.icon[6:] if crate.icon and (crate.icon.startswith('emoji:') or crate.icon.startswith('pixel:')) else 'folder' -%}
 {%- set code = EMOJI_CODES.get(icon_name, '1F4C1') -%}
 {%- set filter_size = 'sm' if size <= 20 else ('lg' if size >= 36 else 'md') -%}
 <span class="emoji-icon emoji-icon--{{ filter_size }}" style="width: {{ size }}px; height: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %} -webkit-mask-image: url('/static/emoji/{{ code }}.svg'); mask-image: url('/static/emoji/{{ code }}.svg');"></span>

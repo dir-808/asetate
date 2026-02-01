@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_icons.html" import pixel_icon, crate_icon %}
+{% from "_icons.html" import emoji_icon, crate_icon %}
 
 {% block title %}Collection - Asetate{% endblock %}
 
@@ -77,7 +77,7 @@
                     {% if release.crate_info %}
                     <div class="release-crate-icons">
                         {% for crate in release.crate_info[:3] %}
-                        {{ crate_icon(crate, scale=1.2) }}
+                        {{ crate_icon(crate, size=14) }}
                         {% endfor %}
                         {% if release.crate_info|length > 3 %}
                         <span class="release-crate-more">+{{ release.crate_info|length - 3 }}</span>
