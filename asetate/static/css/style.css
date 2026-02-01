@@ -4559,8 +4559,13 @@ body.panel-open .collection-page {
 }
 
 .panel-discogs-btn .emoji-icon {
-    width: 18px;
-    height: 18px;
+    font-size: 18px;
+    /* Centering: flex container handles alignment,
+       line-height ensures vertical centering within the icon itself */
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Pixel art icons in discogs buttons */
@@ -5020,8 +5025,8 @@ body.panel-open .collection-page {
 }
 
 .panel-notes-btn .emoji-icon {
-    width: 12px;
-    height: 12px;
+    font-size: 12px;
+    line-height: 1;
 }
 
 .panel-notes-btn:hover {
@@ -5053,8 +5058,8 @@ body.panel-open .collection-page {
 }
 
 .panel-tag-add-btn .emoji-icon {
-    width: 12px;
-    height: 12px;
+    font-size: 12px;
+    line-height: 1;
 }
 
 /* Pixel icons in tag button - compact fit */
