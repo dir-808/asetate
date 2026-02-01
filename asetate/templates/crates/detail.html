@@ -218,7 +218,7 @@
 
 {% block scripts %}
 <script type="module">
-import { DEFAULT_ICON, EMOJI_CHARS, EMOJI_ICONS, renderEmojiIconGrid, renderEmojiIcon, getIconName, formatIconForStorage } from '/static/js/icons.js';
+import { DEFAULT_ICON, EMOJI_CHARS } from '/static/js/icons.js';
 
 const crateId = document.querySelector('.crate-detail').dataset.crateId;
 
@@ -232,81 +232,171 @@ const editClearIconBtn = document.getElementById('edit-clear-icon');
 const editColorInput = document.getElementById('edit-crate-color');
 const editIconSearch = document.getElementById('edit-icon-search');
 
-function updateEditEmojiPreview(iconName) {
-    const char = EMOJI_CHARS[iconName] || EMOJI_CHARS[DEFAULT_ICON];
-    editIconPreviewEmoji.textContent = char;
+// Current selected emoji state
+let currentSelectedEmoji = null;
+let currentSelectedHexcode = null;
+
+// Get current selected color
+function getCurrentColor() {
+    // Check color options first
+    const selectedOption = document.querySelector('#edit-color-picker .color-option.selected');
+    if (selectedOption && selectedOption.dataset.color) {
+        // Get hex from style
+        return selectedOption.style.backgroundColor;
+    }
+    // Check custom color input
+    const customColor = document.getElementById('edit-custom-color');
+    if (customColor && editColorInput.value && editColorInput.value.startsWith('#')) {
+        return editColorInput.value;
+    }
+    return null;
 }
 
-function selectEditEmojiIcon(iconName) {
-    editIconInput.value = formatIconForStorage(iconName);
-    updateEditEmojiPreview(iconName);
+// Apply color to all emoji in grid
+function applyColorToGrid() {
+    const color = getCurrentColor();
+    editIconGrid.querySelectorAll('.emoji-icon').forEach(icon => {
+        icon.style.color = color || '';
+    });
+    // Also update preview
+    if (editIconPreviewEmoji) {
+        editIconPreviewEmoji.style.color = color || '';
+    }
+}
+
+// Fetch emoji from API
+async function fetchEmoji(query = '') {
+    try {
+        const url = `/crates/api/emoji?q=${encodeURIComponent(query)}&limit=60`;
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.emoji || [];
+    } catch (err) {
+        console.error('Failed to fetch emoji:', err);
+        return [];
+    }
+}
+
+// Parse icon value to get hexcode (handles emoji:HEXCODE format)
+function getHexcodeFromIcon(iconValue) {
+    if (!iconValue) return null;
+    if (iconValue.startsWith('emoji:')) {
+        return iconValue.slice(6);
+    }
+    if (iconValue.startsWith('pixel:')) {
+        return iconValue.slice(6);
+    }
+    return iconValue;
+}
+
+// Update preview with emoji character
+function updateEditEmojiPreview(emoji, hexcode) {
+    currentSelectedEmoji = emoji;
+    currentSelectedHexcode = hexcode;
+    if (emoji) {
+        editIconPreviewEmoji.textContent = emoji;
+    } else {
+        // Default folder emoji
+        editIconPreviewEmoji.textContent = EMOJI_CHARS[DEFAULT_ICON] || '\u{1F4C1}';
+    }
+    applyColorToGrid();
+}
+
+// Select emoji from grid
+function selectEmoji(emoji, hexcode) {
+    editIconInput.value = `emoji:${hexcode}`;
+    updateEditEmojiPreview(emoji, hexcode);
     editIconGrid.querySelectorAll('.emoji-icon-grid-item').forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
     });
 }
 
-// Render filtered icon grid
-function renderEditFilteredGrid(query = '', selectedIcon = null) {
-    const lowerQuery = query.toLowerCase().trim();
-    const filtered = lowerQuery
-        ? EMOJI_ICONS.filter(icon =>
-            icon.name.toLowerCase().includes(lowerQuery) ||
-            icon.label.toLowerCase().includes(lowerQuery))
-        : EMOJI_ICONS;
-
+// Render emoji grid from API results
+function renderEmojiGrid(emojiList, selectedHexcode = null) {
+    const color = getCurrentColor();
     editIconGrid.innerHTML = '';
-    filtered.forEach(icon => {
+    emojiList.forEach(e => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'emoji-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
-        btn.dataset.icon = icon.name;
-        btn.title = icon.label;
-        btn.innerHTML = renderEmojiIcon(icon.name, 24);
-        btn.addEventListener('click', () => selectEditEmojiIcon(icon.name));
+        btn.className = 'emoji-icon-grid-item' + (selectedHexcode === e.hexcode ? ' selected' : '');
+        btn.dataset.hexcode = e.hexcode;
+        btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
+        const colorStyle = color ? `color: ${color};` : '';
+        btn.innerHTML = `<span class="emoji-icon" style="font-size: 20px; ${colorStyle}">${e.emoji}</span>`;
+        btn.addEventListener('click', () => selectEmoji(e.emoji, e.hexcode));
         editIconGrid.appendChild(btn);
     });
 }
 
-document.getElementById('btn-edit-crate').addEventListener('click', () => {
+// Load initial emoji and render grid
+async function loadEmojiGrid(query = '', selectedHexcode = null) {
+    const emojiList = await fetchEmoji(query);
+    renderEmojiGrid(emojiList, selectedHexcode);
+}
+
+document.getElementById('btn-edit-crate').addEventListener('click', async () => {
     editModal.classList.add('open');
-    const iconName = getIconName(editIconInput.value);
-    updateEditEmojiPreview(iconName);
+    const hexcode = getHexcodeFromIcon(editIconInput.value);
     editIconSearch.value = '';
-    renderEditFilteredGrid('', iconName);
+    await loadEmojiGrid('', hexcode);
+
+    // Set preview from current icon
+    if (hexcode) {
+        // Try to get emoji char from loaded grid
+        const selectedBtn = editIconGrid.querySelector(`[data-hexcode="${hexcode}"]`);
+        if (selectedBtn) {
+            const emoji = selectedBtn.querySelector('.emoji-icon')?.textContent;
+            updateEditEmojiPreview(emoji, hexcode);
+        } else {
+            // Try to convert hexcode to emoji
+            try {
+                const codepoints = hexcode.split('-').map(cp => parseInt(cp, 16));
+                const emoji = String.fromCodePoint(...codepoints);
+                updateEditEmojiPreview(emoji, hexcode);
+            } catch {
+                updateEditEmojiPreview(null, null);
+            }
+        }
+    } else {
+        updateEditEmojiPreview(null, null);
+    }
 });
 
 // Icon search with debounce
 let editSearchTimeout = null;
 editIconSearch.addEventListener('input', () => {
     clearTimeout(editSearchTimeout);
-    editSearchTimeout = setTimeout(() => {
-        renderEditFilteredGrid(editIconSearch.value, getIconName(editIconInput.value));
-    }, 150);
+    editSearchTimeout = setTimeout(async () => {
+        const hexcode = getHexcodeFromIcon(editIconInput.value);
+        await loadEmojiGrid(editIconSearch.value, hexcode);
+    }, 200);
 });
 
 document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
 document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
 editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
 
-editClearIconBtn.addEventListener('click', () => {
+editClearIconBtn.addEventListener('click', async () => {
     editIconInput.value = '';
-    updateEditEmojiPreview(DEFAULT_ICON);
+    updateEditEmojiPreview(null, null);
     editIconSearch.value = '';
-    renderEditFilteredGrid('', DEFAULT_ICON);
+    await loadEmojiGrid('', null);
 });
 
-// Color picker for edit modal
+// Color picker for edit modal - also update emoji grid colors
 document.querySelectorAll('#edit-color-picker .color-option').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         editColorInput.value = btn.dataset.color;
+        applyColorToGrid();
     });
 });
 
 document.getElementById('edit-custom-color').addEventListener('input', (e) => {
     document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
     editColorInput.value = e.target.value;
+    applyColorToGrid();
 });
 
 editForm.addEventListener('submit', async (e) => {
