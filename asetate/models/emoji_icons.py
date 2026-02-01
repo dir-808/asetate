@@ -10,6 +10,24 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
+
+def strip_variation_selectors(emoji_str: str) -> str:
+    """Remove variation selectors from emoji string.
+
+    Variation selectors (U+FE0E text style, U+FE0F emoji style) force
+    a specific presentation. Removing them allows the Noto Emoji font
+    to render the monochrome version correctly.
+
+    Args:
+        emoji_str: Emoji string that may contain variation selectors
+
+    Returns:
+        Emoji string with variation selectors removed
+    """
+    # U+FE0E = text variation selector (forces text/monochrome)
+    # U+FE0F = emoji variation selector (forces color emoji)
+    return emoji_str.replace("\ufe0f", "").replace("\ufe0e", "")
+
 # Paths
 EMOJI_DIR = Path(__file__).parent.parent / "static" / "emoji"
 METADATA_FILE = EMOJI_DIR / "openmoji.json"
@@ -277,7 +295,7 @@ def _build_emoji_index() -> tuple[list[dict], dict[str, dict]]:
 
         emoji = {
             "hexcode": hexcode,
-            "emoji": item.get("emoji", ""),
+            "emoji": strip_variation_selectors(item.get("emoji", "")),
             "name": annotation,
             "keywords": unique_keywords,
             "group": group,
