@@ -561,6 +561,27 @@ input::placeholder, textarea::placeholder {
     background-color: var(--primary);
 }
 
+/* Mini toggle - for compact sidebar track rows */
+.toggle--mini {
+    width: 28px;
+    height: 16px;
+}
+
+.toggle--mini .toggle-slider {
+    border-width: 1px;
+}
+
+.toggle--mini .toggle-slider::before {
+    height: 10px;
+    width: 10px;
+    left: 2px;
+    bottom: 2px;
+}
+
+.toggle--mini input:checked + .toggle-slider::before {
+    transform: translateX(12px);
+}
+
 /* ============================================
    FOOTER
    ============================================ */
@@ -3962,18 +3983,20 @@ body.panel-open .collection-page {
     color: var(--error);
 }
 
-/* Panel Release Content */
+/* Panel Release Content - main sidebar container */
 .panel-release {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-sm);
+    height: 100%;
+    overflow: hidden;
 }
 
 /* Discogs Card - LCD screen style, clickable to open full page */
 .panel-discogs-card {
+    display: flex;
     background-color: var(--lcd-bg);
     border: 2px solid var(--border);
-    padding: var(--space-md);
     cursor: pointer;
     /* Functional shadow for recessed LCD screen effect */
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -3982,6 +4005,70 @@ body.panel-open .collection-page {
 
 .panel-discogs-card:hover {
     border-color: var(--primary);
+}
+
+/* Main content area (cover + info) */
+.panel-discogs-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-md);
+}
+
+/* Vertical button column on right side */
+.panel-discogs-buttons {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.panel-discogs-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    padding: var(--space-sm);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--lcd-text);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.panel-discogs-btn:last-child {
+    border-bottom: none;
+}
+
+.panel-discogs-btn:hover {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: var(--primary);
+}
+
+.panel-discogs-btn .emoji-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.panel-discogs-btn .activity-led {
+    position: absolute;
+}
+
+.panel-discogs-btn.is-loading .btn-icon {
+    animation: spin 1s linear infinite;
+}
+
+.panel-discogs-btn.has-error {
+    color: var(--error);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .panel-discogs-card .panel-info h2,
@@ -3999,26 +4086,32 @@ body.panel-open .collection-page {
     opacity: 0.7;
 }
 
-.panel-discogs-actions {
+/* Compact stats display */
+.panel-stats {
     display: flex;
-    gap: var(--space-xs);
-    margin-top: var(--space-sm);
-    padding-top: var(--space-sm);
-    border-top: 1px solid var(--border);
+    gap: var(--space-sm);
+    font-size: 0.7rem;
+    margin-top: var(--space-xs);
 }
 
-.panel-header {
-    display: flex;
-    gap: var(--space-md);
+.panel-stat {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Notes indicator on title */
+.panel-notes-indicator {
+    margin-left: var(--space-xs);
+    font-size: 0.7rem;
+    vertical-align: middle;
 }
 
 .panel-cover {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     flex-shrink: 0;
     overflow: hidden;
     background-color: var(--bg-elevated);
-    border: 2px solid var(--border);
+    /* No border - contained within card's border */
 }
 
 .panel-cover img {
@@ -4106,90 +4199,75 @@ body.panel-open .collection-page {
     margin: 0;
 }
 
-/* Panel Tracks */
+/* Panel Tracks - LCD style continuation */
 .panel-tracks {
-    background-color: var(--bg-elevated);
-    border: 1px solid var(--border);
-}
-
-.panel-tracks-header {
+    flex: 1;
+    min-height: 0;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-sm) var(--space-md);
+    flex-direction: column;
     background-color: var(--lcd-bg);
-    border-bottom: 1px solid var(--border);
-}
-
-.panel-tracks-header h3 {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--lcd-dim);
+    border: 2px solid var(--border);
+    /* Functional shadow for recessed LCD screen effect */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .panel-tracks-list {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
 }
 
 .panel-track-row {
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-xs) var(--space-sm);
     border-bottom: 1px solid var(--border);
-    transition: background-color 0.15s, opacity 0.15s, box-shadow 0.15s;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+    cursor: default;
 }
 
 .panel-track-row:last-child {
     border-bottom: none;
 }
 
+/* Track row hover indication */
+.panel-track-row:hover {
+    background-color: rgba(74, 222, 128, 0.05);
+}
+
+/* Panel Track Row - Compact 2-row layout with LCD colors */
 .panel-track-main {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
+}
+
+.panel-track-main .toggle--mini {
+    flex-shrink: 0;
 }
 
 .panel-track-pos {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 600;
-    color: var(--primary);
-    min-width: 30px;
-}
-
-.panel-track-info {
-    flex: 1;
-    min-width: 0;
+    color: var(--lcd-dim);
+    min-width: 20px;
+    flex-shrink: 0;
+    text-transform: uppercase;
 }
 
 .panel-track-title {
-    display: block;
-    font-size: 0.8rem;
+    flex: 1;
+    min-width: 0;
+    font-size: 0.75rem;
     font-weight: 500;
+    color: var(--lcd-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .panel-track-duration {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-}
-
-.toggle-sm {
-    width: 32px;
-    height: 18px;
-}
-
-.toggle-sm .toggle-slider::before {
-    height: 14px;
-    width: 14px;
-    left: 2px;
-    bottom: 2px;
-}
-
-.toggle-sm input:checked + .toggle-slider::before {
-    transform: translateX(14px);
+    font-size: 0.65rem;
+    color: var(--lcd-dim);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
 }
 
 .panel-track-meta {
@@ -4199,26 +4277,47 @@ body.panel-open .collection-page {
     padding-left: calc(30px + var(--space-sm));
 }
 
+/* Panel Inputs - Editable fields with visual distinction */
 .panel-input {
-    width: 55px;
-    padding: 2px 4px;
+    width: 36px;
+    padding: 1px 3px;
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-align: center;
     background: transparent;
     border: 1px solid transparent;
-    color: var(--text-primary);
+    color: var(--lcd-text);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.panel-input:hover {
-    background: var(--bg-input);
-    border-color: var(--border);
+/* Editable variant - shows it's interactive */
+.panel-input--editable {
+    border: 1px dashed var(--lcd-dim);
+    color: var(--lcd-text);
 }
 
-.panel-input:focus {
-    background: var(--bg-input);
-    border-color: var(--primary);
+.panel-input--editable::placeholder {
+    color: var(--lcd-dim);
+    opacity: 0.7;
+}
+
+.panel-input--editable:hover {
+    background: rgba(74, 222, 128, 0.1);
+    border-style: solid;
+    border-color: var(--lcd-text);
+}
+
+.panel-input--editable:focus {
+    background: rgba(74, 222, 128, 0.15);
+    border-style: solid;
+    border-color: var(--success);
     outline: none;
+}
+
+/* When input has value, show solid border */
+.panel-input--editable:not(:placeholder-shown) {
+    border-style: solid;
+    border-color: var(--lcd-text);
 }
 
 .panel-energy-wrap {
@@ -4263,23 +4362,23 @@ body.panel-open .collection-page {
     text-align: center;
 }
 
+/* Panel track tags - now inline in fields row */
 .panel-track-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    margin-top: var(--space-xs);
-    padding-left: calc(30px + var(--space-sm));
+    gap: 2px;
+    align-items: center;
 }
 
 .tag-badge-sm {
     display: inline-block;
-    padding: 1px 6px;
-    font-size: 0.6rem;
+    padding: 0px 4px;
+    font-size: 0.55rem;
     font-weight: 600;
     background-color: var(--tag-color, var(--primary));
     color: var(--bg-primary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
 }
 
 /* Responsive - hide panel on small screens, use modal instead */
@@ -4288,14 +4387,6 @@ body.panel-open .collection-page {
         width: 100%;
         left: 0;
     }
-}
-
-/* Panel Release - flex layout to fill space */
-.panel-release {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
 }
 
 /* Expand button */
@@ -4320,81 +4411,51 @@ body.panel-open .collection-page {
     stroke: var(--primary);
 }
 
-/* Panel playable toggle */
-.panel-playable-toggle {
-    flex-shrink: 0;
-}
-
-/* Panel track fields */
+/* Panel track fields - compact row with editable fields, notes, and tags */
 .panel-track-fields {
     display: flex;
-    gap: var(--space-sm);
-    margin-top: var(--space-xs);
-    padding-left: 28px;
+    gap: var(--space-xs);
+    margin-top: 2px;
+    padding-left: 32px; /* Align with title (toggle 28px + gap 4px) */
     align-items: center;
-}
-
-.panel-field {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.panel-field label {
-    font-size: 0.55rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.panel-field-bpm .panel-input,
-.panel-field-key .panel-input {
-    width: 45px;
-}
-
-/* Panel track extras row */
-.panel-track-extras {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-xs);
-    padding-left: 28px;
     flex-wrap: wrap;
 }
 
+/* Panel notes button - compact version for LCD background */
 .panel-notes-btn {
     font-size: 0.6rem;
-    padding: 2px 6px;
+    padding: 1px 4px;
     background: transparent;
-    border: 1px dashed var(--border);
-    color: var(--text-muted);
+    border: 1px dashed var(--lcd-dim);
+    color: var(--lcd-dim);
     cursor: pointer;
     font-family: var(--font-mono);
     transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    line-height: 1;
 }
 
 .panel-notes-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--lcd-text);
+    color: var(--lcd-text);
 }
 
 .panel-notes-btn.has-notes {
     border-style: solid;
     border-color: var(--warning);
     color: var(--warning);
-    background-color: rgba(251, 191, 36, 0.1);
+    background-color: rgba(251, 191, 36, 0.15);
 }
 
-/* Panel tag add */
+/* Panel tag add - LCD background */
 .panel-tag-add-btn {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     padding: 0;
-    border: 1px dashed var(--border);
+    border: 1px dashed var(--lcd-dim);
     background: transparent;
-    color: var(--text-muted);
+    color: var(--lcd-dim);
     cursor: pointer;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-family: var(--font-mono);
     line-height: 1;
     display: flex;
@@ -4403,17 +4464,17 @@ body.panel-open .collection-page {
 }
 
 .panel-tag-add-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--lcd-text);
+    color: var(--lcd-text);
 }
 
 .panel-tag-input {
-    width: 60px;
-    padding: 1px 4px;
-    font-size: 0.6rem;
-    background-color: var(--bg-input);
-    border: 1px solid var(--primary);
-    color: var(--text-primary);
+    width: 50px;
+    padding: 1px 3px;
+    font-size: 0.55rem;
+    background-color: rgba(74, 222, 128, 0.1);
+    border: 1px solid var(--lcd-text);
+    color: var(--lcd-text);
 }
 
 /* Tag badge small - extend existing with remove button */
@@ -4441,31 +4502,37 @@ body.panel-open .collection-page {
     padding: var(--space-md);
 }
 
-/* Panel actions - override base with panel-specific */
-.panel-actions {
+/* Panel Toolbar - unified actions + crates row */
+.panel-toolbar {
     flex-shrink: 0;
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
+    background-color: var(--bg-elevated);
     border-bottom: 1px solid var(--border);
 }
 
-.panel-action-group {
+.panel-toolbar-actions {
     display: flex;
     gap: var(--space-xs);
     align-items: stretch;
+    flex-shrink: 0;
 }
 
-.panel-action-group .btn {
+.panel-toolbar-actions .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-.panel-action-group.discogs-group {
-    padding-right: var(--space-sm);
-    border-right: 1px solid var(--border);
+.panel-toolbar-crates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    flex: 1;
+    min-width: 0;
 }
 
 /* Panel crate dropdown wrapper */
@@ -4508,6 +4575,32 @@ body.panel-open .collection-page {
 
 .panel-notes-textarea::placeholder {
     color: var(--text-muted);
+}
+
+/* LCD variant - sits below Discogs card, matches LCD aesthetic */
+.panel-notes-lcd {
+    background-color: var(--lcd-bg);
+    border: 2px solid var(--border);
+    border-top: none;
+    color: var(--lcd-text);
+    min-height: 60px;
+    max-height: 100px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    caret-color: var(--success);
+    /* Functional shadow for recessed effect, matching card above */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.panel-notes-lcd:focus {
+    border-color: var(--border);
+    border-top: none;
+    /* Keep subtle green glow on focus to indicate active input */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--success);
+}
+
+.panel-notes-lcd::placeholder {
+    color: var(--lcd-dim);
 }
 
 /* Panel crate dropdown */
