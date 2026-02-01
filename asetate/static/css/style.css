@@ -2727,7 +2727,7 @@ body.crate-panel-open .crates-main {
     background: var(--bg-elevated);
 }
 
-/* Emoji Icon Grid (for icon picker with OpenMoji SVGs) */
+/* Emoji Icon Grid (for icon picker) */
 .emoji-icon-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -2740,15 +2740,20 @@ body.crate-panel-open .crates-main {
 }
 
 .emoji-icon-grid-item {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
-    padding: 0;
+    padding: var(--space-xs);
+}
+
+/* Constrain icon size within grid item */
+.emoji-icon-grid-item .emoji-icon {
+    font-size: 20px;
 }
 
 .emoji-icon-grid-item:hover {
@@ -2794,10 +2799,10 @@ body.crate-panel-open .crates-main {
    Color inheritance via CSS color property
    ============================================ */
 
-/* Base emoji icon - uses Noto Emoji font */
+/* Base emoji icon - uses Noto Emoji font (monochrome) */
 .emoji-icon {
     display: inline-block;
-    font-family: 'NotoEmojiRegular', 'Noto Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+    font-family: 'Noto Emoji', sans-serif;
     font-weight: 500; /* Medium weight */
     font-style: normal;
     line-height: 1;
