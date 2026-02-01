@@ -77,9 +77,8 @@
             {% for track in tracks %}
             <div class="panel-track-row {% if not track.is_playable %}track-dimmed{% endif %}"
                  data-track-id="{{ track.id }}">
-                <!-- Left column: Position + Toggle stacked vertically -->
+                <!-- Left column: Toggle only -->
                 <div class="panel-track-left">
-                    <span class="panel-track-pos">{{ track.display_position }}</span>
                     <label class="toggle toggle--mini" title="Playable">
                         <input type="checkbox" class="panel-track-playable"
                                {% if track.is_playable %}checked{% endif %}
@@ -87,9 +86,10 @@
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
-                <!-- Right content: Title, Duration, and fields -->
+                <!-- Right content: Position + Title, Duration, and fields -->
                 <div class="panel-track-right">
                     <div class="panel-track-main">
+                        <span class="panel-track-pos">{{ track.display_position }}</span>
                         <span class="panel-track-title">{{ track.title }}</span>
                         <span class="panel-track-duration">{{ track.display_duration }}</span>
                     </div>

@@ -4146,7 +4146,7 @@ body.panel-open .collection-page {
     position: absolute;
 }
 
-.panel-discogs-btn.is-loading .btn-icon {
+.panel-discogs-btn.is-loading .emoji-icon {
     animation: spin 1s linear infinite;
 }
 
@@ -4337,13 +4337,11 @@ body.panel-open .collection-page {
     background-color: rgba(74, 222, 128, 0.05);
 }
 
-/* Left column: Position + Toggle stacked vertically */
+/* Left column: Toggle only */
 .panel-track-left {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
     flex-shrink: 0;
     min-width: 32px;
     padding: var(--space-xs) 0;
@@ -4367,13 +4365,15 @@ body.panel-open .collection-page {
     gap: var(--space-xs);
 }
 
-/* Position indicator - more prominent, orange when playable */
+/* Position indicator - inline with title, bold, same size */
 .panel-track-pos {
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--lcd-dim);
     text-transform: uppercase;
     letter-spacing: 0.02em;
+    flex-shrink: 0;
+    min-width: 24px;
 }
 
 /* Position turns orange when track is playable */
