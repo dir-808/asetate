@@ -2615,10 +2615,10 @@ body.crate-panel-open .crates-main {
     border-color: var(--border);
 }
 
-/* Pixel Icon Picker */
+/* Emoji Icon Picker */
 .icon-preview-box {
-    width: 36px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
     border: 2px solid var(--border);
     /* No border-radius - MPC style */
     background: var(--bg-elevated);
@@ -2626,6 +2626,11 @@ body.crate-panel-open .crates-main {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
+
+/* Constrain preview icon size */
+.icon-preview-box .emoji-icon {
+    font-size: 28px !important;
 }
 
 .icon-preview-img {
