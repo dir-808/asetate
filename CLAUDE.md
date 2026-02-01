@@ -266,7 +266,9 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 
 > ⚠️ **ALWAYS render icons via centralized files** - never hardcode emoji characters directly in templates or JS. This ensures all icons update from a single source.
 
-All icons in Asetate use Google's Noto Emoji font (monochrome, medium weight). Icons are stored in the database as `emoji:ICONNAME` format (e.g., `emoji:vinyl`, `emoji:folder`). Legacy `pixel:` format is also supported.
+All icons in Asetate use Google's Noto Emoji font (monochrome, medium weight). Icons are stored in the database as `emoji:HEXCODE` format (e.g., `emoji:1F4C1`, `emoji:1F3B5`). Legacy `pixel:` and `emoji:name` formats are also supported.
+
+**Emoji filtering:** The emoji picker API (`/crates/api/emoji`) only returns emoji that are confirmed to render correctly in Noto Emoji font. This is controlled by the `NOTO_EMOJI_SUPPORTED` whitelist in `models/emoji_icons.py`. If adding support for new emoji, add their hexcodes to this set.
 
 **Centralized Icon Files (Single Source of Truth):**
 - **`templates/_icons.html`** - Jinja2 macros for server-side rendering
@@ -369,6 +371,28 @@ renderEmojiIconGrid(document.getElementById('icon-grid'), onIconSelect, 'folder'
 2. CSS `color` property controls the icon color (monochrome font)
 3. `font-size` controls the icon size
 4. Font loaded from Google Fonts CDN in base.html (`font-family: 'Noto Emoji'`)
+
+**Icon sizing and centering (IMPORTANT):**
+> ⚠️ **NEVER use `width`/`height` to size `.emoji-icon` elements.** Always use `font-size`. The emoji-icon class uses a font-based approach, not image dimensions.
+
+```css
+/* BAD - width/height don't work properly with font-based icons */
+.my-button .emoji-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* GOOD - use font-size for sizing */
+.my-button .emoji-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+```
+
+For centering icons in buttons:
+- Parent container should use `display: flex; align-items: center; justify-content: center;`
+- Icon should have `line-height: 1;` to ensure proper vertical centering
+- The `.emoji-icon` base class already includes `vertical-align: middle;` for inline contexts
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:
