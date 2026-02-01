@@ -315,6 +315,39 @@ function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
 }
 ```
 
+**MPC2000 Chunky Icon Styling:**
+Icons use SVG filters defined in `base.html` to achieve thicker, chunkier lines that match the hardware aesthetic:
+
+```html
+<!-- In base.html - hidden SVG filter definitions -->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute;">
+    <defs>
+        <filter id="icon-chunky" x="-25%" y="-25%" width="150%" height="150%">
+            <feMorphology operator="dilate" radius="0.4" in="SourceGraphic"/>
+        </filter>
+        <filter id="icon-chunky-lg" x="-25%" y="-25%" width="150%" height="150%">
+            <feMorphology operator="dilate" radius="0.6" in="SourceGraphic"/>
+        </filter>
+    </defs>
+</svg>
+```
+
+CSS applies the filter automatically:
+```css
+.emoji-icon {
+    filter: url(#icon-chunky);
+    image-rendering: pixelated;  /* Stepped/aliased edges */
+}
+
+/* Larger icons use stronger dilation */
+.crate-emoji-icon,
+.crate-emoji-icon-lg {
+    filter: url(#icon-chunky-lg);
+}
+```
+
+The `feMorphology` filter with `dilate` operator expands the shape outward, effectively thickening all lines. The `radius` value controls thickness (0.4 for small icons, 0.6 for larger ones).
+
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:
 

@@ -2735,6 +2735,19 @@ body.crate-panel-open .crates-main {
     mask-position: center;
     -webkit-mask-size: contain;
     mask-size: contain;
+    /* MPC2000 chunky aesthetic - thicker lines via SVG filter */
+    filter: url(#icon-chunky);
+    /* Pixelated rendering for stepped/aliased edges */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* Larger icons use stronger dilation for consistent weight */
+.crate-emoji-icon,
+.crate-emoji-icon-lg,
+.emoji-grid-item .emoji-icon {
+    filter: url(#icon-chunky-lg);
 }
 
 /* Emoji in crate cards */
