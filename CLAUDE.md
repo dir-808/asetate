@@ -65,6 +65,21 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
 | Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
 
+#### Sizing
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--icon-sm` | 14px | Crate badges on cards |
+| `--icon-md` | 18px | Action buttons, inline icons |
+| `--icon-lg` | 20px | Standalone icons, grid pickers |
+| `--icon-xl` | 24px | Large icon display |
+| `--btn-sm-size` | 28px | Small square buttons (toggle, mini actions) |
+| `--btn-discogs-width` | 40px | Discogs action button width |
+| `--input-sm-width` | 36px | BPM/Key input fields |
+| `--track-toggle-width` | 30px | Toggle checkbox area width |
+| `--track-indent` | calc | Fields indentation (toggle + gap) |
+| `--sidebar-width` | 450px | Release panel sidebar |
+| `--crate-panel-width` | 420px | Crate edit panel |
+
 #### Font Sizes
 | Token | Size | Usage |
 |-------|------|-------|

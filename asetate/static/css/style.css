@@ -83,6 +83,26 @@
     --crate-panel-width: 420px;  /* Crate edit panel */
 
     /* -----------------------------------------
+       SIZING - Component dimensions
+       ----------------------------------------- */
+    /* Icon sizes */
+    --icon-sm: 14px;             /* Crate badges on cards */
+    --icon-md: 18px;             /* Action buttons, inline icons */
+    --icon-lg: 20px;             /* Standalone icons, grid pickers */
+    --icon-xl: 24px;             /* Large icon display */
+
+    /* Button/control sizes */
+    --btn-sm-size: 28px;         /* Small square buttons (toggle, mini actions) */
+    --btn-discogs-width: 40px;   /* Discogs action button width */
+
+    /* Input sizes */
+    --input-sm-width: 36px;      /* BPM/Key input fields */
+
+    /* Track layout */
+    --track-toggle-width: 30px;  /* Toggle checkbox area width */
+    --track-indent: calc(var(--track-toggle-width) + var(--space-sm));  /* Fields indentation */
+
+    /* -----------------------------------------
        TYPOGRAPHY
        ----------------------------------------- */
     --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
@@ -470,8 +490,8 @@ a:hover {
 
 .btn-icon {
     padding: var(--space-xs);
-    min-width: 28px;
-    height: 28px;
+    min-width: var(--btn-sm-size);
+    height: var(--btn-sm-size);
 }
 
 .btn-block {
@@ -562,7 +582,7 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
-    border: 2px solid var(--border);
+    border: var(--border-width-md) solid var(--border);
     background: transparent;
     cursor: pointer;
     font-family: var(--font-mono);
@@ -634,7 +654,7 @@ input::placeholder, textarea::placeholder {
     inset: 0;
     background-color: var(--border);
     transition: background-color 0.15s;
-    border: 2px solid var(--border);
+    border: var(--border-width-md) solid var(--border);
 }
 
 .toggle-slider::before {
@@ -799,7 +819,7 @@ input::placeholder, textarea::placeholder {
 .progress-bar {
     height: 6px;
     background-color: var(--bg-input);
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     overflow: hidden;
 }
 
@@ -829,7 +849,7 @@ input::placeholder, textarea::placeholder {
     gap: var(--space-xs);
     padding: var(--space-sm);
     background-color: var(--lcd-bg);
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
 }
 
 .sync-stat-value {
@@ -849,7 +869,7 @@ input::placeholder, textarea::placeholder {
 .sync-error {
     padding: var(--space-md);
     background-color: rgba(239, 68, 68, 0.1);
-    border: 2px solid var(--error);
+    border: var(--border-width-md) solid var(--error);
     color: var(--error);
     font-size: 0.85rem;
 }
@@ -1133,6 +1153,7 @@ input::placeholder, textarea::placeholder {
 /* Collection layout - sidebar pushes content */
 .collection-layout {
     display: flex;
+    gap: 0;
     position: relative;
     min-height: calc(100vh - 150px);
 }
@@ -1345,8 +1366,8 @@ input::placeholder, textarea::placeholder {
 
 /* Base icon container - works for both emoji and pixel icons */
 .release-crate-icon {
-    width: 20px;
-    height: 20px;
+    width: var(--icon-lg);
+    height: var(--icon-lg);
     background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
@@ -1358,12 +1379,12 @@ input::placeholder, textarea::placeholder {
 /* Emoji icons on release cards - sized within container */
 .release-crate-icon.emoji-icon {
     /* Override emoji-icon background since parent has dark bg */
-    padding: 2px;
+    padding: var(--space-2xs);
 }
 
 .release-crate-more {
-    width: 20px;
-    height: 20px;
+    width: var(--icon-lg);
+    height: var(--icon-lg);
     background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
@@ -1665,23 +1686,20 @@ input::placeholder, textarea::placeholder {
     border-bottom: none;
 }
 
+/* Track rows - no border collapse to maintain consistent line thickness */
 .track-row {
+    border-left: var(--border-width-sm) solid var(--border);
+    border-right: var(--border-width-sm) solid var(--border);
+    border-bottom: var(--border-width-sm) solid var(--border);
     transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.track-row:first-child {
+    border-top: var(--border-width-sm) solid var(--border);
 }
 
 .track-row:hover {
     background-color: var(--bg-elevated);
-}
-
-/* Track rows - no border collapse to maintain consistent line thickness */
-.track-row {
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-}
-
-.track-row:first-child {
-    border-top: 1px solid var(--border);
 }
 
 /* Playable tracks get orange left/right borders, grey top/bottom for consistent separation */
@@ -1748,7 +1766,7 @@ input::placeholder, textarea::placeholder {
 .track-notes-indicator {
     display: inline-block;
     margin-left: var(--space-sm);
-    padding: var(--space-2xs) 6px;
+    padding: var(--space-2xs) var(--space-xs);
     font-size: 0.65rem;
     color: var(--warning);
     background-color: rgba(251, 191, 36, 0.15);
@@ -1929,7 +1947,7 @@ input::placeholder, textarea::placeholder {
 /* Track notes add button - MPC2000 rectangular, no border-radius */
 .track-notes-add {
     display: inline-block;
-    padding: var(--space-2xs) 6px;
+    padding: var(--space-2xs) var(--space-xs);
     font-size: 0.65rem;
     color: var(--text-muted);
     border: 1px dashed var(--border);
@@ -2024,7 +2042,7 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     padding: var(--space-sm) var(--space-md);
     padding-left: calc(var(--space-md) + calc(var(--depth, 0) * var(--space-lg)));
-    border-bottom: 1px solid var(--border);
+    border-bottom: var(--border-width-sm) solid var(--border);
     transition: background-color 0.15s ease;
 }
 
@@ -2075,7 +2093,7 @@ input::placeholder, textarea::placeholder {
     opacity: 0;
     padding: var(--space-xs) var(--space-sm);
     background: var(--bg-input);
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     color: var(--text-secondary);
     cursor: pointer;
     font-family: var(--font-mono);
@@ -2094,7 +2112,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-children {
-    border-left: 2px solid var(--border);
+    border-left: var(--border-width-md) solid var(--border);
     margin-left: var(--space-lg);
 }
 
@@ -2160,7 +2178,7 @@ input::placeholder, textarea::placeholder {
 
 .crate-section {
     background-color: var(--bg-surface);
-    border: 2px solid var(--border);
+    border: var(--border-width-md) solid var(--border);
     padding: var(--space-lg);
 }
 
@@ -2280,8 +2298,8 @@ input::placeholder, textarea::placeholder {
     position: absolute;
     top: var(--space-xs);
     right: var(--space-xs);
-    width: 20px;
-    height: 20px;
+    width: var(--icon-lg);
+    height: var(--icon-lg);
     padding: 0;
     border: none;
     background: var(--bg-surface);
@@ -2617,10 +2635,10 @@ body.crate-panel-open .crates-main {
     position: fixed;
     top: 0;
     right: 0;
-    width: 400px;
+    width: var(--crate-panel-width);
     height: 100vh;
     background: var(--bg-surface);
-    border-left: 2px solid var(--border);
+    border-left: var(--border-width-md) solid var(--border);
     z-index: 900;
     transform: translateX(100%);
     transition: transform 0.25s ease;
@@ -2636,7 +2654,7 @@ body.crate-panel-open .crates-main {
     justify-content: space-between;
     align-items: center;
     padding: var(--space-md);
-    border-bottom: 2px solid var(--border);
+    border-bottom: var(--border-width-md) solid var(--border);
     position: sticky;
     top: 0;
     background: var(--bg-surface);
@@ -2728,7 +2746,7 @@ body.crate-panel-open .crates-main {
 
 /* Constrain preview icon size */
 .icon-preview-box .emoji-icon {
-    font-size: 28px !important;
+    font-size: 28px;
 }
 
 .icon-preview-img {
@@ -2789,8 +2807,8 @@ body.crate-panel-open .crates-main {
 }
 
 .icon-grid-item img {
-    width: 20px;
-    height: 20px;
+    width: var(--icon-lg);
+    height: var(--icon-lg);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     filter: invert(1); /* White icons on dark background */
@@ -3270,7 +3288,7 @@ body.crate-panel-open .crates-main {
 
 .tag-input {
     width: 80px;
-    padding: var(--space-2xs) 6px;
+    padding: var(--space-2xs) var(--space-xs);
     font-size: 0.7rem;
     background-color: var(--bg-input);
     border: 1px solid var(--primary);
@@ -3579,7 +3597,7 @@ body.crate-panel-open .crates-main {
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: var(--space-2xs) 6px;
+    padding: var(--space-2xs) var(--space-xs);
     font-size: 1rem;
 }
 
@@ -3701,7 +3719,7 @@ body.crate-panel-open .crates-main {
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding-bottom: var(--space-sm);
-    border-bottom: 2px solid var(--border);
+    border-bottom: var(--border-width-md) solid var(--border);
 }
 
 /* Account Info */
@@ -3715,7 +3733,7 @@ body.crate-panel-open .crates-main {
     width: 64px;
     height: 64px;
     object-fit: cover;
-    border: 2px solid var(--border);
+    border: var(--border-width-md) solid var(--border);
 }
 
 .account-details {
@@ -3776,14 +3794,14 @@ body.crate-panel-open .crates-main {
 .save-status.saved { color: var(--success); }
 .save-status.error { color: var(--error); }
 
-/* Discogs Connect Button */
+/* Discogs Connect Button - uses Discogs brand colors */
 .btn-discogs {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background-color: #333;
     color: #fff;
-    border: 2px solid #444;
+    border: var(--border-width-md) solid #444;
     padding: var(--space-sm) var(--space-lg);
     font-family: var(--font-mono);
     font-size: 0.9rem;
@@ -4069,21 +4087,6 @@ body.crate-panel-open .crates-main {
    SIDE PANEL - Collection View
    ============================================ */
 
-.collection-layout {
-    display: flex;
-    gap: 0;
-    min-height: calc(100vh - 150px);
-}
-
-.collection-page {
-    flex: 1;
-    transition: margin-right 0.3s ease;
-}
-
-body.panel-open .collection-page {
-    margin-right: 0;
-}
-
 /* Release card as clickable element */
 .release-card {
     cursor: pointer;
@@ -4102,7 +4105,7 @@ body.panel-open .collection-page {
     width: var(--sidebar-width);
     height: 100vh;
     background-color: var(--bg-surface);
-    border-left: 2px solid var(--border);
+    border-left: var(--border-width-md) solid var(--border);
     transform: translateX(100%);
     transition: transform 0.3s ease-out;
     z-index: 900;
@@ -4122,7 +4125,7 @@ body.panel-open .collection-page {
     align-items: center;
     padding: var(--space-xs) var(--space-sm);
     background-color: var(--bg-elevated);
-    border-bottom: 2px solid var(--border);
+    border-bottom: var(--border-width-md) solid var(--border);
     flex-shrink: 0;
 }
 
@@ -4132,7 +4135,7 @@ body.panel-open .collection-page {
 
 .panel-close {
     background: none;
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     font-size: 1.5rem;
     color: var(--text-muted);
     cursor: pointer;
@@ -4203,7 +4206,7 @@ body.panel-open .collection-page {
 .panel-discogs-buttons {
     display: flex;
     flex-direction: column;
-    border-left: 1px solid var(--border);
+    border-left: var(--border-width-sm) solid var(--border);
     flex-shrink: 0;
 }
 
@@ -4212,11 +4215,11 @@ body.panel-open .collection-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: var(--btn-discogs-width);
     padding: var(--space-sm);
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--border);
+    border-bottom: var(--border-width-sm) solid var(--border);
     color: var(--lcd-text);
     cursor: pointer;
     text-decoration: none;
@@ -4233,7 +4236,7 @@ body.panel-open .collection-page {
 }
 
 .panel-discogs-btn .emoji-icon {
-    font-size: 18px;
+    font-size: var(--icon-md);
     /* Centering: flex container handles alignment,
        line-height ensures vertical centering within the icon itself */
     line-height: 1;
@@ -4261,8 +4264,8 @@ body.panel-open .collection-page {
 
 /* Panel discogs button has larger icon, no margin */
 .panel-discogs-btn .sync-icon {
-    width: 18px;
-    height: 18px;
+    width: var(--icon-md);
+    height: var(--icon-md);
     margin-right: 0;
 }
 
@@ -4298,8 +4301,10 @@ body.panel-open .collection-page {
 /* Compact stats display */
 .panel-stats {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-sm);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
     margin-top: var(--space-xs);
 }
 
@@ -4384,14 +4389,6 @@ body.panel-open .collection-page {
     margin-bottom: var(--space-xs);
 }
 
-.panel-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
 .panel-actions {
     display: flex;
     flex-wrap: wrap;
@@ -4402,12 +4399,13 @@ body.panel-open .collection-page {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-xs);
+    flex-shrink: 0;
 }
 
 .panel-notes {
     background-color: var(--bg-elevated);
     padding: var(--space-sm);
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
 }
 
 .panel-notes h4 {
@@ -4430,8 +4428,9 @@ body.panel-open .collection-page {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     background-color: var(--lcd-bg);
-    border: 2px solid var(--border);
+    border: var(--border-width-md) solid var(--border);
     /* Functional shadow for recessed LCD screen effect */
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -4439,25 +4438,28 @@ body.panel-open .collection-page {
 .panel-tracks-list {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
-/* Panel track row - vertical stack of two rows */
-/* Note: border/opacity styles are in the Playable Highlighting section below */
+/* Panel track row - vertical stack of two rows
+   IMPORTANT: All .panel-track-row styles consolidated here.
+   Playable highlighting modifiers are in SHARED COMPONENTS section. */
 .panel-track-row {
     display: flex;
     flex-direction: column;
     gap: var(--space-2xs);
-    padding: var(--space-xs) var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
     cursor: default;
+    /* Borders for playable highlighting - always present, colors change */
+    border-left: var(--border-width-sm) solid var(--border);
+    border-right: var(--border-width-sm) solid var(--border);
+    border-bottom: var(--border-width-sm) solid var(--border);
+    transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    box-sizing: border-box;
 }
 
-.panel-track-row:last-child {
-    border-bottom: none;
-}
-
-/* Track row hover indication */
-.panel-track-row:hover {
-    background-color: rgba(74, 222, 128, 0.05);
+.panel-track-row:first-child {
+    border-top: var(--border-width-sm) solid var(--border);
 }
 
 /* Row 1: Position + Title + Duration */
@@ -4512,18 +4514,18 @@ body.panel-open .collection-page {
     display: flex;
     gap: var(--space-xs);
     margin-top: var(--space-xs);
-    padding-left: calc(30px + var(--space-sm));
+    padding-left: var(--track-indent);
 }
 
 /* Panel Inputs - Editable fields with visual distinction */
 .panel-input {
-    width: 36px;
+    width: var(--input-sm-width);
     padding: var(--space-2xs) var(--space-xs);
     font-family: var(--font-mono);
     font-size: 0.65rem;
     text-align: center;
     background: transparent;
-    border: 1px solid transparent;
+    border: var(--border-width-sm) solid transparent;
     color: var(--lcd-text);
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -4531,7 +4533,7 @@ body.panel-open .collection-page {
 /* Editable variant - shows it's interactive */
 .panel-input--editable {
     /* Always solid border to prevent layout shift - use subtle color for empty state */
-    border: 1px solid rgba(34, 84, 61, 0.5);  /* --lcd-dim at 50% opacity */
+    border: var(--border-width-sm) solid rgba(34, 84, 61, 0.5);  /* --lcd-dim at 50% opacity */
     color: var(--lcd-text);
 }
 
@@ -4640,13 +4642,13 @@ body.panel-open .collection-page {
 
 /* Expand button */
 .panel-expand-btn {
-    width: 28px;
-    height: 28px;
+    width: var(--btn-sm-size);
+    height: var(--btn-sm-size);
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     color: var(--primary);
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -4670,11 +4672,11 @@ body.panel-open .collection-page {
 
 /* Panel notes button - icon button for LCD background */
 .panel-notes-btn {
-    width: 18px;
-    height: 18px;
+    width: var(--icon-md);
+    height: var(--icon-md);
     padding: 0;
     background: transparent;
-    border: 1px dashed var(--lcd-dim);
+    border: var(--border-width-sm) dashed var(--lcd-dim);
     color: var(--lcd-dim);
     cursor: pointer;
     display: flex;
@@ -4702,10 +4704,10 @@ body.panel-open .collection-page {
 
 /* Panel tag add - icon button for LCD background */
 .panel-tag-add-btn {
-    width: 18px;
-    height: 18px;
+    width: var(--icon-md);
+    height: var(--icon-md);
     padding: 0;
-    border: 1px dashed var(--lcd-dim);
+    border: var(--border-width-sm) dashed var(--lcd-dim);
     background: transparent;
     color: var(--lcd-dim);
     cursor: pointer;
@@ -4730,7 +4732,7 @@ body.panel-open .collection-page {
     padding: var(--space-2xs) var(--space-xs);
     font-size: 0.55rem;
     background-color: rgba(74, 222, 128, 0.1);
-    border: 1px solid var(--lcd-text);
+    border: var(--border-width-sm) solid var(--lcd-text);
     color: var(--lcd-text);
 }
 
@@ -4767,7 +4769,7 @@ body.panel-open .collection-page {
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     background-color: var(--bg-elevated);
-    border-bottom: 1px solid var(--border);
+    border-bottom: var(--border-width-sm) solid var(--border);
 }
 
 .panel-toolbar-actions {
@@ -4804,10 +4806,6 @@ body.panel-open .collection-page {
     align-items: center;
 }
 
-.panel-crates {
-    flex-shrink: 0;
-}
-
 /* Panel notes textarea */
 .panel-notes-textarea {
     flex-shrink: 0;
@@ -4815,7 +4813,7 @@ body.panel-open .collection-page {
     min-height: 80px;
     max-height: 120px;
     padding: var(--space-md);
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
@@ -4838,9 +4836,9 @@ body.panel-open .collection-page {
 /* Notes LCD - connects visually to Discogs card above */
 .panel-notes-lcd {
     background-color: var(--lcd-bg);
-    border: 2px solid var(--border);
-    border-top: 1px solid var(--lcd-dim);  /* Subtle separator within LCD area */
-    margin-top: -2px;  /* Overlap border to create seamless connection */
+    border: var(--border-width-md) solid var(--border);
+    border-top: var(--border-width-sm) solid var(--lcd-dim);  /* Subtle separator within LCD area */
+    margin-top: calc(var(--border-width-md) * -1);  /* Overlap border to create seamless connection */
     color: var(--lcd-text);
     min-height: 60px;
     max-height: 100px;
@@ -4873,7 +4871,7 @@ body.panel-open .collection-page {
     background: var(--bg-surface);
     border: 2px solid var(--border);
     z-index: 100;
-    margin-top: 2px;
+    margin-top: var(--space-2xs);
 }
 
 .panel-crate-dropdown-list {
@@ -4912,19 +4910,10 @@ body.panel-open .collection-page {
     flex: 1;
 }
 
-/* Panel tracks - flex layout */
-.panel-tracks {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-}
-
 .panel-tracks-header {
     flex-shrink: 0;
     padding: var(--space-sm) var(--space-md);
-    border-bottom: 1px solid var(--border);
+    border-bottom: var(--border-width-sm) solid var(--border);
 }
 
 .panel-tracks-header h3 {
@@ -4934,12 +4923,6 @@ body.panel-open .collection-page {
     letter-spacing: 0.1em;
     color: var(--success);
     font-weight: 600;
-}
-
-.panel-tracks-list {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
 }
 
 /* Panel notes modal */
@@ -4982,7 +4965,7 @@ body.panel-open .collection-page {
 #panel-track-notes-textarea {
     width: 100%;
     padding: var(--space-sm);
-    border: 1px solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
@@ -5105,7 +5088,7 @@ body.panel-open .collection-page {
     background: var(--bg-surface);
     border: 2px solid var(--border);
     z-index: 100;
-    margin-top: 2px;
+    margin-top: var(--space-2xs);
 }
 
 .crate-dropdown--lg {
@@ -5204,7 +5187,7 @@ body.panel-open .collection-page {
    -------------------------------------------- */
 .track-notes-btn {
     display: inline-block;
-    padding: var(--space-2xs) 6px;
+    padding: var(--space-2xs) var(--space-xs);
     font-size: 0.65rem;
     font-family: var(--font-mono);
     cursor: pointer;
@@ -5262,21 +5245,10 @@ body.panel-open .collection-page {
    Panel Track Row - Playable Highlighting
    Mirrors .track-row pattern but uses .track-dimmed
    (class on non-playable) instead of .track-playable
+
+   NOTE: Base .panel-track-row definition is in SIDE PANEL section.
+   This section only contains the playable highlighting modifiers.
    -------------------------------------------- */
-
-/* Base panel track row - has all four borders */
-.panel-track-row {
-    padding: var(--space-sm) var(--space-md);
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    transition: opacity 0.15s, background-color 0.15s;
-    box-sizing: border-box;
-}
-
-.panel-track-row:first-child {
-    border-top: 1px solid var(--border);
-}
 
 /* Non-playable tracks are dimmed */
 .panel-track-row.track-dimmed {
