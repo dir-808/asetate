@@ -246,7 +246,8 @@ def search_emoji(query: str, limit: int = 60) -> list[dict]:
                 break
 
     # Sort by score (descending) and return top results
-    sorted_results = [e for _, e in sorted(zip(scores, results), reverse=True)]
+    # Use key function to avoid comparing dicts when scores are equal
+    sorted_results = [e for _, e in sorted(zip(scores, results), key=lambda x: x[0], reverse=True)]
     return sorted_results[:limit]
 
 
