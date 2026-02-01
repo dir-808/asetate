@@ -1,15 +1,37 @@
-/* Asetate - MPC 2000 Inspired Theme
-   Dark, industrial, hardware aesthetic with monospaced typography */
+/* =============================================
+   ASETATE DESIGN SYSTEM
+   MPC2000-inspired dark industrial aesthetic
+   =============================================
+
+   This file is organized using CUBE CSS methodology:
+   1. COMPOSITION - Layout primitives (grids, flex containers)
+   2. BLOCKS - Component styles (buttons, cards, panels)
+   3. UTILITIES - Single-purpose helpers (spacing, text)
+   4. EXCEPTIONS - State variations (.is-loading, .selected)
+
+   ============================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+/* =============================================
+   DESIGN TOKENS
+   Single source of truth for all design values
+   ============================================= */
+
 :root {
-    /* MPC-inspired palette */
+    /* -----------------------------------------
+       COLORS - MPC-inspired palette
+       ----------------------------------------- */
+
+    /* Backgrounds (dark to light) */
     --bg-body: #0a0a0a;
     --bg-primary: #121212;
     --bg-surface: #1a1a1a;
     --bg-elevated: #222222;
     --bg-input: #0d0d0d;
+    --bg-hover: rgba(255, 255, 255, 0.05);
+
+    /* Borders */
     --border: #2a2a2a;
     --border-light: #3a3a3a;
 
@@ -18,7 +40,7 @@
     --lcd-text: #4ade80;
     --lcd-dim: #22543d;
 
-    /* MPC Orange - primary accent */
+    /* Primary accent - MPC Orange */
     --primary: #f97316;
     --primary-hover: #ea580c;
     --primary-dim: #7c2d12;
@@ -31,23 +53,50 @@
     /* Text hierarchy */
     --text-primary: #e5e5e5;
     --text-secondary: #a3a3a3;
-    --text-muted: #737373;  /* Improved legibility from #525252 */
+    --text-muted: #737373;
 
-    /* Spacing */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
+    /* -----------------------------------------
+       SPACING - Based on 8pt grid
+       Use these tokens, never hardcode values
+       ----------------------------------------- */
+    --space-2xs: 2px;      /* Fine detail: segment gaps, icon spacing */
+    --space-xs: 4px;       /* Tight: tag gaps, inline spacing */
+    --space-sm: 8px;       /* Standard: component padding, gaps */
+    --space-md: 16px;      /* Section: card padding, form groups */
+    --space-lg: 24px;      /* Major: section gaps, large padding */
+    --space-xl: 32px;      /* Page: main content padding */
+    --space-2xl: 48px;     /* Hero: dashboard spacing */
 
-    /* Typography - monospace only */
+    /* Legacy rem-based spacing (for backward compatibility) */
+    /* Prefer px-based tokens above for new code */
+
+    /* -----------------------------------------
+       BORDERS
+       ----------------------------------------- */
+    --border-width-sm: 1px;   /* Internal: separators, inputs, table cells */
+    --border-width-md: 2px;   /* Containers: cards, panels, buttons, modals */
+
+    /* -----------------------------------------
+       TYPOGRAPHY
+       ----------------------------------------- */
     --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
 
-    /* Borders - more squared, industrial */
-    --radius-sm: 2px;
-    --radius-md: 4px;
-    --radius-lg: 6px;
+    /* Font sizes */
+    --text-2xs: 0.65rem;   /* 9px - tiny labels */
+    --text-xs: 0.75rem;    /* 10.5px - small text, badges */
+    --text-sm: 0.85rem;    /* 12px - secondary text */
+    --text-base: 1rem;     /* 14px - body text */
+    --text-lg: 1.125rem;   /* 16px - emphasis */
+    --text-xl: 1.5rem;     /* 21px - headings */
+    --text-2xl: 2rem;      /* 28px - page titles */
+
+    /* -----------------------------------------
+       LEGACY TOKENS (deprecated, use above)
+       Kept for backward compatibility
+       ----------------------------------------- */
+    --radius-sm: 0;  /* MPC style: no rounded corners */
+    --radius-md: 0;
+    --radius-lg: 0;
 }
 
 /* Reset */
@@ -90,10 +139,21 @@ a:hover {
     color: var(--primary-hover);
 }
 
-/* ============================================
-   NAVIGATION - Hardware control panel style
-   MPC2000-inspired toolbar with LED indicators
-   ============================================ */
+/* =============================================
+   COMPOSITION - Layout Primitives
+   Page structure, grid systems, flex containers
+   ============================================= */
+
+/* --------------------------------------------
+   NAVIGATION
+   Hardware control panel style toolbar
+
+   SPECS:
+   - Height: auto (padding determines)
+   - Padding: var(--space-md) var(--space-xl) = 16px 32px
+   - Border bottom: var(--border-width-md) = 2px
+   - Background: var(--bg-surface)
+   -------------------------------------------- */
 
 .nav {
     display: flex;
@@ -296,10 +356,34 @@ a:hover {
     gap: var(--space-md);
 }
 
-/* ============================================
-   BUTTONS - MPC Pad Style
-   ============================================ */
+/* =============================================
+   BLOCKS - Component Styles
+   ============================================= */
 
+/* --------------------------------------------
+   BUTTON
+   MPC2000 pad-style buttons with depth effect
+
+   SPECS:
+   - Border: var(--border-width-md) = 2px
+   - Padding default: var(--space-sm) var(--space-lg) = 8px 24px
+   - Padding small: var(--space-xs) var(--space-sm) = 4px 8px
+   - Font: 0.85rem (default), 0.75rem (small)
+   - Min-height: ~36px (default), ~28px (small)
+
+   VARIANTS:
+   - .btn-primary: Orange fill, dark text
+   - .btn-secondary: Elevated bg, light text
+   - .btn-danger: Red border, fills on hover
+   - .btn-sm: Smaller padding and font
+   - .btn-icon: Square, for icon-only buttons
+
+   STATES:
+   - :hover: Background/border color shift
+   - :active: Inverted depth (pressed effect)
+   - :disabled: 0.4 opacity, no pointer
+   - .is-loading: Add .activity-led child
+   -------------------------------------------- */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -820,7 +904,7 @@ input::placeholder, textarea::placeholder {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: var(--space-xs);
 }
 
 .current-release-text {
@@ -958,7 +1042,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .notification-badge {
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -979,7 +1063,7 @@ input::placeholder, textarea::placeholder {
 .notification-details {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
     min-width: 0;
 }
 
@@ -1016,7 +1100,7 @@ input::placeholder, textarea::placeholder {
 .badge-seller {
     background: var(--lcd-bg);
     color: var(--lcd-text);
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -1242,7 +1326,7 @@ input::placeholder, textarea::placeholder {
     bottom: 4px;
     right: 4px;
     display: flex;
-    gap: 2px;
+    gap: var(--space-2xs);
 }
 
 /* Base icon container - works for both emoji and pixel icons */
@@ -1301,7 +1385,7 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-sm);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
     background-color: var(--lcd-bg);
     flex: 1; /* Fill remaining card height so no grey gap shows */
 }
@@ -1650,7 +1734,7 @@ input::placeholder, textarea::placeholder {
 .track-notes-indicator {
     display: inline-block;
     margin-left: var(--space-sm);
-    padding: 2px 6px;
+    padding: var(--space-2xs) 6px;
     font-size: 0.65rem;
     color: var(--warning);
     background-color: rgba(251, 191, 36, 0.15);
@@ -1831,7 +1915,7 @@ input::placeholder, textarea::placeholder {
 /* Track notes add button - MPC2000 rectangular, no border-radius */
 .track-notes-add {
     display: inline-block;
-    padding: 2px 6px;
+    padding: var(--space-2xs) 6px;
     font-size: 0.65rem;
     color: var(--text-muted);
     border: 1px dashed var(--border);
@@ -1859,7 +1943,7 @@ input::placeholder, textarea::placeholder {
 
 .release-extra-info span {
     display: inline-block;
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     font-size: 0.7rem;
     color: var(--text-secondary);
     background: var(--bg-elevated);
@@ -2390,7 +2474,7 @@ body.crate-panel-open .crates-main {
 
 .crate-lid-inner {
     background: #1a1815;
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     /* No border-radius - MPC style */
 }
 
@@ -2483,7 +2567,7 @@ body.crate-panel-open .crates-main {
     bottom: 8px;
     right: 8px;
     display: flex;
-    gap: 4px;
+    gap: var(--space-xs);
     opacity: 0;
     transition: opacity 0.15s;
     z-index: 10;
@@ -2595,7 +2679,7 @@ body.crate-panel-open .crates-main {
 .icon-suggestions {
     display: flex;
     flex-wrap: wrap;
-    gap: 3px;
+    gap: var(--space-2xs);
 }
 
 .icon-suggestion {
@@ -2655,7 +2739,7 @@ body.crate-panel-open .crates-main {
 .icon-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
-    gap: 3px;
+    gap: var(--space-2xs);
     max-height: 180px;
     overflow-y: auto;
     padding: var(--space-xs);
@@ -2702,7 +2786,7 @@ body.crate-panel-open .crates-main {
 .pixel-icon-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: var(--space-xs);
     padding: var(--space-sm);
     background: var(--bg-surface);
     border: 1px solid var(--border);
@@ -2736,7 +2820,7 @@ body.crate-panel-open .crates-main {
 .emoji-icon-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: var(--space-xs);
     padding: var(--space-sm);
     background: var(--bg-surface);
     border: 1px solid var(--border);
@@ -2887,7 +2971,7 @@ body.crate-panel-open .crates-main {
 .color-picker {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: var(--space-xs);
     margin-top: var(--space-xs);
 }
 
@@ -3114,8 +3198,8 @@ body.crate-panel-open .crates-main {
 .tag-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    gap: var(--space-xs);
+    padding: var(--space-2xs) var(--space-sm);
     font-size: 0.7rem;
     font-weight: 600;
     background-color: var(--tag-color, var(--primary));
@@ -3172,7 +3256,7 @@ body.crate-panel-open .crates-main {
 
 .tag-input {
     width: 80px;
-    padding: 2px 6px;
+    padding: var(--space-2xs) 6px;
     font-size: 0.7rem;
     background-color: var(--bg-input);
     border: 1px solid var(--primary);
@@ -3439,7 +3523,7 @@ body.crate-panel-open .crates-main {
 .cue-count {
     background: var(--primary);
     color: var(--bg-body);
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     /* No border-radius - MPC style */
     font-size: 0.8rem;
     font-weight: 600;
@@ -3481,7 +3565,7 @@ body.crate-panel-open .crates-main {
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 2px 6px;
+    padding: var(--space-2xs) 6px;
     font-size: 1rem;
 }
 
@@ -3787,7 +3871,7 @@ body.crate-panel-open .crates-main {
 .form-check-label {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
 }
 
 .form-check-label .text-muted {
@@ -3882,7 +3966,7 @@ body.crate-panel-open .crates-main {
 .toggle-setting-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
 }
 
 .toggle-setting-text .text-muted {
@@ -4209,7 +4293,7 @@ body.panel-open .collection-page {
     font-variant-numeric: tabular-nums;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: var(--space-2xs);
 }
 
 .panel-stat .stat-icon {
@@ -4348,7 +4432,7 @@ body.panel-open .collection-page {
 .panel-track-row {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
     padding: var(--space-xs) var(--space-sm);
     cursor: default;
 }
@@ -4476,7 +4560,7 @@ body.panel-open .collection-page {
 .panel-energy-wrap {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-xs);
 }
 
 .panel-energy-slider {
@@ -4519,7 +4603,7 @@ body.panel-open .collection-page {
 .panel-track-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px;
+    gap: var(--space-2xs);
     align-items: center;
 }
 
@@ -4901,19 +4985,36 @@ body.panel-open .collection-page {
     margin-top: var(--space-md);
 }
 
-/* ============================================
+/* =============================================
    SHARED COMPONENTS
-   Components used across multiple pages (detail, panel, etc.)
-   Keep styles here to ensure consistency.
-   ============================================ */
+   Components used across multiple pages
+   Changes here affect ALL instances sitewide
+   ============================================= */
 
 /* --------------------------------------------
-   Energy Bar - 5-segment horizontal bar
-   Variants: default (table), --sm (panel)
+   ENERGY BAR
+   5-segment horizontal bar for track energy
+
+   SPECS:
+   - Height: 18px (default), 14px (--sm)
+   - Segment width: 14px (default), 10px (--sm)
+   - Segment gap: var(--space-2xs) = 2px
+   - Border: none (MPC style solid rectangles)
+
+   STRUCTURE:
+   .energy-bar[data-value="0-5"]
+     .energy-segment[data-level="1-5"] (x5)
+
+   COLORS BY VALUE:
+   - 1: green (--success)
+   - 2: lime (#84cc16)
+   - 3: yellow (--warning)
+   - 4: orange (--primary)
+   - 5: red (--error)
    -------------------------------------------- */
 .energy-bar {
     display: flex;
-    gap: 2px;
+    gap: var(--space-2xs);
     height: 18px;
     cursor: pointer;
     justify-content: center;
@@ -5091,7 +5192,7 @@ body.panel-open .collection-page {
    -------------------------------------------- */
 .track-notes-btn {
     display: inline-block;
-    padding: 2px 6px;
+    padding: var(--space-2xs) 6px;
     font-size: 0.65rem;
     font-family: var(--font-mono);
     cursor: pointer;
@@ -5216,27 +5317,327 @@ body.panel-open .collection-page {
     background-color: rgba(249, 115, 22, 0.08);
 }
 
-/* ============================================
-   UTILITIES - Common helper classes
-   ============================================ */
+/* =============================================
+   UTILITIES
+   Single-purpose helper classes
+   Use these instead of inline styles
+   ============================================= */
 
-/* Spacing utilities - use instead of inline margin/padding styles */
+/* -----------------------------------------
+   Margin utilities
+   Format: .m{side}-{size}
+   Sides: t=top, b=bottom, l=left, r=right, x=horizontal, y=vertical
+   Sizes: 2xs, xs, sm, md, lg, xl
+   ----------------------------------------- */
+
+/* Margin top */
+.mt-2xs { margin-top: var(--space-2xs); }
+.mt-xs { margin-top: var(--space-xs); }
 .mt-sm { margin-top: var(--space-sm); }
 .mt-md { margin-top: var(--space-md); }
 .mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+
+/* Margin bottom */
+.mb-2xs { margin-bottom: var(--space-2xs); }
+.mb-xs { margin-bottom: var(--space-xs); }
 .mb-sm { margin-bottom: var(--space-sm); }
 .mb-md { margin-bottom: var(--space-md); }
 .mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+
+/* Margin left */
+.ml-2xs { margin-left: var(--space-2xs); }
+.ml-xs { margin-left: var(--space-xs); }
+.ml-sm { margin-left: var(--space-sm); }
+.ml-md { margin-left: var(--space-md); }
+.ml-lg { margin-left: var(--space-lg); }
+
+/* Margin right */
+.mr-2xs { margin-right: var(--space-2xs); }
+.mr-xs { margin-right: var(--space-xs); }
+.mr-sm { margin-right: var(--space-sm); }
+.mr-md { margin-right: var(--space-md); }
+.mr-lg { margin-right: var(--space-lg); }
+
+/* Margin horizontal (left + right) */
+.mx-xs { margin-left: var(--space-xs); margin-right: var(--space-xs); }
+.mx-sm { margin-left: var(--space-sm); margin-right: var(--space-sm); }
+.mx-md { margin-left: var(--space-md); margin-right: var(--space-md); }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Margin vertical (top + bottom) */
+.my-xs { margin-top: var(--space-xs); margin-bottom: var(--space-xs); }
+.my-sm { margin-top: var(--space-sm); margin-bottom: var(--space-sm); }
+.my-md { margin-top: var(--space-md); margin-bottom: var(--space-md); }
+
+/* -----------------------------------------
+   Padding utilities
+   Format: .p{side}-{size}
+   ----------------------------------------- */
+
+/* Padding top */
+.pt-2xs { padding-top: var(--space-2xs); }
+.pt-xs { padding-top: var(--space-xs); }
 .pt-sm { padding-top: var(--space-sm); }
 .pt-md { padding-top: var(--space-md); }
+.pt-lg { padding-top: var(--space-lg); }
+
+/* Padding bottom */
+.pb-2xs { padding-bottom: var(--space-2xs); }
+.pb-xs { padding-bottom: var(--space-xs); }
+.pb-sm { padding-bottom: var(--space-sm); }
+.pb-md { padding-bottom: var(--space-md); }
+.pb-lg { padding-bottom: var(--space-lg); }
+
+/* Padding left */
+.pl-xs { padding-left: var(--space-xs); }
+.pl-sm { padding-left: var(--space-sm); }
+.pl-md { padding-left: var(--space-md); }
 .pl-lg { padding-left: var(--space-lg); }
 
-/* Text utilities */
-.text-sm { font-size: 0.75rem; }
-.text-xs { font-size: 0.65rem; }
-.cursor-pointer { cursor: pointer; }
+/* Padding right */
+.pr-xs { padding-right: var(--space-xs); }
+.pr-sm { padding-right: var(--space-sm); }
+.pr-md { padding-right: var(--space-md); }
 
-/* Scrollbar styling */
+/* Padding horizontal */
+.px-xs { padding-left: var(--space-xs); padding-right: var(--space-xs); }
+.px-sm { padding-left: var(--space-sm); padding-right: var(--space-sm); }
+.px-md { padding-left: var(--space-md); padding-right: var(--space-md); }
+.px-lg { padding-left: var(--space-lg); padding-right: var(--space-lg); }
+
+/* Padding vertical */
+.py-xs { padding-top: var(--space-xs); padding-bottom: var(--space-xs); }
+.py-sm { padding-top: var(--space-sm); padding-bottom: var(--space-sm); }
+.py-md { padding-top: var(--space-md); padding-bottom: var(--space-md); }
+
+/* Padding all sides */
+.p-xs { padding: var(--space-xs); }
+.p-sm { padding: var(--space-sm); }
+.p-md { padding: var(--space-md); }
+.p-lg { padding: var(--space-lg); }
+
+/* -----------------------------------------
+   Gap utilities (for flex/grid)
+   ----------------------------------------- */
+.gap-2xs { gap: var(--space-2xs); }
+.gap-xs { gap: var(--space-xs); }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+
+/* -----------------------------------------
+   Flexbox utilities
+   ----------------------------------------- */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-row { display: flex; flex-direction: row; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+.flex-1 { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+
+/* Alignment */
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.items-stretch { align-items: stretch; }
+
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+
+/* Common flex patterns */
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col-center { display: flex; flex-direction: column; align-items: center; }
+
+/* -----------------------------------------
+   Grid utilities
+   ----------------------------------------- */
+.grid { display: grid; }
+
+/* -----------------------------------------
+   Width/Height utilities
+   ----------------------------------------- */
+.w-full { width: 100%; }
+.w-auto { width: auto; }
+.h-full { height: 100%; }
+.min-w-0 { min-width: 0; }  /* Useful for flex children with text overflow */
+
+/* -----------------------------------------
+   Text utilities
+   ----------------------------------------- */
+.text-2xs { font-size: var(--text-2xs); }
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-base { font-size: var(--text-base); }
+.text-lg { font-size: var(--text-lg); }
+.text-xl { font-size: var(--text-xl); }
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.uppercase { text-transform: uppercase; }
+.lowercase { text-transform: lowercase; }
+.capitalize { text-transform: capitalize; }
+
+.tracking-wide { letter-spacing: 0.05em; }
+.tracking-wider { letter-spacing: 0.1em; }
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.whitespace-nowrap { white-space: nowrap; }
+
+/* Text colors */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-accent { color: var(--primary); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-error { color: var(--error); }
+.text-lcd { color: var(--lcd-text); }
+
+/* -----------------------------------------
+   Display utilities
+   ----------------------------------------- */
+.hidden { display: none; }
+.block { display: block; }
+.inline { display: inline; }
+.inline-block { display: inline-block; }
+.inline-flex { display: inline-flex; }
+
+/* -----------------------------------------
+   Position utilities
+   ----------------------------------------- */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+
+/* -----------------------------------------
+   Border utilities
+   ----------------------------------------- */
+.border { border: var(--border-width-sm) solid var(--border); }
+.border-2 { border: var(--border-width-md) solid var(--border); }
+.border-t { border-top: var(--border-width-sm) solid var(--border); }
+.border-b { border-bottom: var(--border-width-sm) solid var(--border); }
+.border-l { border-left: var(--border-width-sm) solid var(--border); }
+.border-r { border-right: var(--border-width-sm) solid var(--border); }
+.border-none { border: none; }
+
+.border-primary { border-color: var(--primary); }
+.border-success { border-color: var(--success); }
+.border-error { border-color: var(--error); }
+
+/* -----------------------------------------
+   Background utilities
+   ----------------------------------------- */
+.bg-body { background-color: var(--bg-body); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-elevated { background-color: var(--bg-elevated); }
+.bg-lcd { background-color: var(--lcd-bg); }
+.bg-transparent { background-color: transparent; }
+
+/* -----------------------------------------
+   Cursor utilities
+   ----------------------------------------- */
+.cursor-pointer { cursor: pointer; }
+.cursor-default { cursor: default; }
+.cursor-not-allowed { cursor: not-allowed; }
+
+/* -----------------------------------------
+   Overflow utilities
+   ----------------------------------------- */
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-x-auto { overflow-x: auto; }
+
+/* -----------------------------------------
+   Opacity utilities
+   ----------------------------------------- */
+.opacity-0 { opacity: 0; }
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+.opacity-100 { opacity: 1; }
+
+/* -----------------------------------------
+   Visibility utilities
+   ----------------------------------------- */
+.invisible { visibility: hidden; }
+.visible { visibility: visible; }
+
+/* -----------------------------------------
+   Interaction utilities
+   ----------------------------------------- */
+.pointer-events-none { pointer-events: none; }
+.pointer-events-auto { pointer-events: auto; }
+.select-none { user-select: none; }
+.select-text { user-select: text; }
+
+/* -----------------------------------------
+   Transition utilities
+   ----------------------------------------- */
+.transition { transition: all 0.15s ease; }
+.transition-colors { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+.transition-opacity { transition: opacity 0.15s ease; }
+.transition-transform { transition: transform 0.15s ease; }
+
+/* -----------------------------------------
+   Z-index utilities
+   ----------------------------------------- */
+.z-0 { z-index: 0; }
+.z-10 { z-index: 10; }
+.z-20 { z-index: 20; }
+.z-50 { z-index: 50; }
+.z-100 { z-index: 100; }
+
+/* =============================================
+   EXCEPTIONS
+   State-based variations
+   ============================================= */
+
+/* Loading states */
+.is-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Disabled states */
+.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* Error states */
+.has-error {
+    border-color: var(--error);
+}
+
+/* Success states */
+.has-success {
+    border-color: var(--success);
+}
+
+/* =============================================
+   SCROLLBAR STYLING
+   ============================================= */
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
