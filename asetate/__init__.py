@@ -68,6 +68,11 @@ def create_app(config_name: str = "default") -> Flask:
         # Default Flask error page for regular page loads
         return "Internal Server Error", 500
 
+    # Clear emoji cache on startup to ensure fresh data
+    from .models.emoji_icons import _load_emoji_metadata, _build_emoji_index
+    _load_emoji_metadata.cache_clear()
+    _build_emoji_index.cache_clear()
+
     # Register blueprints
     from .routes import main, releases, crates, sync, export, tags, auth
 
