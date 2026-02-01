@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import pixel_icon, crate_icon %}
 
 {% block title %}Collection - Asetate{% endblock %}
 
@@ -76,11 +77,7 @@
                     {% if release.crate_info %}
                     <div class="release-crate-icons">
                         {% for crate in release.crate_info[:3] %}
-                        {% if crate.icon and crate.icon.startswith('pixel:') %}
-                        <span class="px-icon px-icon--{{ crate.icon[6:] }}" style="--px-scale: 1.2;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
-                        {% else %}
-                        <span class="px-icon px-icon--folder" style="--px-scale: 1.2;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
-                        {% endif %}
+                        {{ crate_icon(crate, scale=1.2) }}
                         {% endfor %}
                         {% if release.crate_info|length > 3 %}
                         <span class="release-crate-more">+{{ release.crate_info|length - 3 }}</span>

@@ -265,35 +265,39 @@ Key rule: **Only change border colors, never add/remove borders.** Use `:has()` 
 #### Pixel Art Icons (Unified System)
 All icons in Asetate use a unified CSS pixel art system for consistent MPC2000 aesthetic. Icons are stored in the database as `pixel:ICONNAME` format (e.g., `pixel:vinyl`, `pixel:folder`).
 
-**Rendering pattern (HTML):**
-```html
-<!-- Standard pixel icon -->
-<span class="px-icon px-icon--vinyl" style="--px-scale: 1.5;"></span>
+**Centralized Icon Files:**
+- **`templates/_icons.html`** - Jinja2 macros for server-side rendering
+- **`static/js/icons.js`** - ES6 module for client-side rendering
 
-<!-- With custom color (for crate icons) -->
-<span class="px-icon px-icon--heart" style="--px-scale: 2; color: #448361;"></span>
-```
-
-**JavaScript helper for dynamic rendering:**
-```javascript
-function renderCrateIcon(crate, scale = 1.2) {
-    const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
-    let iconName = 'folder';
-    if (crate.icon && crate.icon.startsWith('pixel:')) {
-        iconName = crate.icon.slice(6);
-    }
-    return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${scale}; ${colorStyle}"></span>`;
-}
-```
-
-**Jinja2 template pattern:**
+**Jinja2 Macros (templates/_icons.html):**
 ```jinja2
-{% if crate.icon and crate.icon.startswith('pixel:') %}
-<span class="px-icon px-icon--{{ crate.icon[6:] }}" style="--px-scale: 2;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
-{% else %}
-<span class="px-icon px-icon--folder" style="--px-scale: 2;"></span>
-{% endif %}
+{# Import at top of template #}
+{% from "_icons.html" import pixel_icon, crate_icon %}
+
+{# Render a basic pixel icon #}
+{{ pixel_icon('vinyl', scale=2, color='#F97316') }}
+
+{# Render a crate's icon with its color #}
+{{ crate_icon(crate, scale=2.5) }}
 ```
+
+**JavaScript Module (static/js/icons.js):**
+```javascript
+// ES6 module import (for type="module" scripts)
+import { renderCrateIcon, renderPixelIconGrid, PIXEL_ICONS } from '/static/js/icons.js';
+
+// Or use global (for AJAX-loaded content)
+const icon = window.AsetateIcons.renderCrateIcon(crate, 1.2);
+```
+
+**Available functions:**
+| Function | Description |
+|----------|-------------|
+| `renderPixelIcon(name, scale, color)` | Render icon by name |
+| `renderCrateIcon(crate, scale)` | Render crate's icon with color |
+| `renderPixelIconGrid(container, onSelect, selected)` | Render icon picker grid |
+| `getIconName(iconField)` | Extract icon name from `pixel:name` format |
+| `formatIconForStorage(name)` | Format name as `pixel:name` for storage |
 
 **Common scale values:**
 | Scale | Size (approx) | Usage |

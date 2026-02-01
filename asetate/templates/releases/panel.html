@@ -544,15 +544,15 @@
         }
     }
 
-    // Helper to render crate icon HTML
-    function renderCrateIcon(crate, scale = 1.2) {
+    // Use centralized icon system (loaded from icons.js)
+    const renderCrateIcon = window.AsetateIcons?.renderCrateIcon || ((crate, scale = 1.2) => {
         const colorStyle = crate.color_hex ? `color: ${crate.color_hex};` : '';
         let iconName = 'folder';
         if (crate.icon && crate.icon.startsWith('pixel:')) {
             iconName = crate.icon.slice(6);
         }
         return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${scale}; ${colorStyle}"></span>`;
-    }
+    });
 
     function updateCratesDisplay() {
         const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));

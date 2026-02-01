@@ -1,0 +1,81 @@
+{#
+    Centralized Icon System
+    =======================
+    All icon rendering logic in one place.
+    Import this file in any template that needs icons.
+
+    Usage:
+        {% from "_icons.html" import pixel_icon, crate_icon %}
+
+        {{ pixel_icon('vinyl', scale=2) }}
+        {{ crate_icon(crate, scale=1.5) }}
+#}
+
+{#
+    Render a pixel art icon
+
+    Parameters:
+        name: Icon name (e.g., 'vinyl', 'folder', 'fire')
+        scale: Size multiplier (default 1.5, which is ~18px)
+        color: Optional color override (hex or CSS color)
+
+    Example:
+        {{ pixel_icon('vinyl', scale=2, color='#F97316') }}
+#}
+{% macro pixel_icon(name, scale=1.5, color=None) -%}
+<span class="px-icon px-icon--{{ name }}" style="--px-scale: {{ scale }};{% if color %} color: {{ color }};{% endif %}"></span>
+{%- endmacro %}
+
+
+{#
+    Render a crate's icon with its color
+
+    Parameters:
+        crate: Crate object with .icon and .color_hex attributes
+        scale: Size multiplier (default 1.2)
+
+    The crate.icon should be in format "pixel:iconname" (e.g., "pixel:vinyl")
+    Falls back to 'folder' icon if not set or invalid format.
+
+    Example:
+        {{ crate_icon(crate, scale=2.5) }}
+#}
+{% macro crate_icon(crate, scale=1.2) -%}
+{%- set icon_name = crate.icon[6:] if crate.icon and crate.icon.startswith('pixel:') else 'folder' -%}
+<span class="px-icon px-icon--{{ icon_name }}" style="--px-scale: {{ scale }};{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
+{%- endmacro %}
+
+
+{#
+    Available pixel icons (for reference):
+
+    Action icons:
+        - link        Chain link (View on Discogs)
+        - edit        Pencil (Edit on Discogs)
+        - sync        Circular arrows (Sync button)
+        - notes       Paper with lines (Track notes)
+        - tag         Price tag (Add tag)
+
+    Crate icons:
+        - folder      Folder (default)
+        - vinyl       Vinyl record
+        - headphones  Headphones
+        - music       Music note
+        - speaker     Speaker
+        - disco       Disco ball
+        - wave        Wave
+        - fire        Flame
+        - bolt        Lightning bolt
+        - star        Star
+        - heart       Heart
+        - diamond     Diamond
+        - crown       Crown
+        - sun         Sun
+        - moon        Moon
+        - globe       Globe
+        - clock       Clock
+        - skull       Skull
+        - box         Box
+        - check       Checkmark
+        - plus        Plus sign
+#}

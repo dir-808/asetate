@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import pixel_icon, crate_icon %}
 
 {% block title %}{{ crate.name }} - Crates - Asetate{% endblock %}
 
@@ -19,11 +20,7 @@
 
     <header class="crate-header">
         <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; border-color: {{ crate.color_hex }}40"{% endif %}>
-            {% if crate.icon and crate.icon.startswith('pixel:') %}
-            <span class="px-icon px-icon--{{ crate.icon[6:] }}" style="--px-scale: 3;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
-            {% else %}
-            <span class="px-icon px-icon--folder" style="--px-scale: 3;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
-            {% endif %}
+            {{ crate_icon(crate, scale=3) }}
         </div>
         <div class="crate-info">
             <h1>{{ crate.name }}</h1>
@@ -216,209 +213,161 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function() {
-    const crateId = document.querySelector('.crate-detail').dataset.crateId;
-    const DEFAULT_ICON = 'folder';
+<script type="module">
+import { DEFAULT_ICON, renderPixelIconGrid, getIconName, formatIconForStorage } from '/static/js/icons.js';
 
-    // Available pixel icons for crates
-    const PIXEL_ICONS = [
-        { name: 'folder', label: 'Folder' },
-        { name: 'vinyl', label: 'Vinyl' },
-        { name: 'headphones', label: 'Headphones' },
-        { name: 'music', label: 'Music' },
-        { name: 'speaker', label: 'Speaker' },
-        { name: 'disco', label: 'Disco' },
-        { name: 'wave', label: 'Wave' },
-        { name: 'fire', label: 'Fire' },
-        { name: 'bolt', label: 'Bolt' },
-        { name: 'star', label: 'Star' },
-        { name: 'heart', label: 'Heart' },
-        { name: 'diamond', label: 'Diamond' },
-        { name: 'crown', label: 'Crown' },
-        { name: 'sun', label: 'Sun' },
-        { name: 'moon', label: 'Moon' },
-        { name: 'globe', label: 'Globe' },
-        { name: 'clock', label: 'Clock' },
-        { name: 'skull', label: 'Skull' },
-        { name: 'box', label: 'Box' },
-        { name: 'check', label: 'Check' },
-        { name: 'plus', label: 'Plus' },
-    ];
+const crateId = document.querySelector('.crate-detail').dataset.crateId;
 
-    // Render pixel icon grid
-    function renderPixelIconGrid(container, onSelect, selectedIcon = null) {
-        container.innerHTML = '';
-        PIXEL_ICONS.forEach(icon => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'pixel-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
-            btn.dataset.icon = icon.name;
-            btn.title = icon.label;
-            btn.innerHTML = `<span class="px-icon px-icon--${icon.name}" style="--px-scale: 1.5;"></span>`;
-            btn.addEventListener('click', () => onSelect(icon.name));
-            container.appendChild(btn);
-        });
-    }
+// Edit modal
+const editModal = document.getElementById('edit-crate-modal');
+const editForm = document.getElementById('edit-crate-form');
+const editIconInput = document.getElementById('edit-crate-icon');
+const editIconPreviewPixel = document.getElementById('edit-icon-preview-pixel');
+const editIconGrid = document.getElementById('edit-icon-grid');
+const editClearIconBtn = document.getElementById('edit-clear-icon');
+const editColorInput = document.getElementById('edit-crate-color');
 
-    // Edit modal
-    const editModal = document.getElementById('edit-crate-modal');
-    const editForm = document.getElementById('edit-crate-form');
-
-    document.getElementById('btn-edit-crate').addEventListener('click', () => {
-        editModal.classList.add('open');
-        // Get current icon
-        const currentIcon = editIconInput.value;
-        let iconName = DEFAULT_ICON;
-        if (currentIcon && currentIcon.startsWith('pixel:')) {
-            iconName = currentIcon.slice(6);
-        }
-        renderPixelIconGrid(editIconGrid, selectEditPixelIcon, iconName);
+function selectEditPixelIcon(iconName) {
+    editIconInput.value = formatIconForStorage(iconName);
+    editIconPreviewPixel.className = `px-icon px-icon--${iconName}`;
+    editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.icon === iconName);
     });
+}
 
-    document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
-    document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
-    editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
+document.getElementById('btn-edit-crate').addEventListener('click', () => {
+    editModal.classList.add('open');
+    const iconName = getIconName(editIconInput.value);
+    renderPixelIconGrid(editIconGrid, selectEditPixelIcon, iconName);
+});
 
-    // Pixel icon picker for edit modal
-    const editIconInput = document.getElementById('edit-crate-icon');
-    const editIconPreviewPixel = document.getElementById('edit-icon-preview-pixel');
-    const editIconGrid = document.getElementById('edit-icon-grid');
-    const editClearIconBtn = document.getElementById('edit-clear-icon');
-    const editColorInput = document.getElementById('edit-crate-color');
+document.getElementById('edit-modal-close').addEventListener('click', () => editModal.classList.remove('open'));
+document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
+editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
 
-    function selectEditPixelIcon(iconName) {
-        editIconInput.value = `pixel:${iconName}`;
-        editIconPreviewPixel.className = `px-icon px-icon--${iconName}`;
-        editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
-            btn.classList.toggle('selected', btn.dataset.icon === iconName);
-        });
-    }
-
-    editClearIconBtn.addEventListener('click', () => {
-        editIconInput.value = '';
-        editIconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
-        editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
-            btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
-        });
+editClearIconBtn.addEventListener('click', () => {
+    editIconInput.value = '';
+    editIconPreviewPixel.className = `px-icon px-icon--${DEFAULT_ICON}`;
+    editIconGrid.querySelectorAll('.pixel-icon-grid-item').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.icon === DEFAULT_ICON);
     });
+});
 
-    // Color picker for edit modal
-    document.querySelectorAll('#edit-color-picker .color-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            editColorInput.value = btn.dataset.color;
-        });
-    });
-
-    document.getElementById('edit-custom-color').addEventListener('input', (e) => {
+// Color picker for edit modal
+document.querySelectorAll('#edit-color-picker .color-option').forEach(btn => {
+    btn.addEventListener('click', () => {
         document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
-        editColorInput.value = e.target.value;
+        btn.classList.add('selected');
+        editColorInput.value = btn.dataset.color;
     });
+});
 
-    editForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const parentVal = document.getElementById('edit-crate-parent').value;
-        const data = {
-            name: document.getElementById('edit-crate-name').value.trim(),
-            description: document.getElementById('edit-crate-description').value.trim(),
-            icon: editIconInput.value || null,
-            color: editColorInput.value || null,
-            parent_id: parentVal ? parseInt(parentVal) : null,
-        };
+document.getElementById('edit-custom-color').addEventListener('input', (e) => {
+    document.querySelectorAll('#edit-color-picker .color-option').forEach(b => b.classList.remove('selected'));
+    editColorInput.value = e.target.value;
+});
+
+editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const parentVal = document.getElementById('edit-crate-parent').value;
+    const data = {
+        name: document.getElementById('edit-crate-name').value.trim(),
+        description: document.getElementById('edit-crate-description').value.trim(),
+        icon: editIconInput.value || null,
+        color: editColorInput.value || null,
+        parent_id: parentVal ? parseInt(parentVal) : null,
+    };
+
+    try {
+        const response = await fetch(`/crates/${crateId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const result = await response.json();
+            alert(result.error || 'Failed to update crate');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+
+// Delete modal
+const deleteModal = document.getElementById('delete-crate-modal');
+
+document.getElementById('btn-delete-crate').addEventListener('click', () => {
+    deleteModal.classList.add('open');
+});
+
+document.getElementById('delete-modal-close').addEventListener('click', () => deleteModal.classList.remove('open'));
+document.getElementById('delete-btn-cancel').addEventListener('click', () => deleteModal.classList.remove('open'));
+deleteModal.querySelector('.modal-backdrop').addEventListener('click', () => deleteModal.classList.remove('open'));
+
+document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+    try {
+        const response = await fetch(`/crates/${crateId}`, { method: 'DELETE' });
+        if (response.ok) {
+            window.location.href = '/crates/';
+        } else {
+            alert('Failed to delete crate');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+
+// Remove release from crate
+document.querySelectorAll('.btn-remove[data-release-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const releaseId = btn.dataset.releaseId;
+        if (!confirm('Remove this release from the crate?')) return;
 
         try {
-            const response = await fetch(`/crates/${crateId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+            const response = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
+                method: 'DELETE',
             });
-
             if (response.ok) {
-                window.location.reload();
+                btn.closest('.crate-release-card').remove();
             } else {
-                const result = await response.json();
-                alert(result.error || 'Failed to update crate');
+                alert('Failed to remove release');
             }
         } catch (err) {
             alert('Error: ' + err.message);
         }
     });
+});
 
-    // Delete modal
-    const deleteModal = document.getElementById('delete-crate-modal');
+// Remove track from crate
+document.querySelectorAll('.btn-remove[data-track-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const trackId = btn.dataset.trackId;
+        if (!confirm('Remove this track from the crate?')) return;
 
-    document.getElementById('btn-delete-crate').addEventListener('click', () => {
-        deleteModal.classList.add('open');
-    });
-
-    document.getElementById('delete-modal-close').addEventListener('click', () => deleteModal.classList.remove('open'));
-    document.getElementById('delete-btn-cancel').addEventListener('click', () => deleteModal.classList.remove('open'));
-    deleteModal.querySelector('.modal-backdrop').addEventListener('click', () => deleteModal.classList.remove('open'));
-
-    document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
         try {
-            const response = await fetch(`/crates/${crateId}`, { method: 'DELETE' });
+            const response = await fetch(`/crates/${crateId}/tracks/${trackId}`, {
+                method: 'DELETE',
+            });
             if (response.ok) {
-                window.location.href = '/crates/';
+                btn.closest('.crate-track-item').remove();
             } else {
-                alert('Failed to delete crate');
+                alert('Failed to remove track');
             }
         } catch (err) {
             alert('Error: ' + err.message);
         }
     });
+});
 
-    // Remove release from crate
-    document.querySelectorAll('.btn-remove[data-release-id]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const releaseId = btn.dataset.releaseId;
-            if (!confirm('Remove this release from the crate?')) return;
-
-            try {
-                const response = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) {
-                    btn.closest('.crate-release-card').remove();
-                } else {
-                    alert('Failed to remove release');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        });
-    });
-
-    // Remove track from crate
-    document.querySelectorAll('.btn-remove[data-track-id]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const trackId = btn.dataset.trackId;
-            if (!confirm('Remove this track from the crate?')) return;
-
-            try {
-                const response = await fetch(`/crates/${crateId}/tracks/${trackId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) {
-                    btn.closest('.crate-track-item').remove();
-                } else {
-                    alert('Failed to remove track');
-                }
-            } catch (err) {
-                alert('Error: ' + err.message);
-            }
-        });
-    });
-
-    // Close modals on escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            editModal.classList.remove('open');
-            deleteModal.classList.remove('open');
-        }
-    });
-})();
+// Close modals on escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        editModal.classList.remove('open');
+        deleteModal.classList.remove('open');
+    }
+});
 </script>
 {% endblock %}
