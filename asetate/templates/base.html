@@ -8,6 +8,20 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    <!-- SVG Filters for MPC2000 chunky icon aesthetic -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute; pointer-events: none;">
+        <defs>
+            <!-- Chunky filter: dilates/thickens icon lines for hardware aesthetic -->
+            <filter id="icon-chunky" x="-25%" y="-25%" width="150%" height="150%">
+                <feMorphology operator="dilate" radius="0.4" in="SourceGraphic" result="thickened"/>
+            </filter>
+            <!-- Extra chunky for larger icons -->
+            <filter id="icon-chunky-lg" x="-25%" y="-25%" width="150%" height="150%">
+                <feMorphology operator="dilate" radius="0.6" in="SourceGraphic" result="thickened"/>
+            </filter>
+        </defs>
+    </svg>
+
     <nav class="nav">
         <div class="nav-brand">
             <a href="{{ url_for('main.index') }}">Asetate</a>
