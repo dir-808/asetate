@@ -21,10 +21,10 @@
                 </div>
                 {% set avg_bpm = release.get_average_bpm() %}
                 <div class="panel-stats">
-                    <span class="panel-stat" title="Total tracks">{{ stats.total }}T</span>
-                    <span class="panel-stat text-success" title="Playable tracks">{{ stats.playable }}▶</span>
+                    <span class="panel-stat" title="Total tracks"><span class="stat-icon">♫</span>{{ stats.total }}</span>
+                    <span class="panel-stat text-success" title="Playable tracks"><span class="stat-icon">▶</span>{{ stats.playable }}</span>
                     {% if avg_bpm.value %}
-                    <span class="panel-stat avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" title="Average BPM">{{ avg_bpm.display }}</span>
+                    <span class="panel-stat avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" title="Average BPM">{{ avg_bpm.display }}<span class="stat-label">bpm</span></span>
                     {% endif %}
                 </div>
             </div>
@@ -76,44 +76,52 @@
             {% for track in tracks %}
             <div class="panel-track-row {% if not track.is_playable %}track-dimmed{% endif %}"
                  data-track-id="{{ track.id }}">
-                <!-- Row 1: Toggle, Position, Title, Duration -->
-                <div class="panel-track-main">
+                <!-- Left column: Position + Toggle stacked vertically -->
+                <div class="panel-track-left">
+                    <span class="panel-track-pos">{{ track.display_position }}</span>
                     <label class="toggle toggle--mini" title="Playable">
                         <input type="checkbox" class="panel-track-playable"
                                {% if track.is_playable %}checked{% endif %}
                                data-field="is_playable">
                         <span class="toggle-slider"></span>
                     </label>
-                    <span class="panel-track-pos">{{ track.display_position }}</span>
-                    <span class="panel-track-title">{{ track.title }}</span>
-                    <span class="panel-track-duration">{{ track.display_duration }}</span>
                 </div>
-                <!-- Row 2: Editable fields (BPM, Key, Energy) + Notes + Tags -->
-                <div class="panel-track-fields">
-                    <input type="number" class="panel-input panel-input--editable panel-bpm"
-                           value="{{ track.bpm or '' }}" placeholder="BPM"
-                           min="20" max="300" data-field="bpm" title="BPM">
-                    <input type="text" class="panel-input panel-input--editable panel-key"
-                           value="{{ track.camelot or track.musical_key or '' }}"
-                           placeholder="Key" data-field="camelot" list="panel-camelot-keys" title="Key">
-                    <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy: {{ track.energy or 3 }}/5">
-                        <div class="energy-segment" data-level="1"></div>
-                        <div class="energy-segment" data-level="2"></div>
-                        <div class="energy-segment" data-level="3"></div>
-                        <div class="energy-segment" data-level="4"></div>
-                        <div class="energy-segment" data-level="5"></div>
+                <!-- Right content: Title, Duration, and fields -->
+                <div class="panel-track-right">
+                    <div class="panel-track-main">
+                        <span class="panel-track-title">{{ track.title }}</span>
+                        <span class="panel-track-duration">{{ track.display_duration }}</span>
                     </div>
-                    <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
-                            data-track-id="{{ track.id }}"
-                            data-track-notes="{{ track.notes or '' }}"
-                            title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
-                        {% if track.notes %}📝{% else %}+{% endif %}
-                    </button>
-                    <div class="panel-track-tags" data-track-id="{{ track.id }}">
-                        {% for tag in track.tags %}
-                        <span class="tag-badge-sm" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
-                        {% endfor %}
-                        <button class="panel-tag-add-btn" title="Add tag">+</button>
+                    <div class="panel-track-fields">
+                        <input type="number" class="panel-input panel-input--editable panel-bpm"
+                               value="{{ track.bpm or '' }}" placeholder="BPM"
+                               min="20" max="300" data-field="bpm" title="BPM">
+                        <input type="text" class="panel-input panel-input--editable panel-key"
+                               value="{{ track.camelot or track.musical_key or '' }}"
+                               placeholder="Key" data-field="camelot" list="panel-camelot-keys" title="Key">
+                        <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy: {{ track.energy or 3 }}/5">
+                            <div class="energy-segment" data-level="1"></div>
+                            <div class="energy-segment" data-level="2"></div>
+                            <div class="energy-segment" data-level="3"></div>
+                            <div class="energy-segment" data-level="4"></div>
+                            <div class="energy-segment" data-level="5"></div>
+                        </div>
+                        <div class="panel-track-actions">
+                            <button class="panel-notes-btn {% if track.notes %}has-notes{% endif %}"
+                                    data-track-id="{{ track.id }}"
+                                    data-track-notes="{{ track.notes or '' }}"
+                                    title="{% if track.notes %}Edit notes{% else %}Add notes{% endif %}">
+                                <span class="emoji-icon" style="-webkit-mask-image: url('/static/emoji/1F4DD.svg'); mask-image: url('/static/emoji/1F4DD.svg');"></span>
+                            </button>
+                            <div class="panel-track-tags" data-track-id="{{ track.id }}">
+                                {% for tag in track.tags %}
+                                <span class="tag-badge-sm" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">{{ tag.name }}</span>
+                                {% endfor %}
+                                <button class="panel-tag-add-btn" title="Add tag">
+                                    <span class="emoji-icon" style="-webkit-mask-image: url('/static/emoji/1F3F7.svg'); mask-image: url('/static/emoji/1F3F7.svg');"></span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -210,16 +218,18 @@
             }
         });
 
-        // Update playable count
+        // Update playable count (preserve the icon)
         const statsEl = document.querySelector('.panel-stats .text-success');
         if (statsEl) {
-            statsEl.textContent = `${playableCount} playable`;
+            const icon = statsEl.querySelector('.stat-icon');
+            const iconHtml = icon ? icon.outerHTML : '<span class="stat-icon">▶</span>';
+            statsEl.innerHTML = `${iconHtml}${playableCount}`;
         }
 
-        // Update avg BPM
+        // Update avg BPM (preserve the label)
         const avgBpmEl = document.querySelector('.panel-stats .avg-bpm');
         if (avgBpmEl && bpmCount > 0) {
-            avgBpmEl.textContent = Math.round(totalBpm / bpmCount);
+            avgBpmEl.innerHTML = `${Math.round(totalBpm / bpmCount)}<span class="stat-label">bpm</span>`;
         }
     }
 
@@ -357,10 +367,8 @@
                 if (btn) {
                     btn.dataset.trackNotes = notes;
                     if (notes) {
-                        btn.textContent = '📝';
                         btn.classList.add('has-notes');
                     } else {
-                        btn.textContent = '+Note';
                         btn.classList.remove('has-notes');
                     }
                 }
