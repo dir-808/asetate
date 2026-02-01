@@ -29,7 +29,11 @@
                 <!-- Crate body -->
                 <div class="crate-body">
                     <div class="crate-icon-container">
+                        {% if node.crate.icon_type == 'emoji' %}
+                        <span class="emoji-icon crate-emoji-icon" style="-webkit-mask-image: url('{{ node.crate.icon_url }}'); mask-image: url('{{ node.crate.icon_url }}');"></span>
+                        {% else %}
                         <img src="{{ node.crate.icon_url }}" alt="" class="crate-pixel-icon">
+                        {% endif %}
                     </div>
                     <div class="crate-info">
                         <span class="crate-name">{{ node.crate.name }}</span>
@@ -100,22 +104,22 @@
                 <input type="text" id="crate-description" name="description" placeholder="e.g., Late night vibes">
             </div>
 
-            <!-- Icon Picker -->
+            <!-- Emoji Picker -->
             <div class="form-group">
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="icon-preview">
-                            <img src="/static/icons/Software_File_Folder_Directory_Explorer.png" alt="" class="icon-preview-img" id="icon-preview-img">
+                            <span class="emoji-icon crate-emoji-icon" id="icon-preview-emoji" style="-webkit-mask-image: url('/static/emoji/1F4C1.svg'); mask-image: url('/static/emoji/1F4C1.svg');"></span>
                         </div>
                         <input type="text"
                                id="crate-icon-search"
                                class="icon-search-input"
-                               placeholder="Search icons...">
+                               placeholder="Search emoji...">
                         <button type="button" class="btn btn-secondary btn-sm" id="clear-icon">Clear</button>
                     </div>
                     <div class="icon-grid" id="icon-grid">
-                        <!-- Icons loaded via JS -->
+                        <!-- Emoji loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="crate-icon" name="icon" value="">
@@ -174,73 +178,79 @@
     const cratePanelContent = document.getElementById('crate-panel-content');
     const cratesMain = document.getElementById('crates-main');
 
-    const DEFAULT_ICON = 'Software_File_Folder_Directory_Explorer';
+    const DEFAULT_EMOJI = '1F4C1';  // Folder emoji
+    const iconPreviewEmoji = document.getElementById('icon-preview-emoji');
     let searchTimeout = null;
-    let allIcons = []; // Cache all icons for faster filtering
+    let allEmoji = []; // Cache all emoji for faster filtering
 
-    // Load icons from API
-    async function loadIcons(query = '') {
+    // Load emoji from API
+    async function loadEmoji(query = '') {
         try {
-            const response = await fetch(`/crates/api/icons?q=${encodeURIComponent(query)}&limit=60`);
+            const response = await fetch(`/crates/api/emoji?q=${encodeURIComponent(query)}&limit=60`);
             const data = await response.json();
-            return data.icons;
+            return data.emoji;
         } catch (err) {
-            console.error('Failed to load icons:', err);
+            console.error('Failed to load emoji:', err);
             return [];
         }
     }
 
-    // Render icon grid
-    function renderIconGrid(icons, container, onSelect) {
+    // Render emoji grid
+    function renderEmojiGrid(emoji, container, onSelect) {
         container.innerHTML = '';
-        icons.forEach(icon => {
+        emoji.forEach(e => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'icon-grid-item';
-            btn.dataset.icon = icon.name;
-            btn.title = icon.keywords.slice(0, 3).join(', ');
-            btn.innerHTML = `<img src="${icon.url}" alt="${icon.name}">`;
-            btn.addEventListener('click', () => onSelect(icon.name, icon.url));
+            btn.className = 'emoji-grid-item';
+            btn.dataset.hexcode = e.hexcode;
+            btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
+            btn.innerHTML = `<img src="${e.url}" alt="${e.name}">`;
+            btn.addEventListener('click', () => onSelect(e.hexcode, e.url));
             container.appendChild(btn);
         });
     }
 
-    // Select icon handler for modal
-    function selectIcon(iconName, iconUrl) {
-        iconInput.value = iconName;
-        iconPreviewImg.src = iconUrl;
+    // Select emoji handler for modal
+    function selectEmoji(hexcode, url) {
+        iconInput.value = `emoji:${hexcode}`;
+        // Update preview using mask
+        iconPreviewEmoji.style.webkitMaskImage = `url('${url}')`;
+        iconPreviewEmoji.style.maskImage = `url('${url}')`;
         // Highlight selected
-        iconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
-            btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        iconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
         });
     }
 
-    // Initialize icon grid with all icons
-    async function initIconGrid() {
-        allIcons = await loadIcons('');
-        renderIconGrid(allIcons, iconGrid, selectIcon);
+    // Initialize emoji grid
+    async function initEmojiGrid() {
+        allEmoji = await loadEmoji('');
+        renderEmojiGrid(allEmoji, iconGrid, selectEmoji);
     }
 
-    // Search icons with debounce
+    // Search emoji with debounce
     iconSearchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(async () => {
             const query = iconSearchInput.value.trim();
             if (query) {
-                const results = await loadIcons(query);
-                renderIconGrid(results, iconGrid, selectIcon);
+                const results = await loadEmoji(query);
+                renderEmojiGrid(results, iconGrid, selectEmoji);
             } else {
-                renderIconGrid(allIcons, iconGrid, selectIcon);
+                renderEmojiGrid(allEmoji, iconGrid, selectEmoji);
             }
         }, 200);
     });
 
     clearIconBtn.addEventListener('click', () => {
         iconInput.value = '';
-        iconPreviewImg.src = `/static/icons/${DEFAULT_ICON}.png`;
+        // Reset preview to default folder emoji
+        const defaultUrl = `/static/emoji/${DEFAULT_EMOJI}.svg`;
+        iconPreviewEmoji.style.webkitMaskImage = `url('${defaultUrl}')`;
+        iconPreviewEmoji.style.maskImage = `url('${defaultUrl}')`;
         iconSearchInput.value = '';
-        renderIconGrid(allIcons, iconGrid, selectIcon);
-        iconGrid.querySelectorAll('.icon-grid-item').forEach(btn => btn.classList.remove('selected'));
+        renderEmojiGrid(allEmoji, iconGrid, selectEmoji);
+        iconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => btn.classList.remove('selected'));
     });
 
     document.querySelectorAll('.color-option').forEach(btn => {
@@ -270,9 +280,9 @@
         }
         modal.classList.add('open');
         nameInput.focus();
-        // Load icons when modal opens
-        if (allIcons.length === 0) {
-            initIconGrid();
+        // Load emoji when modal opens
+        if (allEmoji.length === 0) {
+            initEmojiGrid();
         }
     }
 
@@ -280,11 +290,14 @@
         modal.classList.remove('open');
         form.reset();
         iconInput.value = '';
-        iconPreviewImg.src = `/static/icons/${DEFAULT_ICON}.png`;
+        // Reset emoji preview
+        const defaultUrl = `/static/emoji/${DEFAULT_EMOJI}.svg`;
+        iconPreviewEmoji.style.webkitMaskImage = `url('${defaultUrl}')`;
+        iconPreviewEmoji.style.maskImage = `url('${defaultUrl}')`;
         iconSearchInput.value = '';
         document.querySelectorAll('.color-option').forEach((b, i) => b.classList.toggle('selected', i === 0));
         colorInput.value = '';
-        iconGrid.querySelectorAll('.icon-grid-item').forEach(btn => btn.classList.remove('selected'));
+        iconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => btn.classList.remove('selected'));
     }
 
     document.getElementById('btn-new-crate')?.addEventListener('click', () => openModal());
@@ -370,7 +383,11 @@
     }
 
     async function renderPanelForm(crate) {
-        const currentIcon = crate.icon || DEFAULT_ICON;
+        // Get current emoji hexcode (strip "emoji:" prefix if present)
+        let currentHexcode = DEFAULT_EMOJI;
+        if (crate.icon && crate.icon.startsWith('emoji:')) {
+            currentHexcode = crate.icon.slice(6);
+        }
         cratePanelContent.innerHTML = `
             <form id="panel-edit-form">
                 <div class="panel-form-group">
@@ -386,9 +403,9 @@
                     <div class="icon-picker-container panel-icon-picker">
                         <div class="icon-input-row">
                             <div class="icon-preview-box" id="panel-icon-preview">
-                                <img src="/static/icons/${currentIcon}.png" alt="" class="icon-preview-img" id="panel-icon-preview-img">
+                                <span class="emoji-icon crate-emoji-icon" id="panel-icon-preview-emoji" style="-webkit-mask-image: url('/static/emoji/${currentHexcode}.svg'); mask-image: url('/static/emoji/${currentHexcode}.svg');"></span>
                             </div>
-                            <input type="text" id="panel-icon-search" class="icon-search-input" placeholder="Search icons...">
+                            <input type="text" id="panel-icon-search" class="icon-search-input" placeholder="Search emoji...">
                         </div>
                         <div class="icon-grid icon-grid-sm" id="panel-icon-grid"></div>
                     </div>
@@ -417,44 +434,46 @@
 
         // Setup panel form handlers
         const panelForm = document.getElementById('panel-edit-form');
-        const panelIconPreviewImg = document.getElementById('panel-icon-preview-img');
+        const panelIconPreviewEmoji = document.getElementById('panel-icon-preview-emoji');
         const panelIconInput = document.getElementById('panel-icon');
         const panelIconSearch = document.getElementById('panel-icon-search');
         const panelIconGrid = document.getElementById('panel-icon-grid');
         const panelColorInput = document.getElementById('panel-color');
         let panelSearchTimeout = null;
 
-        // Panel icon selection handler
-        function selectPanelIcon(iconName, iconUrl) {
-            panelIconInput.value = iconName;
-            panelIconPreviewImg.src = iconUrl;
-            panelIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.icon === iconName);
+        // Panel emoji selection handler
+        function selectPanelEmoji(hexcode, url) {
+            panelIconInput.value = `emoji:${hexcode}`;
+            panelIconPreviewEmoji.style.webkitMaskImage = `url('${url}')`;
+            panelIconPreviewEmoji.style.maskImage = `url('${url}')`;
+            panelIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
             });
         }
 
-        // Load and render panel icon grid
-        const panelIcons = allIcons.length > 0 ? allIcons : await loadIcons('');
-        if (allIcons.length === 0) allIcons = panelIcons;
-        renderIconGrid(panelIcons.slice(0, 40), panelIconGrid, selectPanelIcon);
+        // Load and render panel emoji grid
+        const panelEmoji = allEmoji.length > 0 ? allEmoji : await loadEmoji('');
+        if (allEmoji.length === 0) allEmoji = panelEmoji;
+        renderEmojiGrid(panelEmoji.slice(0, 40), panelIconGrid, selectPanelEmoji);
 
-        // Highlight current icon if set
-        if (crate.icon) {
-            panelIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.icon === crate.icon);
+        // Highlight current emoji if set
+        if (crate.icon && crate.icon.startsWith('emoji:')) {
+            const hexcode = crate.icon.slice(6);
+            panelIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
             });
         }
 
-        // Panel icon search
+        // Panel emoji search
         panelIconSearch.addEventListener('input', () => {
             clearTimeout(panelSearchTimeout);
             panelSearchTimeout = setTimeout(async () => {
                 const query = panelIconSearch.value.trim();
                 if (query) {
-                    const results = await loadIcons(query);
-                    renderIconGrid(results.slice(0, 40), panelIconGrid, selectPanelIcon);
+                    const results = await loadEmoji(query);
+                    renderEmojiGrid(results.slice(0, 40), panelIconGrid, selectPanelEmoji);
                 } else {
-                    renderIconGrid(allIcons.slice(0, 40), panelIconGrid, selectPanelIcon);
+                    renderEmojiGrid(allEmoji.slice(0, 40), panelIconGrid, selectPanelEmoji);
                 }
             }, 200);
         });

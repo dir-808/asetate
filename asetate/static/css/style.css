@@ -2691,6 +2691,71 @@ body.crate-panel-open .crates-main {
     filter: invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.5));
 }
 
+/* ============================================
+   EMOJI ICONS (SVG)
+   Using mask-image for color inheritance
+   ============================================ */
+
+/* Base emoji icon - uses mask for color control */
+.emoji-icon {
+    display: inline-block;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Emoji in crate cards */
+.crate-emoji-icon {
+    width: 32px;
+    height: 32px;
+}
+
+/* Large emoji on crate detail page */
+.crate-emoji-icon-lg {
+    width: 40px;
+    height: 40px;
+}
+
+/* Emoji on release cards (crate indicators) */
+.release-emoji-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* Emoji in icon picker grid */
+.emoji-grid-item {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.emoji-grid-item:hover {
+    border-color: var(--border);
+    background: var(--bg-surface);
+}
+
+.emoji-grid-item.selected {
+    border-color: var(--primary);
+    background: var(--bg-surface);
+}
+
+.emoji-grid-item img {
+    width: 24px;
+    height: 24px;
+    /* Use filter for preview - actual icons use mask */
+    filter: invert(1);
+}
+
 .color-picker {
     display: flex;
     flex-wrap: wrap;

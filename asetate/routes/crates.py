@@ -7,6 +7,7 @@ from asetate import db
 from asetate.models import Crate, Release, Track, crate_releases, crate_tracks
 from asetate.models.crate import CRATE_COLORS, CRATE_ICONS
 from asetate.models.pixel_icons import search_icons, PIXEL_ICONS
+from asetate.models.emoji_icons import search_emoji, get_emoji_url
 
 bp = Blueprint("crates", __name__)
 
@@ -413,5 +414,33 @@ def api_search_icons():
                 "url": f"/static/icons/{icon['name']}.png",
             }
             for icon in results
+        ]
+    })
+
+
+@bp.route("/api/emoji")
+@login_required
+def api_search_emoji():
+    """Search OpenMoji emoji by keyword.
+
+    Query params:
+        q: Search query (optional, returns all if empty)
+        limit: Max results to return (default 60)
+    """
+    query = request.args.get("q", "").strip()
+    limit = min(int(request.args.get("limit", 60)), 200)
+
+    results = search_emoji(query, limit)
+
+    return jsonify({
+        "emoji": [
+            {
+                "hexcode": e["hexcode"],
+                "name": e["name"],
+                "emoji": e["emoji"],
+                "keywords": e["keywords"][:8],  # Limit keywords in response
+                "url": get_emoji_url(e["hexcode"]),
+            }
+            for e in results
         ]
     })

@@ -19,7 +19,11 @@
 
     <header class="crate-header">
         <div class="crate-icon-large" {% if crate.color_hex %}style="background-color: {{ crate.color_hex }}20; border-color: {{ crate.color_hex }}40"{% endif %}>
+            {% if crate.icon_type == 'emoji' %}
+            <span class="emoji-icon crate-emoji-icon-lg" style="-webkit-mask-image: url('{{ crate.icon_url }}'); mask-image: url('{{ crate.icon_url }}');{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}"></span>
+            {% else %}
             <img src="{{ crate.icon_url }}" alt="" class="crate-pixel-icon-lg">
+            {% endif %}
         </div>
         <div class="crate-info">
             <h1>{{ crate.name }}</h1>
@@ -132,22 +136,22 @@
                 <input type="text" id="edit-crate-description" value="{{ crate.description or '' }}" placeholder="Optional">
             </div>
 
-            <!-- Icon Picker -->
+            <!-- Emoji Picker -->
             <div class="form-group">
                 <label>Icon</label>
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="edit-icon-preview">
-                            <img src="{{ crate.icon_url }}" alt="" class="icon-preview-img" id="edit-icon-preview-img">
+                            <span class="emoji-icon crate-emoji-icon" id="edit-icon-preview-emoji" style="-webkit-mask-image: url('{{ crate.icon_url }}'); mask-image: url('{{ crate.icon_url }}');"></span>
                         </div>
                         <input type="text"
                                id="edit-icon-search"
                                class="icon-search-input"
-                               placeholder="Search icons...">
+                               placeholder="Search emoji...">
                         <button type="button" class="btn btn-secondary btn-sm" id="edit-clear-icon">Clear</button>
                     </div>
                     <div class="icon-grid" id="edit-icon-grid">
-                        <!-- Icons loaded via JS -->
+                        <!-- Emoji loaded via JS -->
                     </div>
                 </div>
                 <input type="hidden" id="edit-crate-icon" name="icon" value="{{ crate.icon or '' }}">
@@ -218,33 +222,33 @@
 <script>
 (function() {
     const crateId = document.querySelector('.crate-detail').dataset.crateId;
-    const DEFAULT_ICON = 'Software_File_Folder_Directory_Explorer';
-    let allIcons = [];
+    const DEFAULT_EMOJI = '1F4C1';  // Folder emoji
+    let allEmoji = [];
     let searchTimeout = null;
 
-    // Load icons from API
-    async function loadIcons(query = '') {
+    // Load emoji from API
+    async function loadEmoji(query = '') {
         try {
-            const response = await fetch(`/crates/api/icons?q=${encodeURIComponent(query)}&limit=60`);
+            const response = await fetch(`/crates/api/emoji?q=${encodeURIComponent(query)}&limit=60`);
             const data = await response.json();
-            return data.icons;
+            return data.emoji;
         } catch (err) {
-            console.error('Failed to load icons:', err);
+            console.error('Failed to load emoji:', err);
             return [];
         }
     }
 
-    // Render icon grid
-    function renderIconGrid(icons, container, onSelect) {
+    // Render emoji grid
+    function renderEmojiGrid(emoji, container, onSelect) {
         container.innerHTML = '';
-        icons.forEach(icon => {
+        emoji.forEach(e => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'icon-grid-item';
-            btn.dataset.icon = icon.name;
-            btn.title = icon.keywords.slice(0, 3).join(', ');
-            btn.innerHTML = `<img src="${icon.url}" alt="${icon.name}">`;
-            btn.addEventListener('click', () => onSelect(icon.name, icon.url));
+            btn.className = 'emoji-grid-item';
+            btn.dataset.hexcode = e.hexcode;
+            btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
+            btn.innerHTML = `<img src="${e.url}" alt="${e.name}">`;
+            btn.addEventListener('click', () => onSelect(e.hexcode, e.url));
             container.appendChild(btn);
         });
     }
@@ -255,16 +259,17 @@
 
     document.getElementById('btn-edit-crate').addEventListener('click', async () => {
         editModal.classList.add('open');
-        // Load icons when modal opens
-        if (allIcons.length === 0) {
-            allIcons = await loadIcons('');
+        // Load emoji when modal opens
+        if (allEmoji.length === 0) {
+            allEmoji = await loadEmoji('');
         }
-        renderIconGrid(allIcons, editIconGrid, selectEditIcon);
-        // Highlight current icon
+        renderEmojiGrid(allEmoji, editIconGrid, selectEditEmoji);
+        // Highlight current emoji
         const currentIcon = editIconInput.value;
-        if (currentIcon) {
-            editIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.icon === currentIcon);
+        if (currentIcon && currentIcon.startsWith('emoji:')) {
+            const hexcode = currentIcon.slice(6);
+            editIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
             });
         }
     });
@@ -273,42 +278,45 @@
     document.getElementById('edit-btn-cancel').addEventListener('click', () => editModal.classList.remove('open'));
     editModal.querySelector('.modal-backdrop').addEventListener('click', () => editModal.classList.remove('open'));
 
-    // Icon picker for edit modal
+    // Emoji picker for edit modal
     const editIconInput = document.getElementById('edit-crate-icon');
-    const editIconPreviewImg = document.getElementById('edit-icon-preview-img');
+    const editIconPreviewEmoji = document.getElementById('edit-icon-preview-emoji');
     const editIconSearch = document.getElementById('edit-icon-search');
     const editIconGrid = document.getElementById('edit-icon-grid');
     const editClearIconBtn = document.getElementById('edit-clear-icon');
     const editColorInput = document.getElementById('edit-crate-color');
 
-    function selectEditIcon(iconName, iconUrl) {
-        editIconInput.value = iconName;
-        editIconPreviewImg.src = iconUrl;
-        editIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => {
-            btn.classList.toggle('selected', btn.dataset.icon === iconName);
+    function selectEditEmoji(hexcode, url) {
+        editIconInput.value = `emoji:${hexcode}`;
+        editIconPreviewEmoji.style.webkitMaskImage = `url('${url}')`;
+        editIconPreviewEmoji.style.maskImage = `url('${url}')`;
+        editIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.hexcode === hexcode);
         });
     }
 
-    // Search icons with debounce
+    // Search emoji with debounce
     editIconSearch.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(async () => {
             const query = editIconSearch.value.trim();
             if (query) {
-                const results = await loadIcons(query);
-                renderIconGrid(results, editIconGrid, selectEditIcon);
+                const results = await loadEmoji(query);
+                renderEmojiGrid(results, editIconGrid, selectEditEmoji);
             } else {
-                renderIconGrid(allIcons, editIconGrid, selectEditIcon);
+                renderEmojiGrid(allEmoji, editIconGrid, selectEditEmoji);
             }
         }, 200);
     });
 
     editClearIconBtn.addEventListener('click', () => {
         editIconInput.value = '';
-        editIconPreviewImg.src = `/static/icons/${DEFAULT_ICON}.png`;
+        const defaultUrl = `/static/emoji/${DEFAULT_EMOJI}.svg`;
+        editIconPreviewEmoji.style.webkitMaskImage = `url('${defaultUrl}')`;
+        editIconPreviewEmoji.style.maskImage = `url('${defaultUrl}')`;
         editIconSearch.value = '';
-        renderIconGrid(allIcons, editIconGrid, selectEditIcon);
-        editIconGrid.querySelectorAll('.icon-grid-item').forEach(btn => btn.classList.remove('selected'));
+        renderEmojiGrid(allEmoji, editIconGrid, selectEditEmoji);
+        editIconGrid.querySelectorAll('.emoji-grid-item').forEach(btn => btn.classList.remove('selected'));
     });
 
     // Color picker for edit modal

@@ -3,7 +3,8 @@
 from datetime import datetime
 
 from asetate import db
-from .pixel_icons import PIXEL_ICONS, DEFAULT_ICON, get_icon_url, is_valid_icon
+from .pixel_icons import PIXEL_ICONS, DEFAULT_ICON as DEFAULT_PIXEL_ICON, get_icon_url as get_pixel_icon_url
+from .emoji_icons import DEFAULT_EMOJI, get_emoji_url, is_valid_emoji
 
 # Preset colors for crates (Notion-inspired palette)
 CRATE_COLORS = [
@@ -69,7 +70,7 @@ class Crate(db.Model):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     color = db.Column(db.String(20))  # Preset color ID or hex color
-    icon = db.Column(db.String(50))   # Pixel icon name (e.g., "music", "fire")
+    icon = db.Column(db.String(100))  # Icon: pixel name or "emoji:HEXCODE"
     sort_order = db.Column(db.Integer, default=0)  # For manual ordering
 
     # Timestamps
@@ -131,14 +132,40 @@ class Crate(db.Model):
         return ""
 
     @property
+    def is_emoji_icon(self) -> bool:
+        """Check if the icon is an emoji (vs pixel icon)."""
+        return self.icon and self.icon.startswith("emoji:")
+
+    @property
+    def emoji_hexcode(self) -> str | None:
+        """Get emoji hexcode if icon is an emoji."""
+        if self.is_emoji_icon:
+            return self.icon[6:]  # Remove "emoji:" prefix
+        return None
+
+    @property
     def display_icon(self) -> str:
-        """Get the icon name to display, with fallback to default folder icon."""
-        return self.icon or DEFAULT_ICON
+        """Get the icon name to display, with fallback to default emoji."""
+        if not self.icon:
+            return f"emoji:{DEFAULT_EMOJI}"
+        return self.icon
 
     @property
     def icon_url(self) -> str:
         """Get the URL path for the icon image."""
-        return get_icon_url(self.icon or DEFAULT_ICON)
+        if not self.icon:
+            return get_emoji_url(DEFAULT_EMOJI)
+        if self.is_emoji_icon:
+            return get_emoji_url(self.emoji_hexcode)
+        # Legacy pixel icon support
+        return get_pixel_icon_url(self.icon)
+
+    @property
+    def icon_type(self) -> str:
+        """Get the icon type: 'emoji' or 'pixel'."""
+        if not self.icon or self.is_emoji_icon:
+            return "emoji"
+        return "pixel"
 
     @property
     def is_top_level(self) -> bool:
