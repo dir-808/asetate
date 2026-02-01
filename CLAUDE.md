@@ -76,12 +76,13 @@ These are used across multiple pages - changes apply everywhere:
 | **Crate Icons** | `.emoji-icon`, `.crate-emoji-icon`, `.crate-badge-emoji`, `.release-crate-icon` |
 | **Crate Badges** | `.crate-badge`, `.crate-badge-panel`, `.crate-badge-name` |
 | **Crate Dropdown** | `.crate-dropdown`, `.crate-dropdown-wrapper`, `.crate-dropdown-emoji` |
-| **Notes Textarea** | `.notes-textarea`, `.notes-textarea--lg` |
+| **Notes Textarea** | `.notes-textarea`, `.panel-notes-lcd` |
 | **Side Panel** | `.release-panel`, `.panel-content`, `.panel-discogs-card` |
+| **Panel Toolbar** | `.panel-toolbar`, `.panel-toolbar-actions`, `.panel-toolbar-crates` |
 | **Panel Track Row** | `.panel-track-row`, `.panel-track-main`, `.panel-track-fields` |
 | **Editable Inputs** | `.panel-input`, `.panel-input--editable` |
 | **Buttons** | `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm` |
-| **Playable Toggle** | `.toggle`, `.toggle-slider` |
+| **Playable Toggle** | `.toggle`, `.toggle-slider`, `.toggle--mini` |
 | **Toggle Button (Settings)** | `.toggle-btn`, `.toggle-btn .led` |
 
 ---
@@ -396,25 +397,25 @@ Key points:
 - Orange border on hover indicates interactivity
 
 **Panel Track Row (compact 2-row layout):**
-The sidebar track list uses a space-efficient 2-row layout per track:
+The sidebar track list uses a space-efficient 2-row layout per track with LCD styling:
 
 ```
 ┌────────────────────────────────────────────┐
-│ A1 │ Track Title                  3:45 [□]│  ← Row 1
+│ [□] A1 │ Track Title              3:45    │  ← Row 1
 ├────────────────────────────────────────────┤
-│    BPM [120] Key [8A] [█████] 📝 [tags]  │  ← Row 2
+│       [120] [8A] [█████] [+] [tag]       │  ← Row 2
 └────────────────────────────────────────────┘
 ```
 
 Structure:
 ```html
 <div class="panel-track-row">
-    <!-- Row 1: Position, Title, Duration, Toggle -->
+    <!-- Row 1: Toggle, Position, Title, Duration -->
     <div class="panel-track-main">
+        <label class="toggle toggle--mini">...</label>
         <span class="panel-track-pos">A1</span>
         <span class="panel-track-title">Track Title</span>
         <span class="panel-track-duration">3:45</span>
-        <label class="toggle">...</label>
     </div>
     <!-- Row 2: Editable fields + Notes + Tags -->
     <div class="panel-track-fields">
@@ -428,24 +429,81 @@ Structure:
 ```
 
 Key design decisions:
-- **Row 1**: Read-only info (position, title, duration) + playable toggle
-- **Row 2**: Editable fields (BPM, Key, Energy) + notes + tags
-- **Visual distinction**: Editable inputs use `.panel-input--editable` with dashed orange border
-- **Toggle consistency**: Uses standard `.toggle` (not `.toggle-sm`) for visual consistency with detail page
-- **Compact**: No labels - inputs use placeholder text (e.g., "BPM", "Key")
+- **Toggle on left**: Allows quick scanning of playable tracks
+- **Row 1**: Toggle + read-only info (position, title, duration)
+- **Row 2**: Editable fields (BPM, Key, Energy) + notes + tags, aligned with title
+- **LCD colors**: Track titles use `--lcd-text`, positions/durations use `--lcd-dim`
+- **Mini toggle**: Uses `.toggle--mini` (28x16px) for compact rows
+- **No labels**: Inputs use placeholder text (e.g., "BPM", "Key")
 
-Editable input styling:
+Editable input styling (LCD variant):
 ```css
 .panel-input--editable {
-    border: 1px dashed var(--border);  /* Dashed = editable/empty */
-    color: var(--primary);             /* Orange text for values */
+    border: 1px dashed var(--lcd-dim);
+    color: var(--lcd-text);
 }
 
-.panel-input--editable:not(:placeholder-shown) {
-    border-style: solid;               /* Solid = has value */
-    border-color: var(--primary-dim);
+.panel-input--editable:focus {
+    background: rgba(74, 222, 128, 0.15);
+    border-color: var(--success);
 }
 ```
+
+---
+
+### Sidebar Design Standards
+
+The sidebar panel follows these standards for consistency:
+
+**1. Spacing:**
+- Container gap: `var(--space-sm)` (8px) between sections
+- Content padding: `var(--space-sm) var(--space-md)` (8px 16px) for rows
+- Compact padding: `var(--space-xs) var(--space-sm)` (4px 8px) for track rows
+
+**2. Visual Zones:**
+The sidebar has distinct visual zones with consistent styling:
+
+| Zone | Background | Border | Text Color |
+|------|------------|--------|------------|
+| LCD Card (Discogs info) | `--lcd-bg` | 2px `--border` | `--lcd-text` |
+| LCD Notes | `--lcd-bg` | 2px `--border` (no top) | `--lcd-text` |
+| Toolbar (actions) | `--bg-elevated` | 1px bottom | Default |
+| LCD Tracks | `--lcd-bg` | 2px `--border` | `--lcd-text` |
+
+**3. Alignment Rules:**
+- All horizontal padding uses `--space-md` (16px) consistently
+- Track fields row aligns with title using `padding-left: 32px` (toggle width + gap)
+- Crate badges flow inline with action buttons
+
+**4. Empty States:**
+- Don't show empty containers - hide them entirely
+- Don't show placeholder text like "Not in any crate"
+
+**5. Component Sizes:**
+| Component | Width | Height |
+|-----------|-------|--------|
+| Cover image | 100px | 100px |
+| Mini toggle | 28px | 16px |
+| BPM/Key inputs | 36px | auto |
+| Discogs buttons | 40px | flex (full height) |
+
+**6. Color Usage in LCD zones:**
+- Primary text: `--lcd-text` (green #4ade80)
+- Secondary/muted: `--lcd-dim` (dark green #22543d)
+- Interactive hover: `rgba(74, 222, 128, 0.1)` background
+- Focus: `--success` border with subtle glow
+
+**7. Compact Stats Format:**
+Use abbreviated stats with symbols instead of words:
+```html
+<span title="Total tracks">5T</span>
+<span title="Playable">3▶</span>
+<span title="Average BPM">120</span>
+```
+
+**8. Indicators:**
+- Notes indicator: 📝 emoji next to title when release has notes
+- Has-notes button: Amber border + background highlight
 
 #### Inputs & Forms
 - Minimal styling - transparent background until hover/focus

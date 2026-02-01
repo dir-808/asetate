@@ -13,7 +13,7 @@
                 {% endif %}
             </div>
             <div class="panel-info">
-                <h2>{{ release.display_title }}</h2>
+                <h2>{{ release.display_title }}{% if release.notes %}<span class="panel-notes-indicator" title="Has notes">📝</span>{% endif %}</h2>
                 <p class="panel-artist">{{ release.display_artist }}</p>
                 <div class="panel-meta">
                     {% if release.label %}<span>{{ release.label }}</span>{% endif %}
@@ -21,12 +21,10 @@
                 </div>
                 {% set avg_bpm = release.get_average_bpm() %}
                 <div class="panel-stats">
-                    <span>{{ stats.total }} tracks</span>
-                    <span class="stat-divider">•</span>
-                    <span class="text-success">{{ stats.playable }} playable</span>
+                    <span class="panel-stat" title="Total tracks">{{ stats.total }}T</span>
+                    <span class="panel-stat text-success" title="Playable tracks">{{ stats.playable }}▶</span>
                     {% if avg_bpm.value %}
-                    <span class="stat-divider">•</span>
-                    <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}">{{ avg_bpm.display }}</span>
+                    <span class="panel-stat avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" title="Average BPM">{{ avg_bpm.display }}</span>
                     {% endif %}
                 </div>
             </div>
@@ -52,8 +50,9 @@
     <!-- Release Notes - LCD style, sits below Discogs card -->
     <textarea class="panel-notes-textarea panel-notes-lcd" id="panel-release-notes" placeholder="Add notes...">{{ release.notes or '' }}</textarea>
 
-    <div class="panel-actions">
-        <div class="panel-action-group asetate-group">
+    <!-- Actions + Crates - unified row -->
+    <div class="panel-toolbar">
+        <div class="panel-toolbar-actions">
             <div class="panel-crate-dropdown-wrapper">
                 <button class="btn btn-primary btn-sm" id="panel-btn-add-to-crate">Crate ▾</button>
                 <div class="panel-crate-dropdown" id="panel-crate-dropdown" style="display: none;">
@@ -62,36 +61,32 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to print cue">Print cue</button>
+            <button class="btn btn-secondary btn-sm" id="panel-btn-add-to-cue" title="Add to print cue">Print</button>
+        </div>
+        <div class="panel-toolbar-crates" id="panel-release-crates">
+            <!-- Crates will be loaded via JS -->
         </div>
     </div>
 
-    <div class="panel-crates" id="panel-release-crates">
-        <!-- Crates will be loaded via JS -->
-    </div>
-
-    <!-- Tracks Section -->
+    <!-- Tracks Section - LCD style continuation -->
     <section class="panel-tracks">
-        <div class="panel-tracks-header">
-            <h3>Tracklist</h3>
-        </div>
 
         {% if tracks %}
         <div class="panel-tracks-list" id="panel-tracks-list">
             {% for track in tracks %}
             <div class="panel-track-row {% if not track.is_playable %}track-dimmed{% endif %}"
                  data-track-id="{{ track.id }}">
-                <!-- Row 1: Position, Title, Duration, Playable toggle -->
+                <!-- Row 1: Toggle, Position, Title, Duration -->
                 <div class="panel-track-main">
-                    <span class="panel-track-pos">{{ track.display_position }}</span>
-                    <span class="panel-track-title">{{ track.title }}</span>
-                    <span class="panel-track-duration">{{ track.display_duration }}</span>
-                    <label class="toggle" title="Playable">
+                    <label class="toggle toggle--mini" title="Playable">
                         <input type="checkbox" class="panel-track-playable"
                                {% if track.is_playable %}checked{% endif %}
                                data-field="is_playable">
                         <span class="toggle-slider"></span>
                     </label>
+                    <span class="panel-track-pos">{{ track.display_position }}</span>
+                    <span class="panel-track-title">{{ track.title }}</span>
+                    <span class="panel-track-duration">{{ track.display_duration }}</span>
                 </div>
                 <!-- Row 2: Editable fields (BPM, Key, Energy) + Notes + Tags -->
                 <div class="panel-track-fields">
@@ -101,7 +96,7 @@
                     <input type="text" class="panel-input panel-input--editable panel-key"
                            value="{{ track.camelot or track.musical_key or '' }}"
                            placeholder="Key" data-field="camelot" list="panel-camelot-keys" title="Key">
-                    <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy">
+                    <div class="energy-bar energy-bar--sm" data-field="energy" data-value="{{ track.energy or 3 }}" title="Energy: {{ track.energy or 3 }}/5">
                         <div class="energy-segment" data-level="1"></div>
                         <div class="energy-segment" data-level="2"></div>
                         <div class="energy-segment" data-level="3"></div>
@@ -554,15 +549,17 @@
     function updateCratesDisplay() {
         const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
         if (inCrates.length > 0) {
+            cratesContainer.style.display = '';
             cratesContainer.innerHTML = inCrates.map(c => {
                 const bgStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40;` : '';
-                return `<a href="/crates/${c.id}" class="crate-badge-panel" style="${bgStyle}">
+                return `<a href="/crates/${c.id}" class="crate-badge-panel" style="${bgStyle}" onclick="event.stopPropagation();">
                     ${renderCrateIcon(c)}
                     <span class="crate-badge-name">${c.name}</span>
                 </a>`;
             }).join('');
         } else {
-            cratesContainer.innerHTML = '<span class="text-muted" style="font-size: 0.75rem;">Not in any crate</span>';
+            cratesContainer.style.display = 'none';
+            cratesContainer.innerHTML = '';
         }
     }
 
