@@ -315,38 +315,78 @@ function renderCrateIcon(crate, sizeClass = 'crate-badge-emoji') {
 }
 ```
 
-**MPC2000 Chunky Icon Styling:**
-Icons use SVG filters defined in `base.html` to achieve thicker, chunkier lines that match the hardware aesthetic:
+**MPC2000 Icon System - Two Approaches:**
+
+The app uses two icon systems for different purposes:
+
+1. **CSS Pixel Art Icons (`.px-icon`)** - For fixed UI action icons (link, edit, sync, notes, tag)
+2. **SVG Mask Icons (`.emoji-icon`)** - For user-selectable crate emoji icons
+
+---
+
+**CSS Pixel Art Icons:**
+Pure CSS icons using box-shadow technique. Each shadow = 1 pixel on a 12x12 grid, scaled up for display.
 
 ```html
-<!-- In base.html - hidden SVG filter definitions -->
-<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute;">
-    <defs>
-        <filter id="icon-chunky" x="-25%" y="-25%" width="150%" height="150%">
-            <feMorphology operator="dilate" radius="0.4" in="SourceGraphic"/>
-        </filter>
-        <filter id="icon-chunky-lg" x="-25%" y="-25%" width="150%" height="150%">
-            <feMorphology operator="dilate" radius="0.6" in="SourceGraphic"/>
-        </filter>
-    </defs>
-</svg>
+<!-- Usage -->
+<span class="px-icon px-icon--link"></span>
+<span class="px-icon px-icon--edit"></span>
+<span class="px-icon px-icon--sync"></span>
+<span class="px-icon px-icon--notes"></span>
+<span class="px-icon px-icon--tag"></span>
+
+<!-- Custom size via CSS variable -->
+<span class="px-icon px-icon--link" style="--px-scale: 2;"></span>
 ```
 
-CSS applies the filter automatically:
+Available icons:
+| Class | Icon | Usage |
+|-------|------|-------|
+| `.px-icon--link` | Chain link | View on Discogs |
+| `.px-icon--edit` | Pencil | Edit on Discogs |
+| `.px-icon--sync` | Circular arrows | Sync button |
+| `.px-icon--notes` | Paper with lines | Track notes |
+| `.px-icon--tag` | Price tag | Add tag |
+
+**Creating new pixel art icons:**
 ```css
-.emoji-icon {
-    filter: url(#icon-chunky);
-    image-rendering: pixelated;  /* Stepped/aliased edges */
-}
-
-/* Larger icons use stronger dilation */
-.crate-emoji-icon,
-.crate-emoji-icon-lg {
-    filter: url(#icon-chunky-lg);
+.px-icon--example {
+    color: currentColor;
+    box-shadow:
+        /* Each value is: Xpx Ypx (coordinates on 12x12 grid) */
+        3px 1px, 4px 1px, 5px 1px,  /* Row 1 */
+        2px 2px, 6px 2px,            /* Row 2 */
+        /* ... etc */;
 }
 ```
 
-The `feMorphology` filter with `dilate` operator expands the shape outward, effectively thickening all lines. The `radius` value controls thickness (0.4 for small icons, 0.6 for larger ones).
+---
+
+**SVG Mask Icons (Crate Emoji):**
+For crate icons where users choose from 3000+ OpenMoji emoji. Uses CSS `mask-image` with SVG filter for chunky lines.
+
+```html
+<span class="emoji-icon crate-emoji-icon"
+      style="-webkit-mask-image: url('/static/emoji/1F30A.svg');
+             mask-image: url('/static/emoji/1F30A.svg');
+             color: #448361;"></span>
+```
+
+SVG filters in `base.html` thicken lines:
+```html
+<filter id="icon-chunky" x="-50%" y="-50%" width="200%" height="200%">
+    <feMorphology operator="dilate" radius="1.2" in="SourceGraphic"/>
+</filter>
+<filter id="icon-chunky-lg" x="-50%" y="-50%" width="200%" height="200%">
+    <feMorphology operator="dilate" radius="1.8" in="SourceGraphic"/>
+</filter>
+```
+
+CSS applies filter automatically:
+```css
+.emoji-icon { filter: url(#icon-chunky); }
+.crate-emoji-icon, .crate-emoji-icon-lg { filter: url(#icon-chunky-lg); }
+```
 
 #### Sidebar Panel (Master-Detail Pattern)
 The sidebar panel pushes content rather than overlaying. Key implementation details:
