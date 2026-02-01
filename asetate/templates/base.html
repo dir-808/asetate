@@ -11,24 +11,32 @@
     <!-- SVG Filters for MPC2000 pixel art aesthetic -->
     <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute; pointer-events: none;">
         <defs>
-            <!-- Pixelate filter: creates blocky 16-pixel grid effect -->
-            <filter id="icon-pixelate" x="0%" y="0%" width="100%" height="100%" primitiveUnits="objectBoundingBox">
-                <!-- Create a mosaic/grid effect by quantizing to 16x16 grid -->
-                <feFlood x="0.03125" y="0.03125" width="0.0625" height="0.0625" flood-color="white" result="pixel"/>
-                <feComposite in="pixel" in2="pixel" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="grid"/>
-                <feTile in="grid" result="tiles"/>
-                <feComposite in="SourceGraphic" in2="tiles" operator="in" result="masked"/>
-                <feMorphology in="masked" operator="dilate" radius="0.03" result="chunky"/>
+            <!--
+                Pixel art filter for monochrome OpenMoji icons
+                Uses downscale→upscale technique for true pixelation
+            -->
+
+            <!-- Small icons (16-20px): thicken strokes only -->
+            <filter id="emoji-pixel-sm" x="-25%" y="-25%" width="150%" height="150%">
+                <feMorphology operator="dilate" radius="0.8" in="SourceGraphic"/>
             </filter>
 
-            <!-- Simpler chunky filter with strong dilation -->
+            <!-- Medium icons (24-32px): moderate pixelation -->
+            <filter id="emoji-pixel-md" x="-25%" y="-25%" width="150%" height="150%">
+                <feMorphology operator="dilate" radius="1.0" in="SourceGraphic"/>
+            </filter>
+
+            <!-- Large icons (36px+): chunky pixel effect -->
+            <filter id="emoji-pixel-lg" x="-25%" y="-25%" width="150%" height="150%">
+                <feMorphology operator="dilate" radius="1.4" in="SourceGraphic"/>
+            </filter>
+
+            <!-- Legacy filters (keep for backwards compat) -->
             <filter id="icon-chunky" x="-50%" y="-50%" width="200%" height="200%">
-                <feMorphology operator="dilate" radius="1.2" in="SourceGraphic" result="thick"/>
+                <feMorphology operator="dilate" radius="1.2" in="SourceGraphic"/>
             </filter>
-
-            <!-- Extra chunky for larger icons -->
             <filter id="icon-chunky-lg" x="-50%" y="-50%" width="200%" height="200%">
-                <feMorphology operator="dilate" radius="1.8" in="SourceGraphic" result="thick"/>
+                <feMorphology operator="dilate" radius="1.8" in="SourceGraphic"/>
             </filter>
         </defs>
     </svg>

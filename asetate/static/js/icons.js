@@ -5,18 +5,51 @@
  * Import this module in any script that needs icons.
  *
  * Usage:
- *     import { PIXEL_ICONS, renderPixelIcon, renderCrateIcon, renderPixelIconGrid } from '/static/js/icons.js';
+ *     import { EMOJI_ICONS, renderEmojiIcon, renderCrateIcon, renderEmojiIconGrid } from '/static/js/icons.js';
  *
- *     renderPixelIcon('vinyl', 2);
- *     renderCrateIcon(crate, 1.5);
- *     renderPixelIconGrid(container, onSelectCallback, 'vinyl');
+ *     renderEmojiIcon('vinyl', 24);
+ *     renderCrateIcon(crate, 32);
+ *     renderEmojiIconGrid(container, onSelectCallback, 'vinyl');
  */
 
 /**
- * Available pixel icons for crates
+ * Emoji code mapping - OpenMoji SVG filenames
+ * Maps friendly icon names to OpenMoji unicode points
+ */
+export const EMOJI_CODES = {
+    folder: '1F4C1',
+    vinyl: '1F4BF',
+    headphones: '1F3A7',
+    music: '1F3B5',
+    speaker: '1F50A',
+    disco: '1FAA9',
+    wave: '1F30A',
+    fire: '1F525',
+    bolt: '26A1',
+    star: '2B50',
+    heart: '2764',
+    diamond: '1F48E',
+    crown: '1F451',
+    sun: '1F31E',
+    moon: '1F319',
+    globe: '1F30D',
+    clock: '1F570',
+    skull: '1F480',
+    box: '1F4E6',
+    check: '2714',
+    plus: '2795',
+    link: '1F517',
+    edit: '270F',
+    sync: '1F504',
+    notes: '1F4DD',
+    tag: '1F3F7',
+};
+
+/**
+ * Available emoji icons for crates
  * This is the single source of truth for icon options
  */
-export const PIXEL_ICONS = [
+export const EMOJI_ICONS = [
     { name: 'folder', label: 'Folder' },
     { name: 'vinyl', label: 'Vinyl' },
     { name: 'headphones', label: 'Headphones' },
@@ -40,69 +73,100 @@ export const PIXEL_ICONS = [
     { name: 'plus', label: 'Plus' },
 ];
 
+/** Legacy alias */
+export const PIXEL_ICONS = EMOJI_ICONS;
+
 /** Default icon when none is specified */
 export const DEFAULT_ICON = 'folder';
 
 /**
- * Render a pixel icon HTML string
+ * Get filter size class based on icon size
+ * @param {number} size - Size in pixels
+ * @returns {string} Filter size class (sm, md, lg)
+ */
+function getFilterSize(size) {
+    if (size <= 20) return 'sm';
+    if (size >= 36) return 'lg';
+    return 'md';
+}
+
+/**
+ * Render an emoji icon HTML string (OpenMoji SVG with pixel art filter)
  *
  * @param {string} name - Icon name (e.g., 'vinyl', 'folder')
- * @param {number} scale - Size multiplier (default 1.5)
+ * @param {number} size - Size in pixels (default 24)
  * @param {string|null} color - Optional color (hex or CSS color)
  * @returns {string} HTML string for the icon
  */
-export function renderPixelIcon(name, scale = 1.5, color = null) {
+export function renderEmojiIcon(name, size = 24, color = null) {
+    const code = EMOJI_CODES[name] || EMOJI_CODES[DEFAULT_ICON];
+    const filterSize = getFilterSize(size);
     const colorStyle = color ? ` color: ${color};` : '';
-    return `<span class="px-icon px-icon--${name}" style="--px-scale: ${scale};${colorStyle}"></span>`;
+    return `<span class="emoji-icon emoji-icon--${filterSize}" style="width: ${size}px; height: ${size}px;${colorStyle} -webkit-mask-image: url('/static/emoji/${code}.svg'); mask-image: url('/static/emoji/${code}.svg');"></span>`;
 }
 
 /**
- * Render a crate's icon with its color
+ * Render a crate's icon with its color (emoji version)
  *
  * @param {Object} crate - Crate object with icon and color_hex properties
- * @param {number} scale - Size multiplier (default 1.2)
+ * @param {number} size - Size in pixels (default 24)
  * @returns {string} HTML string for the crate icon
  */
-export function renderCrateIcon(crate, scale = 1.2) {
+export function renderCrateIcon(crate, size = 24) {
     const colorStyle = crate.color_hex ? ` color: ${crate.color_hex};` : '';
     let iconName = DEFAULT_ICON;
-    if (crate.icon && crate.icon.startsWith('pixel:')) {
-        iconName = crate.icon.slice(6);
+    // Support both 'emoji:name' and legacy 'pixel:name' formats
+    if (crate.icon) {
+        if (crate.icon.startsWith('emoji:')) {
+            iconName = crate.icon.slice(6);
+        } else if (crate.icon.startsWith('pixel:')) {
+            iconName = crate.icon.slice(6);
+        }
     }
-    return `<span class="px-icon px-icon--${iconName}" style="--px-scale: ${scale};${colorStyle}"></span>`;
+    const code = EMOJI_CODES[iconName] || EMOJI_CODES[DEFAULT_ICON];
+    const filterSize = getFilterSize(size);
+    return `<span class="emoji-icon emoji-icon--${filterSize}" style="width: ${size}px; height: ${size}px;${colorStyle} -webkit-mask-image: url('/static/emoji/${code}.svg'); mask-image: url('/static/emoji/${code}.svg');"></span>`;
 }
 
 /**
- * Render a pixel icon grid for icon selection
+ * Render an emoji icon grid for icon selection
  *
  * @param {HTMLElement} container - Container element to render grid into
  * @param {Function} onSelect - Callback when icon is selected (receives icon name)
  * @param {string|null} selectedIcon - Currently selected icon name (for highlighting)
  */
-export function renderPixelIconGrid(container, onSelect, selectedIcon = null) {
+export function renderEmojiIconGrid(container, onSelect, selectedIcon = null) {
     container.innerHTML = '';
-    PIXEL_ICONS.forEach(icon => {
+    EMOJI_ICONS.forEach(icon => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'pixel-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
+        btn.className = 'emoji-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
         btn.dataset.icon = icon.name;
         btn.title = icon.label;
-        btn.innerHTML = renderPixelIcon(icon.name, 1.5);
+        btn.innerHTML = renderEmojiIcon(icon.name, 24);
         btn.addEventListener('click', () => onSelect(icon.name));
         container.appendChild(btn);
     });
 }
 
+/** Legacy alias for grid rendering */
+export const renderPixelIconGrid = renderEmojiIconGrid;
+
 /**
  * Get icon name from a crate's icon field
- * Handles the "pixel:iconname" format
+ * Handles both "emoji:iconname" and legacy "pixel:iconname" formats
  *
  * @param {string|null} iconField - The crate.icon field value
  * @returns {string} The icon name (or default)
  */
 export function getIconName(iconField) {
-    if (iconField && iconField.startsWith('pixel:')) {
-        return iconField.slice(6);
+    if (iconField) {
+        if (iconField.startsWith('emoji:')) {
+            return iconField.slice(6);
+        }
+        if (iconField.startsWith('pixel:')) {
+            return iconField.slice(6);
+        }
     }
     return DEFAULT_ICON;
 }
@@ -111,20 +175,33 @@ export function getIconName(iconField) {
  * Format icon name for storage in database
  *
  * @param {string} iconName - Plain icon name (e.g., 'vinyl')
- * @returns {string} Formatted for storage (e.g., 'pixel:vinyl')
+ * @returns {string} Formatted for storage (e.g., 'emoji:vinyl')
  */
 export function formatIconForStorage(iconName) {
-    return `pixel:${iconName}`;
+    return `emoji:${iconName}`;
+}
+
+/**
+ * Legacy: Render a CSS pixel art icon
+ * @deprecated Use renderEmojiIcon instead
+ */
+export function renderPixelIcon(name, scale = 1.5, color = null) {
+    const colorStyle = color ? ` color: ${color};` : '';
+    return `<span class="px-icon px-icon--${name}" style="--px-scale: ${scale};${colorStyle}"></span>`;
 }
 
 // Also expose on window for AJAX-loaded partials that can't use ES6 imports
 if (typeof window !== 'undefined') {
     window.AsetateIcons = {
+        EMOJI_ICONS,
+        EMOJI_CODES,
         PIXEL_ICONS,
         DEFAULT_ICON,
-        renderPixelIcon,
+        renderEmojiIcon,
         renderCrateIcon,
+        renderEmojiIconGrid,
         renderPixelIconGrid,
+        renderPixelIcon,
         getIconName,
         formatIconForStorage,
     };

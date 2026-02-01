@@ -2727,6 +2727,40 @@ body.crate-panel-open .crates-main {
     background: var(--bg-elevated);
 }
 
+/* Emoji Icon Grid (for icon picker with OpenMoji SVGs) */
+.emoji-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    padding: var(--space-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.emoji-icon-grid-item {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.emoji-icon-grid-item:hover {
+    border-color: var(--border);
+    background: var(--bg-elevated);
+}
+
+.emoji-icon-grid-item.selected {
+    border-color: var(--primary);
+    background: var(--bg-elevated);
+}
+
 /* Pixel icons in crate cards */
 .crate-pixel-icon {
     width: 32px;
@@ -2755,12 +2789,12 @@ body.crate-panel-open .crates-main {
 }
 
 /* ============================================
-   EMOJI ICONS (SVG)
+   EMOJI ICONS (OpenMoji SVG)
    Using mask-image for color inheritance
+   MPC2000 pixel art aesthetic via filters
    ============================================ */
 
-/* Base emoji icon - uses mask for color control
-   MPC2000 pixel art aesthetic via chunky filter + pixelated rendering */
+/* Base emoji icon - uses mask for color control */
 .emoji-icon {
     display: inline-block;
     background-color: currentColor;
@@ -2770,19 +2804,32 @@ body.crate-panel-open .crates-main {
     mask-position: center;
     -webkit-mask-size: contain;
     mask-size: contain;
-    /* Thicken lines with dilation filter */
-    filter: url(#icon-chunky);
     /* Force pixelated/aliased rendering */
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+    /* Crisp SVG edges */
+    shape-rendering: crispEdges;
 }
 
-/* Larger icons use stronger dilation for consistent visual weight */
+/* Size-based filters for consistent visual weight at different sizes */
+.emoji-icon--sm {
+    filter: url(#emoji-pixel-sm);
+}
+
+.emoji-icon--md {
+    filter: url(#emoji-pixel-md);
+}
+
+.emoji-icon--lg {
+    filter: url(#emoji-pixel-lg);
+}
+
+/* Legacy size classes (backwards compat) */
 .crate-emoji-icon,
 .crate-emoji-icon-lg,
 .emoji-grid-item .emoji-icon {
-    filter: url(#icon-chunky-lg);
+    filter: url(#emoji-pixel-lg);
 }
 
 /* ============================================
