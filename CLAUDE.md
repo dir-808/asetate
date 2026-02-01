@@ -46,7 +46,9 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 
 ### Design Tokens Quick Reference
 
-**ALWAYS use design tokens. NEVER hardcode pixel values for spacing.**
+> ⚠️ **CRITICAL: ALWAYS use design tokens. NEVER hardcode pixel values, colors, or sizes.**
+>
+> Before writing any CSS value, check if a token exists. If you need a value not covered by tokens, consider if it should be added as a new token.
 
 #### Spacing (8pt grid)
 | Token | Value | Usage |
@@ -64,21 +66,91 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 |---------|-------|-------|
 | Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
 | Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
+| Accent/indicator borders | 3px | `--border-width-accent` |
 
-#### Sizing
+#### Colors
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary` | #f97316 | Orange - interactive elements, playable |
+| `--primary-hover` | #ea580c | Orange hover state |
+| `--primary-dim` | #7c2d12 | Dimmed orange background |
+| `--success` | #4ade80 | Green - positive states, playable counts |
+| `--lime` | #84cc16 | Lime - energy level 2 |
+| `--warning` | #fbbf24 | Amber - notes, caution |
+| `--error` | #ef4444 | Red - errors, high energy |
+| `--lcd-bg` | #0a1210 | LCD background |
+| `--lcd-text` | #4ade80 | LCD text (green) |
+| `--lcd-dim` | #22543d | LCD muted text |
+| `--border` | #2a2a2a | Standard border color |
+| `--border-light` | #3a3a3a | Lighter border |
+
+#### Icon Sizes
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--icon-sm` | 14px | Crate badges on cards |
+| `--icon-base` | 16px | Inline icons, dropdown emoji |
 | `--icon-md` | 18px | Action buttons, inline icons |
 | `--icon-lg` | 20px | Standalone icons, grid pickers |
 | `--icon-xl` | 24px | Large icon display |
-| `--btn-sm-size` | 28px | Small square buttons (toggle, mini actions) |
+| `--icon-2xl` | 32px | Icon buttons, emoji grid items |
+| `--icon-3xl` | 40px | Icon previews |
+
+#### Component Sizes
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--btn-sm-size` | 28px | Small square buttons |
 | `--btn-discogs-width` | 40px | Discogs action button width |
 | `--input-sm-width` | 36px | BPM/Key input fields |
 | `--track-toggle-width` | 30px | Toggle checkbox area width |
 | `--track-indent` | calc | Fields indentation (toggle + gap) |
 | `--sidebar-width` | 450px | Release panel sidebar |
 | `--crate-panel-width` | 420px | Crate edit panel |
+| `--led-size` | 8px | LED indicator dots, scrollbar |
+| `--led-size-sm` | 6px | Small LED indicators |
+
+#### Toggle Sizes
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--toggle-width` | 44px | Standard toggle width |
+| `--toggle-height` | 24px | Standard toggle height |
+| `--toggle-thumb` | 16px | Toggle knob size |
+| `--toggle-travel` | 20px | Knob travel distance |
+| `--toggle-mini-width` | 28px | Mini toggle width |
+| `--toggle-mini-height` | 16px | Mini toggle height |
+| `--toggle-mini-thumb` | 10px | Mini toggle knob |
+| `--toggle-mini-travel` | 12px | Mini knob travel |
+
+#### Max-Width Constraints
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--max-width-page` | 1400px | Page content max width |
+| `--max-width-narrow` | 600px | Narrow forms/pages (sync, settings) |
+| `--max-width-sidebar` | 400px | Sidebar dropdowns, modals |
+| `--max-width-card` | 280px | Card min-width |
+
+#### Table Column Widths
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--col-pos-width` | 60px | Track position column |
+| `--col-duration-width` | 70px | Duration column |
+| `--col-field-width` | 80px | BPM, Key, Energy columns |
+| `--col-playable-width` | 70px | Playable toggle column |
+| `--col-title-min` | 200px | Minimum title column width |
+| `--col-tags-min` | 150px | Minimum tags column width |
+
+#### Energy Bar Sizes
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--energy-bar-height` | 18px | Standard energy bar height |
+| `--energy-bar-sm-height` | 14px | Small energy bar height |
+| `--energy-segment-width` | 14px | Energy segment width |
+| `--energy-segment-sm-width` | 10px | Small energy segment |
+
+#### Cover/Image Sizes
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--cover-lg` | 250px | Large cover (release detail) |
+| `--cover-sm` | 100px | Small cover (sidebar) |
 
 #### Font Sizes
 | Token | Size | Usage |
@@ -89,6 +161,44 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--text-base` | 1rem | Body text |
 | `--text-lg` | 1.125rem | Emphasis |
 | `--text-xl` | 1.5rem | Headings |
+| `--text-2xl` | 2rem | Page titles, large icons |
+
+### Token Usage Rules
+
+**DO:**
+```css
+/* Use spacing tokens */
+padding: var(--space-md);
+gap: var(--space-sm);
+
+/* Use border tokens */
+border: var(--border-width-sm) solid var(--border);
+
+/* Use color tokens */
+color: var(--error);
+background: var(--lcd-bg);
+
+/* Use size tokens */
+width: var(--icon-xl);
+max-width: var(--max-width-sidebar);
+```
+
+**DON'T:**
+```css
+/* NO hardcoded pixels */
+padding: 16px;           /* Use var(--space-md) */
+width: 24px;             /* Use var(--icon-xl) */
+border: 1px solid #2a2a2a; /* Use var(--border-width-sm) solid var(--border) */
+
+/* NO hardcoded colors */
+color: #ef4444;          /* Use var(--error) */
+background: #0a1210;     /* Use var(--lcd-bg) */
+```
+
+**Exceptions (OK to hardcode):**
+- `font-size: 14px` on `html` element (root font size)
+- Responsive breakpoint values in `@media` queries
+- Third-party brand colors (e.g., Discogs button) with a comment explaining why
 
 ### Utility Classes
 Use utility classes instead of inline styles. Full list available in style.css.
@@ -239,8 +349,8 @@ Use `.activity-led` for any button where the user waits for a process to complet
 /* Activity LED - hidden by default, shows blinking when loading */
 .activity-led {
     display: none;
-    width: 8px;
-    height: 8px;
+    width: var(--led-size);
+    height: var(--led-size);
     background: currentColor;
     border-radius: 50%; /* LED dots mimic hardware */
     margin-right: var(--space-xs);
@@ -712,8 +822,8 @@ The nav bar should feel like the MPC's top control panel - a functional toolbar,
 
 /* LED indicator inside nav link - always visible */
 .nav-links a .led {
-    width: 8px;
-    height: 8px;
+    width: var(--led-size);
+    height: var(--led-size);
     background: var(--border); /* Grey when inactive */
     border-radius: 50%; /* LEDs are round - mimics hardware */
 }
@@ -759,7 +869,7 @@ Settings should feel like the MPC's "GLOBAL PROGRAM" or "MIDI/SYNC" parameter sc
 ```css
 .toggle-switch {
     padding: var(--space-sm) var(--space-md);
-    border: 2px solid var(--border);
+    border: var(--border-width-md) solid var(--border);
     background: transparent;
     cursor: pointer;
     display: flex;
@@ -772,8 +882,8 @@ Settings should feel like the MPC's "GLOBAL PROGRAM" or "MIDI/SYNC" parameter sc
 }
 
 .toggle-switch .led {
-    width: 8px;
-    height: 8px;
+    width: var(--led-size);
+    height: var(--led-size);
     background: var(--border);
     border-radius: 50%;
 }
