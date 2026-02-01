@@ -1979,7 +1979,7 @@ input::placeholder, textarea::placeholder {
 
 /* Release notes simple - size variant for detail page */
 .release-notes-simple {
-    width: 400px;
+    width: var(--max-width-sidebar);
     height: 250px;
 }
 
@@ -2756,7 +2756,7 @@ body.crate-panel-open .crates-main {
 
 .icon-text-input {
     flex: 1;
-    max-width: 100px;
+    max-width: var(--cover-sm);
     padding: var(--space-xs);
     border: var(--border-width-sm) solid var(--border);
     /* No border-radius - MPC style */
@@ -4542,7 +4542,7 @@ body.crate-panel-open .crates-main {
     text-transform: uppercase;
     letter-spacing: 0.02em;
     flex-shrink: 0;
-    min-width: 24px;
+    min-width: var(--icon-xl);
 }
 
 /* Position turns orange when track is playable */
@@ -4786,7 +4786,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-tag-input {
-    width: 50px;
+    width: var(--slider-width);
     padding: var(--space-2xs) var(--space-xs);
     font-size: 0.55rem;
     background-color: rgba(74, 222, 128, 0.1);
@@ -5231,7 +5231,7 @@ body.crate-panel-open .crates-main {
 
 /* Large variant for full-page view */
 .notes-textarea--lg {
-    width: 400px;
+    width: var(--max-width-sidebar);
     height: 250px;
 }
 
