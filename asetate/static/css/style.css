@@ -5111,9 +5111,9 @@ body.crate-panel-open .crates-main {
 .panel-notes-lcd {
     background-color: var(--lcd-bg);
     border: var(--border-width-md) solid var(--border);
-    border-top: var(--border-width-sm) solid var(--lcd-dim);  /* Subtle separator within LCD area */
-    /* Pull up to overcome parent gap and overlap card's bottom border, leaving 1px separator */
-    margin-top: calc((var(--space-sm) + var(--border-width-md)) * -1);
+    border-top: none;  /* Card's bottom border serves as separator */
+    /* Pull up to sit adjacent to card (overcome parent gap only) */
+    margin-top: calc(var(--space-sm) * -1);
     color: var(--lcd-text);
     min-height: var(--textarea-min-height);
     max-height: var(--textarea-max-height);
@@ -5126,8 +5126,6 @@ body.crate-panel-open .crates-main {
 
 .panel-notes-lcd:focus {
     border-color: var(--success);
-    border-top-color: var(--lcd-dim);
-    /* Keep subtle green glow on focus to indicate active input */
     box-shadow: var(--shadow-inset-lcd), var(--shadow-focus-success);
 }
 
