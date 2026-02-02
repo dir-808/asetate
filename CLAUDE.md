@@ -299,6 +299,14 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--leading-normal` | 1.5 | Standard readable text |
 | `--leading-relaxed` | 1.6 | Body text, long-form reading |
 
+#### Font Weights
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--weight-normal` | 400 | Normal/regular text |
+| `--weight-medium` | 500 | Medium emphasis |
+| `--weight-semibold` | 600 | Semi-bold, labels, buttons |
+| `--weight-bold` | 700 | Bold, headings, strong emphasis |
+
 #### Z-Index Scale
 | Token | Value | Usage |
 |-------|-------|-------|

@@ -259,6 +259,12 @@
     --leading-normal: 1.5;      /* Standard readable text */
     --leading-relaxed: 1.6;     /* Body text, long-form reading */
 
+    /* Font weights */
+    --weight-normal: 400;       /* Normal/regular text */
+    --weight-medium: 500;       /* Medium emphasis */
+    --weight-semibold: 600;     /* Semi-bold, labels, buttons */
+    --weight-bold: 700;         /* Bold, headings, strong emphasis */
+
     /* -----------------------------------------
        Z-INDEX SCALE
        Layering system for stacking contexts
@@ -412,7 +418,7 @@ a:hover {
 
 .nav-brand a {
     font-size: var(--text-md);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     color: var(--primary);
     text-decoration: none;
     letter-spacing: var(--tracking-wider);
@@ -432,7 +438,7 @@ a:hover {
     color: var(--text-secondary);
     text-decoration: none;
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     padding: var(--space-sm) var(--space-md);
@@ -482,7 +488,7 @@ a:hover {
     text-decoration: none;
     color: var(--text-secondary);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-wide);  /* Match nav-links for consistency */
     text-transform: uppercase;
     padding: var(--space-sm) var(--space-md);
@@ -547,7 +553,7 @@ a:hover {
 
 .dashboard-header h1 {
     font-size: var(--text-2xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     margin-bottom: var(--space-sm);
@@ -589,7 +595,7 @@ a:hover {
 
 .stat-value {
     font-size: var(--text-2xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     color: var(--lcd-text);
     font-variant-numeric: tabular-nums;
 }
@@ -642,7 +648,7 @@ a:hover {
     padding: var(--space-sm) var(--space-lg);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
@@ -781,7 +787,7 @@ input::placeholder, textarea::placeholder {
 .form-group label {
     display: block;
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     margin-bottom: var(--space-xs);
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -804,7 +810,7 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
     color: var(--text-secondary);
@@ -948,7 +954,7 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     padding: var(--space-xs) var(--space-sm);
     font-size: var(--text-xxs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     background-color: var(--bg-elevated);
     border: var(--border-width-sm) solid var(--border);
     color: var(--text-secondary);
@@ -969,7 +975,7 @@ input::placeholder, textarea::placeholder {
 
 .page-header h1 {
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-xs);
@@ -1071,7 +1077,7 @@ input::placeholder, textarea::placeholder {
 
 .sync-stat-value {
     font-size: var(--text-heading);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     color: var(--lcd-text);
     font-variant-numeric: tabular-nums;
 }
@@ -1136,7 +1142,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .progress-percent {
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--lcd-text);
 }
 
@@ -1160,7 +1166,7 @@ input::placeholder, textarea::placeholder {
 
 .current-release-text {
     display: block;
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1182,7 +1188,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .live-stat-value {
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--lcd-text);
 }
 
@@ -1203,7 +1209,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .error-title {
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--error);
 }
 
@@ -1295,7 +1301,7 @@ input::placeholder, textarea::placeholder {
 .notification-badge {
     padding: var(--space-2xs) var(--space-sm);
     font-size: var(--text-xxs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-tight);
     flex-shrink: 0;
@@ -1353,7 +1359,7 @@ input::placeholder, textarea::placeholder {
     color: var(--lcd-text);
     padding: var(--space-2xs) var(--space-sm);
     font-size: var(--text-xxs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-tight);
 }
@@ -1398,7 +1404,7 @@ input::placeholder, textarea::placeholder {
 
 .collection-title h1 {
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-xs);
@@ -1452,7 +1458,7 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-sm) var(--space-md);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--text-secondary);
     text-decoration: none;
     text-transform: uppercase;
@@ -1497,7 +1503,7 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-sm) var(--space-md);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
@@ -1644,7 +1650,7 @@ input::placeholder, textarea::placeholder {
 
 .release-title {
     font-size: var(--text-caption);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     line-height: var(--leading-snug);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1794,7 +1800,7 @@ input::placeholder, textarea::placeholder {
 
 .release-info-large h1 {
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     line-height: var(--leading-tight);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
@@ -1824,7 +1830,7 @@ input::placeholder, textarea::placeholder {
 
 .avg-bpm {
     font-family: var(--font-mono);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .bpm-varied {
@@ -1857,7 +1863,7 @@ input::placeholder, textarea::placeholder {
 
 .tracks-header h2 {
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
 }
@@ -1884,7 +1890,7 @@ input::placeholder, textarea::placeholder {
 .tracks-table th {
     text-align: left;
     padding: var(--space-sm) var(--space-md);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--text-muted);
     font-size: var(--text-xxs);
     text-transform: uppercase;
@@ -1973,12 +1979,12 @@ input::placeholder, textarea::placeholder {
 .col-pos {
     width: var(--col-pos-width);
     color: var(--primary);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .col-title { min-width: var(--col-title-min); }
 
-.track-title { font-weight: 500; }
+.track-title { font-weight: var(--weight-medium); }
 
 .track-notes-indicator {
     display: inline-block;
@@ -2156,7 +2162,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-notes-title {
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     margin-bottom: var(--space-sm);
     color: var(--text-secondary);
 }
@@ -2240,7 +2246,7 @@ input::placeholder, textarea::placeholder {
 
 .crates-header h1 {
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-xs);
@@ -2291,7 +2297,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-name {
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .crate-counts {
@@ -2373,7 +2379,7 @@ input::placeholder, textarea::placeholder {
 
 .crate-info h1 {
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
     margin-bottom: var(--space-xs);
@@ -2401,7 +2407,7 @@ input::placeholder, textarea::placeholder {
 
 .crate-section h2 {
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-md);
@@ -2435,7 +2441,7 @@ input::placeholder, textarea::placeholder {
     border-color: var(--primary);
 }
 
-.sub-crate-name { font-weight: 500; }
+.sub-crate-name { font-weight: var(--weight-medium); }
 .sub-crate-count { font-size: var(--text-xs); color: var(--text-muted); }
 
 /* Crate releases grid - fixed max-width so items reflow but don't resize */
@@ -2497,7 +2503,7 @@ input::placeholder, textarea::placeholder {
 
 .release-title-small {
     font-size: var(--text-caption);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2563,7 +2569,7 @@ input::placeholder, textarea::placeholder {
     flex: 1;
 }
 
-.track-title-sm { font-weight: 500; }
+.track-title-sm { font-weight: var(--weight-medium); }
 .track-artist-sm { font-size: var(--text-caption); color: var(--text-secondary); }
 
 .track-bpm-sm {
@@ -2605,7 +2611,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-badge-name {
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 /* Crate selector in modal */
@@ -2732,7 +2738,7 @@ body.crate-panel-open .crates-main {
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
     color: var(--crate-accent);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .crate-box:hover .crate-lid {
@@ -2774,7 +2780,7 @@ body.crate-panel-open .crates-main {
 .crate-box .crate-name {
     display: block;
     font-size: var(--text-caption);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
@@ -3141,7 +3147,7 @@ body.crate-panel-open .crates-main {
 .emoji-icon {
     display: inline-block;
     font-family: 'Noto Emoji';
-    font-weight: 500; /* Medium weight */
+    font-weight: var(--weight-medium); /* Medium weight */
     font-style: normal;
     font-size: var(--icon-xl); /* Default size (24px), override with size modifiers */
     line-height: var(--leading-none);
@@ -3407,7 +3413,7 @@ body.crate-panel-open .crates-main {
 
 .modal-header h2 {
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
 }
@@ -3462,7 +3468,7 @@ body.crate-panel-open .crates-main {
     gap: var(--space-xs);
     padding: var(--space-2xs) var(--space-sm);
     font-size: var(--text-xxs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     background-color: var(--tag-color, var(--tag-default));
     color: var(--bg-primary);
     white-space: nowrap;
@@ -3565,7 +3571,7 @@ body.crate-panel-open .crates-main {
 
 .export-section h3 {
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     margin-bottom: var(--space-md);
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -3606,7 +3612,7 @@ body.crate-panel-open .crates-main {
 .filter-group > label:not(.checkbox-label) {
     display: block;
     font-size: var(--text-xxs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     margin-bottom: var(--space-xs);
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -3667,7 +3673,7 @@ body.crate-panel-open .crates-main {
 
 .preview-header h2 {
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
 }
@@ -3699,7 +3705,7 @@ body.crate-panel-open .crates-main {
 .preview-table th {
     text-align: left;
     padding: var(--space-sm) var(--space-md);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--lcd-dim);
     font-size: var(--text-2xs);
     text-transform: uppercase;
@@ -3787,7 +3793,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-2xs) var(--space-sm);
     /* No border-radius - MPC style */
     font-size: var(--text-caption);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .cue-hint {
@@ -3872,7 +3878,7 @@ body.crate-panel-open .crates-main {
 .toggle-label-right {
     font-size: var(--text-caption);
     color: var(--primary);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .toggle-hint {
@@ -3944,7 +3950,7 @@ body.crate-panel-open .crates-main {
 
 .settings-section h2 {
     font-size: var(--text-body);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     padding-bottom: var(--space-sm);
@@ -3973,7 +3979,7 @@ body.crate-panel-open .crates-main {
 
 .account-name {
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .account-email {
@@ -4034,7 +4040,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm) var(--space-lg);
     font-family: var(--font-mono);
     font-size: var(--text-body);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     cursor: pointer;
     text-decoration: none;
     text-transform: uppercase;
@@ -4073,7 +4079,7 @@ body.crate-panel-open .crates-main {
 .token-form label {
     display: block;
     margin-bottom: var(--space-xs);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 /* LCD-style form inputs */
@@ -4192,7 +4198,7 @@ body.crate-panel-open .crates-main {
 
 .auto-backup-section h3 {
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     margin-bottom: var(--space-sm);
@@ -4205,7 +4211,7 @@ body.crate-panel-open .crates-main {
 .auto-backup-form label[for="backup_path"] {
     display: block;
     margin-bottom: var(--space-xs);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .auto-backup-form small {
@@ -4597,7 +4603,7 @@ body.crate-panel-open .crates-main {
 
 .panel-info h2 {
     font-size: var(--text-base);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
     line-height: var(--leading-tight);
@@ -4708,7 +4714,7 @@ body.crate-panel-open .crates-main {
 /* Position indicator - inline with title, bold, same size */
 .panel-track-pos {
     font-size: var(--text-xs);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     color: var(--lcd-dim);
     text-transform: uppercase;
     letter-spacing: var(--tracking-tight);
@@ -4725,7 +4731,7 @@ body.crate-panel-open .crates-main {
     flex: 1;
     min-width: 0;
     font-size: var(--text-xs);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     color: var(--lcd-text);
     white-space: nowrap;
     overflow: hidden;
@@ -4854,7 +4860,7 @@ body.crate-panel-open .crates-main {
     display: inline-block;
     padding: 0 var(--space-xs);
     font-size: var(--text-3xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     background-color: var(--tag-color, var(--tag-default));
     color: var(--bg-primary);
     text-transform: uppercase;
@@ -5151,7 +5157,7 @@ body.crate-panel-open .crates-main {
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     color: var(--success);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 /* Panel notes modal */
@@ -5185,7 +5191,7 @@ body.crate-panel-open .crates-main {
 
 .panel-notes-modal-header h4 {
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
 }
@@ -5694,10 +5700,10 @@ body.crate-panel-open .crates-main {
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
-.font-normal { font-weight: 400; }
-.font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.font-bold { font-weight: 700; }
+.font-normal { font-weight: var(--weight-normal); }
+.font-medium { font-weight: var(--weight-medium); }
+.font-semibold { font-weight: var(--weight-semibold); }
+.font-bold { font-weight: var(--weight-bold); }
 
 .uppercase { text-transform: uppercase; }
 .lowercase { text-transform: lowercase; }
