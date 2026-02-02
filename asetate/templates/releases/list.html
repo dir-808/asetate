@@ -86,18 +86,25 @@
                     {% endif %}
                 </div>
                 <div class="release-info">
-                    <h3 class="release-title">{{ release.display_title }}</h3>
+                    <div class="release-title-row">
+                        <h3 class="release-title">{{ release.display_title }}</h3>
+                        {% if release.year %}
+                        <span class="release-year">{{ release.year }}</span>
+                        {% endif %}
+                    </div>
                     <p class="release-artist">{{ release.display_artist }}</p>
-                    {% if release.label %}
-                    <p class="release-label">{{ release.label }}</p>
-                    {% endif %}
-                    {% if release.catno or release.year %}
-                    <p class="release-meta">
-                        {%- set meta_parts = [] -%}
-                        {%- if release.catno %}{% set _ = meta_parts.append(release.catno) %}{% endif -%}
-                        {%- if release.year %}{% set _ = meta_parts.append(release.year|string) %}{% endif -%}
-                        {{ meta_parts|join(' · ') }}
-                    </p>
+                    {% if release.label or release.catno %}
+                    <div class="release-label-row">
+                        {% if release.label %}
+                        <span class="release-label">{{ release.label }}</span>
+                        {% endif %}
+                        {% if release.label and release.catno %}
+                        <span class="release-label-divider"></span>
+                        {% endif %}
+                        {% if release.catno %}
+                        <span class="release-catno">{{ release.catno }}</span>
+                        {% endif %}
+                    </div>
                     {% endif %}
                 </div>
             </div>

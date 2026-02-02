@@ -1689,6 +1689,14 @@ input::placeholder, textarea::placeholder {
     flex: 1; /* Fill remaining card height so no grey gap shows */
 }
 
+/* Title row: title left, year right */
+.release-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-xs);
+}
+
 .release-title {
     font-size: var(--text-caption);
     font-weight: var(--weight-semibold);
@@ -1699,6 +1707,16 @@ input::placeholder, textarea::placeholder {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     color: var(--lcd-text);
+    flex: 1;
+    min-width: 0;
+}
+
+.release-year {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--text-muted);
+    flex-shrink: 0;
+    line-height: var(--leading-snug);
 }
 
 .release-artist {
@@ -1711,21 +1729,38 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap;
 }
 
+/* Label row: label left, divider, catno right */
+.release-label-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
 .release-label {
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
-    color: var(--text-primary);  /* Light grey, almost white */
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
+    min-width: 0;
 }
 
-.release-meta {
+.release-label-divider {
+    width: var(--border-width-sm);
+    height: 0.8em;
+    background: var(--text-muted);
+    opacity: var(--opacity-dim);
+    flex-shrink: 0;
+}
+
+.release-catno {
     font-size: var(--text-2xs);
-    color: var(--text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    text-align: right;
 }
 
 /* Pagination */
@@ -4521,7 +4556,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-discogs-btn:hover {
-    background-color: var(--primary-bg-medium);
+    background-color: var(--primary-bg-muted);
     color: var(--primary);
 }
 
@@ -4763,7 +4798,7 @@ body.crate-panel-open .crates-main {
     gap: var(--space-xs);
 }
 
-/* Position indicator - inline with title, bold, same size */
+/* Position indicator - centered over toggle below */
 .panel-track-pos {
     font-size: var(--text-xs);
     font-weight: var(--weight-bold);
@@ -4771,7 +4806,8 @@ body.crate-panel-open .crates-main {
     text-transform: uppercase;
     letter-spacing: var(--tracking-tight);
     flex-shrink: 0;
-    min-width: var(--icon-xl);
+    width: var(--toggle-mini-width);
+    text-align: center;
 }
 
 /* Position turns orange when track is playable */
