@@ -1703,7 +1703,7 @@ input::placeholder, textarea::placeholder {
 
 .release-artist {
     font-size: var(--text-caption);
-    font-weight: var(--weight-medium);
+    font-weight: var(--weight-semibold);
     color: var(--lcd-text);
     opacity: var(--opacity-muted);  /* Dimmed but readable */
     overflow: hidden;
