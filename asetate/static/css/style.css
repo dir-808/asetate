@@ -217,6 +217,17 @@
     --max-width-sidebar: 400px;   /* Sidebar dropdowns */
     --max-width-card: 280px;      /* Card min width */
 
+    /* Grid card sizing (for auto-fill grids) */
+    --grid-card-min: 160px;       /* Standard card min width */
+    --grid-card-max: 200px;       /* Standard card max width */
+    --grid-card-sm-min: 130px;    /* Small card min (responsive) */
+    --grid-card-sm-max: 160px;    /* Small card max (responsive) */
+    --grid-card-lg-min: 200px;    /* Large card min (crates) */
+    --grid-card-lg-max: 260px;    /* Large card max (crates) */
+    --grid-dashboard-min: 180px;  /* Dashboard card min */
+    --grid-dashboard-max: 240px;  /* Dashboard card max */
+    --grid-picker-min: 32px;      /* Color/emoji picker item */
+
     /* Energy bar sizing */
     --energy-bar-height: 18px;    /* Energy bar component height */
     --energy-bar-sm-height: 14px; /* Small energy bar height */
@@ -591,7 +602,7 @@ a:hover {
 
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 240px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-dashboard-min), var(--grid-dashboard-max)));
     gap: var(--space-md);
 }
 
@@ -1575,7 +1586,7 @@ input::placeholder, textarea::placeholder {
 /* Release grid - fixed max-width so items reflow but don't resize when panel opens */
 .releases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-min), var(--grid-card-max)));
     gap: var(--space-md);
 }
 
@@ -2470,7 +2481,7 @@ input::placeholder, textarea::placeholder {
 /* Crate releases grid - fixed max-width so items reflow but don't resize */
 .crate-releases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 260px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-lg-min), var(--grid-card-lg-max)));
     gap: var(--space-md);
 }
 
@@ -2698,7 +2709,7 @@ body.crate-panel-open .crates-main {
 /* Crate grid - square cards with fixed max-width so items reflow but don't resize */
 .crates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-min), var(--grid-card-max)));
     gap: var(--space-md);
 }
 
@@ -3016,7 +3027,7 @@ body.crate-panel-open .crates-main {
 
 .icon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-picker-min), 1fr));
     gap: var(--space-2xs);
     max-height: var(--icon-grid-max-height);
     overflow-y: auto;
@@ -4326,7 +4337,7 @@ body.crate-panel-open .crates-main {
     }
 
     .releases-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 160px));
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-sm-min), var(--grid-card-sm-max)));
     }
 
     .collection-toolbar {

@@ -236,6 +236,19 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--max-width-sidebar` | 400px | Sidebar dropdowns, modals |
 | `--max-width-card` | 280px | Card min-width |
 
+#### Grid Card Sizing
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--grid-card-min` | 160px | Standard card min width |
+| `--grid-card-max` | 200px | Standard card max width |
+| `--grid-card-sm-min` | 130px | Small card min (responsive) |
+| `--grid-card-sm-max` | 160px | Small card max (responsive) |
+| `--grid-card-lg-min` | 200px | Large card min (crates) |
+| `--grid-card-lg-max` | 260px | Large card max (crates) |
+| `--grid-dashboard-min` | 180px | Dashboard card min |
+| `--grid-dashboard-max` | 240px | Dashboard card max |
+| `--grid-picker-min` | 32px | Color/emoji picker item |
+
 #### Table Column Widths
 | Token | Value | Usage |
 |-------|-------|-------|
