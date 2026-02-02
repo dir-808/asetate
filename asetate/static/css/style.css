@@ -1714,8 +1714,7 @@ input::placeholder, textarea::placeholder {
 .release-label {
     font-size: var(--text-caption);
     font-weight: var(--weight-semibold);
-    color: var(--lcd-text);
-    opacity: var(--opacity-dim);  /* Dimmer than artist */
+    color: var(--text-primary);  /* Light grey, almost white */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
