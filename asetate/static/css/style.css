@@ -1712,7 +1712,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-label {
-    font-size: var(--text-caption);
+    font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     color: var(--text-primary);  /* Light grey, almost white */
     overflow: hidden;
