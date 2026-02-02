@@ -91,12 +91,11 @@
                     {% if release.label %}
                     <p class="release-label">{{ release.label }}</p>
                     {% endif %}
-                    {% if release.year or release.format_details or release.catno %}
+                    {% if release.catno or release.year %}
                     <p class="release-meta">
                         {%- set meta_parts = [] -%}
-                        {%- if release.year %}{% set _ = meta_parts.append(release.year|string) %}{% endif -%}
-                        {%- if release.format_details %}{% set _ = meta_parts.append(release.format_details) %}{% endif -%}
                         {%- if release.catno %}{% set _ = meta_parts.append(release.catno) %}{% endif -%}
+                        {%- if release.year %}{% set _ = meta_parts.append(release.year|string) %}{% endif -%}
                         {{ meta_parts|join(' · ') }}
                     </p>
                     {% endif %}
