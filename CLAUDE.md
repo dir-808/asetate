@@ -267,6 +267,10 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--modal-sm-max-height` | 120px | Small modal/content area |
 | `--textarea-min-height` | 60px | Minimum textarea height |
 | `--textarea-max-height` | 100px | Maximum textarea height |
+| `--icon-grid-max-height` | 180px | Icon/emoji picker grid |
+| `--icon-grid-sm-max-height` | 140px | Small icon grid |
+| `--list-max-height` | 200px | Scrollable list sections |
+| `--notes-compact-max-height` | 120px | Compact notes areas |
 
 ### Token Usage Rules
 

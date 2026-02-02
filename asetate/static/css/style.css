@@ -240,9 +240,13 @@
        ----------------------------------------- */
     --dropdown-max-height: 250px;   /* Standard dropdown height */
     --dropdown-lg-max-height: 300px; /* Large dropdown height */
-    --modal-sm-max-height: 120px;   /* Small modal/content area */
+    --modal-sm-max-height: var(--notes-compact-max-height);   /* Small modal/content area */
     --textarea-min-height: 60px;    /* Minimum textarea height */
     --textarea-max-height: 100px;   /* Maximum textarea height */
+    --icon-grid-max-height: var(--icon-grid-max-height);  /* Icon/emoji picker grid height */
+    --icon-grid-sm-max-height: var(--icon-grid-sm-max-height); /* Small icon grid height */
+    --list-max-height: var(--list-max-height);       /* Scrollable list sections */
+    --notes-compact-max-height: var(--notes-compact-max-height); /* Compact notes areas */
 
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
@@ -2900,7 +2904,7 @@ body.crate-panel-open .crates-main {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
     gap: var(--space-2xs);
-    max-height: 180px;
+    max-height: var(--icon-grid-max-height);
     overflow-y: auto;
     padding: var(--space-xs);
     background: var(--bg-elevated);
@@ -2908,7 +2912,7 @@ body.crate-panel-open .crates-main {
 }
 
 .icon-grid-sm {
-    max-height: 140px;
+    max-height: var(--icon-grid-sm-max-height);
 }
 
 .icon-grid-item {
@@ -2950,7 +2954,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm);
     background: var(--bg-surface);
     border: var(--border-width-sm) solid var(--border);
-    max-height: 180px;
+    max-height: var(--icon-grid-max-height);
     overflow-y: auto;
 }
 
@@ -2984,7 +2988,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm);
     background: var(--bg-surface);
     border: var(--border-width-sm) solid var(--border);
-    max-height: 180px;
+    max-height: var(--icon-grid-max-height);
     overflow-y: auto;
 }
 
@@ -3707,7 +3711,7 @@ body.crate-panel-open .crates-main {
 }
 
 .cue-list {
-    max-height: 200px;
+    max-height: var(--list-max-height);
     overflow-y: auto;
     margin: var(--space-sm) 0;
 }
@@ -4951,7 +4955,7 @@ body.crate-panel-open .crates-main {
     flex-shrink: 0;
     width: 100%;
     min-height: 80px;
-    max-height: 120px;
+    max-height: var(--notes-compact-max-height);
     padding: var(--space-md);
     border: var(--border-width-sm) solid var(--border);
     background: var(--bg-input);
@@ -5319,7 +5323,7 @@ body.crate-panel-open .crates-main {
 
 /* Compact variant for panel */
 .notes-textarea--panel {
-    max-height: 120px;
+    max-height: var(--notes-compact-max-height);
 }
 
 /* --------------------------------------------
