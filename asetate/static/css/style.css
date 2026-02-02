@@ -74,7 +74,7 @@
     /* Text hierarchy */
     --text-primary: #e5e5e5;
     --text-secondary: #a3a3a3;
-    --text-muted: #737373;
+    --text-muted: #8a8a8a;        /* WCAG AA compliant (4.5:1 on dark bg) */
 
     /* Crate box theme (wooden crate) */
     --crate-wood-dark: #1a1815;     /* Darkest wood - inner shadow */
@@ -217,6 +217,17 @@
     --max-width-sidebar: 400px;   /* Sidebar dropdowns */
     --max-width-card: 280px;      /* Card min width */
 
+    /* Grid card sizing (for auto-fill grids) */
+    --grid-card-min: 160px;       /* Standard card min width */
+    --grid-card-max: 200px;       /* Standard card max width */
+    --grid-card-sm-min: 130px;    /* Small card min (responsive) */
+    --grid-card-sm-max: 160px;    /* Small card max (responsive) */
+    --grid-card-lg-min: 200px;    /* Large card min (crates) */
+    --grid-card-lg-max: 260px;    /* Large card max (crates) */
+    --grid-dashboard-min: 180px;  /* Dashboard card min */
+    --grid-dashboard-max: 240px;  /* Dashboard card max */
+    --grid-picker-min: 32px;      /* Color/emoji picker item */
+
     /* Energy bar sizing */
     --energy-bar-height: 18px;    /* Energy bar component height */
     --energy-bar-sm-height: 14px; /* Small energy bar height */
@@ -266,6 +277,18 @@
     --weight-bold: 700;         /* Bold, headings, strong emphasis */
 
     /* -----------------------------------------
+       BREAKPOINTS
+       Responsive design breakpoints
+       NOTE: CSS vars can't be used in @media queries,
+       so these serve as documentation/reference.
+       Always update both the token AND the media query.
+       ----------------------------------------- */
+    --bp-sm: 768px;             /* Mobile/small screens */
+    --bp-md: 900px;             /* Tablets/medium screens */
+    --bp-lg: 1100px;            /* Small desktop */
+    --bp-xl: 1200px;            /* Large desktop */
+
+    /* -----------------------------------------
        Z-INDEX SCALE
        Layering system for stacking contexts
        ----------------------------------------- */
@@ -291,6 +314,12 @@
     --shadow-focus-success: 0 0 0 1px var(--success);       /* Focus ring (success) */
 
     /* -----------------------------------------
+       FILTERS
+       Visual effects for icons and images
+       ----------------------------------------- */
+    --filter-invert: invert(1);   /* White icons on dark background */
+
+    /* -----------------------------------------
        TRANSITIONS
        Animation durations for consistent motion
        ----------------------------------------- */
@@ -301,6 +330,17 @@
     --duration-blink: 0.6s;     /* LED blink, activity indicators */
     --duration-spin: 1s;        /* Spin/rotation animations */
     --duration-pulse: 2s;       /* Slow pulse animations */
+
+    /* -----------------------------------------
+       TRANSFORMS
+       Scale and translate values for hover effects
+       ----------------------------------------- */
+    --scale-hover: 1.1;         /* Standard hover scale */
+    --scale-hover-lg: 1.2;      /* Larger hover scale */
+    --scale-hover-y: 1.15;      /* Vertical scale (energy bars) */
+    --lift-hover: -4px;         /* Hover lift effect */
+    --lift-hover-lg: -8px;      /* Larger hover lift */
+    --tilt-crate-lid: -75deg;   /* Crate lid rotation */
 
     /* -----------------------------------------
        OPACITY
@@ -336,8 +376,8 @@
     --table-cell-max-width: 200px;      /* Table cell truncation */
     --modal-panel-max-width: 350px;     /* Panel notes modal width */
     --setting-max-width: 500px;         /* Toggle setting row */
-    --crate-name-max-width: var(--crate-name-max-width);      /* Crate name in cards */
-    --energy-val-min-width: var(--energy-val-min-width);       /* Energy value display */
+    --crate-name-max-width: 120px;      /* Crate name in cards */
+    --energy-val-min-width: 12px;       /* Energy value display */
 
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
@@ -568,7 +608,7 @@ a:hover {
 
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 240px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-dashboard-min), var(--grid-dashboard-max)));
     gap: var(--space-md);
 }
 
@@ -1552,7 +1592,7 @@ input::placeholder, textarea::placeholder {
 /* Release grid - fixed max-width so items reflow but don't resize when panel opens */
 .releases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-min), var(--grid-card-max)));
     gap: var(--space-md);
 }
 
@@ -2073,7 +2113,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-energy-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
+    transform: scale(var(--scale-hover-lg));
 }
 
 .track-energy-slider::-moz-range-thumb {
@@ -2217,7 +2257,7 @@ input::placeholder, textarea::placeholder {
     border-left: var(--border-width-md) solid var(--warning) !important;
 }
 
-/* Responsive: stack notes below on smaller screens */
+/* Responsive: stack notes below on smaller screens (--bp-lg) */
 @media (max-width: 1100px) {
     .release-header {
         grid-template-columns: auto 1fr;
@@ -2447,7 +2487,7 @@ input::placeholder, textarea::placeholder {
 /* Crate releases grid - fixed max-width so items reflow but don't resize */
 .crate-releases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 260px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-lg-min), var(--grid-card-lg-max)));
     gap: var(--space-md);
 }
 
@@ -2675,7 +2715,7 @@ body.crate-panel-open .crates-main {
 /* Crate grid - square cards with fixed max-width so items reflow but don't resize */
 .crates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-min), var(--grid-card-max)));
     gap: var(--space-md);
 }
 
@@ -2695,7 +2735,7 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-box:hover {
-    transform: translateY(-4px);
+    transform: translateY(var(--lift-hover));
     border-color: var(--crate-accent);
 }
 
@@ -2742,7 +2782,7 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-box:hover .crate-lid {
-    transform: rotateX(-75deg) translateY(-8px);
+    transform: rotateX(var(--tilt-crate-lid)) translateY(var(--lift-hover-lg));
 }
 
 /* Crate body */
@@ -2977,7 +3017,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-xl);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 .icon-search-input {
@@ -2993,7 +3033,7 @@ body.crate-panel-open .crates-main {
 
 .icon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-picker-min), 1fr));
     gap: var(--space-2xs);
     max-height: var(--icon-grid-max-height);
     overflow-y: auto;
@@ -3034,7 +3074,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-lg);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 /* Pixel Icon Grid (for icon picker) */
@@ -3116,7 +3156,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-2xl);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 /* Large pixel icon on crate detail page */
@@ -3125,7 +3165,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-3xl);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 /* Pixel icons on release cards (crate indicators) */
@@ -3134,7 +3174,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-sm);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.5));
+    filter: var(--filter-invert) drop-shadow(0 0 1px rgba(0,0,0,0.5));
 }
 
 /* ============================================
@@ -3232,7 +3272,7 @@ body.crate-panel-open .crates-main {
     width: var(--icon-xl);
     height: var(--icon-xl);
     /* Use filter for preview - actual icons use mask */
-    filter: invert(1);
+    filter: var(--filter-invert);
 }
 
 .color-picker {
@@ -3251,7 +3291,7 @@ body.crate-panel-open .crates-main {
 }
 
 .color-option:hover {
-    transform: scale(1.1);
+    transform: scale(var(--scale-hover));
 }
 
 .color-option.selected {
@@ -3358,6 +3398,7 @@ body.crate-panel-open .crates-main {
     font-size: var(--text-body);
 }
 
+/* Responsive: crate detail layout (--bp-xl) */
 @media (max-width: 1200px) {
     body.crate-panel-open .crates-main {
         padding-right: 0;
@@ -3551,6 +3592,7 @@ body.crate-panel-open .crates-main {
     align-items: start;
 }
 
+/* Responsive: sync page layout (--bp-md) */
 @media (max-width: 900px) {
     .export-layout {
         grid-template-columns: 1fr;
@@ -4259,6 +4301,7 @@ body.crate-panel-open .crates-main {
    RESPONSIVE
    ============================================ */
 
+/* Mobile/small screen adjustments (--bp-sm) */
 @media (max-width: 768px) {
     html {
         font-size: 13px;
@@ -4300,7 +4343,7 @@ body.crate-panel-open .crates-main {
     }
 
     .releases-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 160px));
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-sm-min), var(--grid-card-sm-max)));
     }
 
     .collection-toolbar {
@@ -4624,11 +4667,7 @@ body.crate-panel-open .crates-main {
     margin-bottom: var(--space-xs);
 }
 
-.panel-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-}
+/* NOTE: .panel-actions is defined in the form panel section (~line 3344) */
 
 .panel-crates {
     display: flex;
@@ -4867,7 +4906,7 @@ body.crate-panel-open .crates-main {
     letter-spacing: var(--tracking-tight);
 }
 
-/* Responsive - hide panel on small screens, use modal instead */
+/* Responsive: hide panel on small screens, use modal instead (--bp-md) */
 @media (max-width: 900px) {
     .release-panel {
         width: 100%;
@@ -5266,7 +5305,7 @@ body.crate-panel-open .crates-main {
 }
 
 .energy-bar .energy-segment:hover {
-    transform: scaleY(1.15);
+    transform: scaleY(var(--scale-hover-y));
 }
 
 /* Energy color states - green → lime → yellow → orange → red */
@@ -5734,8 +5773,8 @@ body.crate-panel-open .crates-main {
 
 /* -----------------------------------------
    Display utilities
+   NOTE: .hidden is defined earlier (line ~983) with !important
    ----------------------------------------- */
-.hidden { display: none; }
 .block { display: block; }
 .inline { display: inline; }
 .inline-block { display: inline-block; }

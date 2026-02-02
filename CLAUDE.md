@@ -106,24 +106,6 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 >
 > Before writing any CSS value, check if a token exists. If you need a value not covered by tokens, consider if it should be added as a new token.
 
-#### Spacing (8pt grid)
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--space-2xs` | 2px | Fine detail: segment gaps, icon spacing |
-| `--space-xs` | 4px | Tight: tag gaps, inline spacing |
-| `--space-sm` | 8px | Standard: component padding, gaps |
-| `--space-md` | 16px | Section: card padding, form groups |
-| `--space-lg` | 24px | Major: section gaps, large padding |
-| `--space-xl` | 32px | Page: main content padding |
-| `--space-2xl` | 48px | Hero: dashboard spacing |
-
-#### Borders
-| Context | Width | Token |
-|---------|-------|-------|
-| Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
-| Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
-| Accent/indicator borders | 3px | `--border-width-accent` |
-
 #### Colors
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -190,6 +172,24 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--overlay-strong` | rgba(0,0,0,0.8) | Strong overlay |
 | `--lcd-dim-alpha` | rgba(34,84,61,0.5) | LCD dim at 50% |
 
+#### Spacing (8pt grid)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--space-2xs` | 2px | Fine detail: segment gaps, icon spacing |
+| `--space-xs` | 4px | Tight: tag gaps, inline spacing |
+| `--space-sm` | 8px | Standard: component padding, gaps |
+| `--space-md` | 16px | Section: card padding, form groups |
+| `--space-lg` | 24px | Major: section gaps, large padding |
+| `--space-xl` | 32px | Page: main content padding |
+| `--space-2xl` | 48px | Hero: dashboard spacing |
+
+#### Borders
+| Context | Width | Token |
+|---------|-------|-------|
+| Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
+| Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
+| Accent/indicator borders | 3px | `--border-width-accent` |
+
 #### Icon Sizes
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -235,6 +235,19 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--max-width-narrow` | 600px | Narrow forms/pages (sync, settings) |
 | `--max-width-sidebar` | 400px | Sidebar dropdowns, modals |
 | `--max-width-card` | 280px | Card min-width |
+
+#### Grid Card Sizing
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--grid-card-min` | 160px | Standard card min width |
+| `--grid-card-max` | 200px | Standard card max width |
+| `--grid-card-sm-min` | 130px | Small card min (responsive) |
+| `--grid-card-sm-max` | 160px | Small card max (responsive) |
+| `--grid-card-lg-min` | 200px | Large card min (crates) |
+| `--grid-card-lg-max` | 260px | Large card max (crates) |
+| `--grid-dashboard-min` | 180px | Dashboard card min |
+| `--grid-dashboard-max` | 240px | Dashboard card max |
+| `--grid-picker-min` | 32px | Color/emoji picker item |
 
 #### Table Column Widths
 | Token | Value | Usage |
@@ -307,6 +320,16 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--weight-semibold` | 600 | Semi-bold, labels, buttons |
 | `--weight-bold` | 700 | Bold, headings, strong emphasis |
 
+#### Breakpoints
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--bp-sm` | 768px | Mobile/small screens |
+| `--bp-md` | 900px | Tablets/medium screens |
+| `--bp-lg` | 1100px | Small desktop |
+| `--bp-xl` | 1200px | Large desktop |
+
+> ⚠️ **Note**: CSS custom properties cannot be used in `@media` queries. These tokens serve as documentation and a single source of truth. When changing a breakpoint, update both the token AND the media query. Media queries include comments referencing their token (e.g., `/* --bp-md */`).
+
 #### Z-Index Scale
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -330,6 +353,11 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--shadow-focus` | 0 0 0 1px var(--primary-dim) | Focus ring (primary) |
 | `--shadow-focus-success` | 0 0 0 1px var(--success) | Focus ring (success) |
 
+#### Filters
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--filter-invert` | invert(1) | White icons on dark background |
+
 #### Transition Durations
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -340,6 +368,16 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--duration-blink` | 0.6s | LED blink, activity indicators |
 | `--duration-spin` | 1s | Spin/rotation animations |
 | `--duration-pulse` | 2s | Slow pulse animations |
+
+#### Transforms
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--scale-hover` | 1.1 | Standard hover scale effect |
+| `--scale-hover-lg` | 1.2 | Larger hover scale effect |
+| `--scale-hover-y` | 1.15 | Vertical scale (energy bars) |
+| `--lift-hover` | -4px | Hover lift effect |
+| `--lift-hover-lg` | -8px | Larger hover lift |
+| `--tilt-crate-lid` | -75deg | Crate lid rotation |
 
 #### Opacity
 | Token | Value | Usage |
