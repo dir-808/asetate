@@ -216,11 +216,20 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 #### Font Sizes
 | Token | Size | Usage |
 |-------|------|-------|
-| `--text-2xs` | 0.65rem | Tiny labels |
+| `--text-4xs` | 0.5rem | Extreme tiny (rare) |
+| `--text-3xs` | 0.55rem | Micro labels, tiny tags |
+| `--text-micro` | 0.6rem | Micro UI text |
+| `--text-2xs` | 0.65rem | Tiny labels, badge text |
+| `--text-xxs` | 0.7rem | Very small UI text |
 | `--text-xs` | 0.75rem | Small text, badges |
+| `--text-caption` | 0.8rem | Captions, stats |
 | `--text-sm` | 0.85rem | Secondary text |
+| `--text-body` | 0.9rem | Small body text, inputs |
 | `--text-base` | 1rem | Body text |
+| `--text-md` | 1.1rem | Slightly larger body |
 | `--text-lg` | 1.125rem | Emphasis |
+| `--text-subhead` | 1.2rem | Subheadings |
+| `--text-heading` | 1.25rem | Small headings |
 | `--text-xl` | 1.5rem | Headings |
 | `--text-2xl` | 2rem | Page titles, large icons |
 
@@ -284,10 +293,14 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 #### Constraints (Max/Min Dimensions)
 | Token | Value | Usage |
 |-------|-------|-------|
+| `--header-offset` | 150px | Header + toolbar offset for layouts |
+| `--dropdown-min-width` | 180px | Standard dropdown min-width |
+| `--dropdown-lg-min-width` | 200px | Large dropdown min-width |
 | `--dropdown-max-height` | 250px | Standard dropdown height |
 | `--dropdown-lg-max-height` | 300px | Large dropdown height |
 | `--textarea-min-height` | 60px | Minimum textarea height |
 | `--textarea-max-height` | 100px | Maximum textarea height |
+| `--textarea-base-height` | 80px | Standard textarea height |
 | `--icon-grid-max-height` | 180px | Icon/emoji picker grid |
 | `--icon-grid-sm-max-height` | 140px | Small icon grid |
 | `--list-max-height` | 200px | Scrollable list sections |
@@ -299,6 +312,8 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--table-cell-max-width` | 200px | Table cell truncation |
 | `--modal-panel-max-width` | 350px | Panel notes modal width |
 | `--setting-max-width` | 500px | Toggle setting row width |
+| `--crate-name-max-width` | 120px | Crate name in cards |
+| `--energy-val-min-width` | 12px | Energy value display |
 
 ### Token Usage Rules
 
