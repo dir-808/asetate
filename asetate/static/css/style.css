@@ -4661,11 +4661,7 @@ body.crate-panel-open .crates-main {
     margin-bottom: var(--space-xs);
 }
 
-.panel-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-}
+/* NOTE: .panel-actions is defined in the form panel section (~line 3344) */
 
 .panel-crates {
     display: flex;
