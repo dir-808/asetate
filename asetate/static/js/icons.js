@@ -84,17 +84,24 @@ export const PIXEL_ICONS = EMOJI_ICONS;
 export const DEFAULT_ICON = 'folder';
 
 /**
+ * Valid size modifiers that map to CSS classes
+ */
+const SIZE_MODIFIERS = ['sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'];
+
+/**
  * Render an emoji icon HTML string using Noto Emoji font
  *
  * @param {string} name - Icon name (e.g., 'vinyl', 'folder')
- * @param {number} size - Font size in pixels (default 24)
+ * @param {string} size - Size modifier ('sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '4xl')
+ *                        Default is 'xl' (24px). Uses CSS classes with design tokens.
  * @param {string|null} color - Optional color (hex or CSS color)
  * @returns {string} HTML string for the icon
  */
-export function renderEmojiIcon(name, size = 24, color = null) {
+export function renderEmojiIcon(name, size = 'xl', color = null) {
     const char = EMOJI_CHARS[name] || EMOJI_CHARS[DEFAULT_ICON];
-    const colorStyle = color ? ` color: ${color};` : '';
-    return `<span class="emoji-icon" style="font-size: ${size}px;${colorStyle}">${char}</span>`;
+    const sizeClass = SIZE_MODIFIERS.includes(size) ? size : 'xl';
+    const colorStyle = color ? ` style="color: ${color};"` : '';
+    return `<span class="emoji-icon emoji-icon--${sizeClass}"${colorStyle}>${char}</span>`;
 }
 
 /**
@@ -126,11 +133,13 @@ function isHexcode(value) {
  * Render a crate's icon with its color
  *
  * @param {Object} crate - Crate object with icon and color_hex properties
- * @param {number} size - Font size in pixels (default 24)
+ * @param {string} size - Size modifier ('sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '4xl')
+ *                        Default is 'xl' (24px). Uses CSS classes with design tokens.
  * @returns {string} HTML string for the crate icon
  */
-export function renderCrateIcon(crate, size = 24) {
-    const colorStyle = crate.color_hex ? ` color: ${crate.color_hex};` : '';
+export function renderCrateIcon(crate, size = 'xl') {
+    const sizeClass = SIZE_MODIFIERS.includes(size) ? size : 'xl';
+    const colorStyle = crate.color_hex ? ` style="color: ${crate.color_hex};"` : '';
     let char = EMOJI_CHARS[DEFAULT_ICON];
 
     if (crate.icon) {
@@ -152,7 +161,7 @@ export function renderCrateIcon(crate, size = 24) {
         }
     }
 
-    return `<span class="emoji-icon" style="font-size: ${size}px;${colorStyle}">${char}</span>`;
+    return `<span class="emoji-icon emoji-icon--${sizeClass}"${colorStyle}>${char}</span>`;
 }
 
 /**
@@ -170,7 +179,7 @@ export function renderEmojiIconGrid(container, onSelect, selectedIcon = null) {
         btn.className = 'emoji-icon-grid-item' + (selectedIcon === icon.name ? ' selected' : '');
         btn.dataset.icon = icon.name;
         btn.title = icon.label;
-        btn.innerHTML = renderEmojiIcon(icon.name, 24);
+        btn.innerHTML = renderEmojiIcon(icon.name, 'xl');
         btn.addEventListener('click', () => onSelect(icon.name));
         container.appendChild(btn);
     });
@@ -213,8 +222,9 @@ export function formatIconForStorage(iconName) {
  * @deprecated Use renderEmojiIcon instead
  */
 export function renderPixelIcon(name, scale = 1.5, color = null) {
-    // Redirect to emoji icon with size approximation
-    const size = Math.round(12 * scale);
+    // Map legacy scale to size class (scale 1.5 ≈ 18px → 'md')
+    const sizeMap = { 1: 'sm', 1.25: 'base', 1.5: 'md', 2: 'xl', 2.5: '2xl', 3: '3xl' };
+    const size = sizeMap[scale] || 'md';
     return renderEmojiIcon(name, size, color);
 }
 
@@ -226,6 +236,7 @@ if (typeof window !== 'undefined') {
         EMOJI_CODES: EMOJI_CHARS,
         PIXEL_ICONS,
         DEFAULT_ICON,
+        SIZE_MODIFIERS,
         renderEmojiIcon,
         renderCrateIcon,
         renderEmojiIconGrid,

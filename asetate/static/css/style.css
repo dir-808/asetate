@@ -51,6 +51,10 @@
     --warning: #fbbf24;
     --error: #ef4444;
 
+    /* Component-specific colors */
+    --tag-default: #E07A5F;  /* Default tag color (terracotta) */
+    --color-none: #e0e0e0;   /* "No color" option in color pickers */
+
     /* Text hierarchy */
     --text-primary: #e5e5e5;
     --text-secondary: #a3a3a3;
@@ -2984,6 +2988,7 @@ body.crate-panel-open .crates-main {
     font-family: 'Noto Emoji';
     font-weight: 500; /* Medium weight */
     font-style: normal;
+    font-size: var(--icon-xl); /* Default size (24px), override with size modifiers */
     line-height: 1;
     /* Force text/monochrome presentation */
     font-variant-emoji: text;
@@ -2996,6 +3001,17 @@ body.crate-panel-open .crates-main {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+/* Emoji icon size modifiers - use these instead of inline styles */
+.emoji-icon--sm { font-size: var(--icon-sm); }      /* 14px */
+.emoji-icon--base { font-size: var(--icon-base); }  /* 16px */
+.emoji-icon--md { font-size: var(--icon-md); }      /* 18px */
+.emoji-icon--lg { font-size: var(--icon-lg); }      /* 20px */
+.emoji-icon--xl { font-size: var(--icon-xl); }      /* 24px - default */
+.emoji-icon--2xl { font-size: var(--icon-2xl); }    /* 32px */
+.emoji-icon--3xl { font-size: var(--icon-3xl); }    /* 40px */
+.emoji-icon--4xl { font-size: var(--icon-4xl); }    /* 64px */
+
 /* Emoji in crate cards */
 .crate-emoji-icon {
     width: var(--icon-2xl);
@@ -3292,7 +3308,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-2xs) var(--space-sm);
     font-size: 0.7rem;
     font-weight: 600;
-    background-color: var(--tag-color, var(--primary));
+    background-color: var(--tag-color, var(--tag-default));
     color: var(--bg-primary);
     white-space: nowrap;
     text-transform: uppercase;
@@ -4684,7 +4700,7 @@ body.crate-panel-open .crates-main {
     padding: 0 var(--space-xs);
     font-size: 0.55rem;
     font-weight: 600;
-    background-color: var(--tag-color, var(--primary));
+    background-color: var(--tag-color, var(--tag-default));
     color: var(--bg-primary);
     text-transform: uppercase;
     letter-spacing: 0.03em;

@@ -152,7 +152,7 @@
                         <td class="col-tags {% if 'tags' not in visible_fields %}hidden{% endif %}">
                             <div class="track-tags" data-track-id="{{ track.id }}">
                                 {% for tag in track.tags %}
-                                <span class="tag-badge" data-tag-id="{{ tag.id }}" style="--tag-color: {{ tag.color or '#E07A5F' }}">
+                                <span class="tag-badge" data-tag-id="{{ tag.id }}"{% if tag.color %} style="--tag-color: {{ tag.color }}"{% endif %}>
                                     {{ tag.name }}
                                     <button class="tag-remove" title="Remove tag">&times;</button>
                                 </span>
@@ -529,7 +529,7 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             const isSelected = releaseCrateIds.includes(c.id);
             return `<label class="crate-dropdown-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
                 <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                ${renderCrateIcon(c, 1.2)}
+                ${renderCrateIcon(c, 'sm')}
                 <span class="crate-dropdown-item-name">${c.name}</span>
             </label>`;
         }).join('');
@@ -646,7 +646,9 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         const span = document.createElement('span');
         span.className = 'tag-badge';
         span.dataset.tagId = tag.id;
-        span.style.setProperty('--tag-color', tag.color || '#E07A5F');
+        if (tag.color) {
+            span.style.setProperty('--tag-color', tag.color);
+        }
         span.innerHTML = `${tag.name}<button class="tag-remove" title="Remove tag">&times;</button>`;
 
         span.querySelector('.tag-remove').addEventListener('click', async (e) => {
