@@ -31,27 +31,37 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 ### Token-First Philosophy
 
-**CRITICAL: Every CSS value should use a design token unless it's truly one-off.**
+> 🔥 **EVERYTHING IS A TOKEN. NO EXCEPTIONS (unless explicitly documented below).**
+>
+> This is the #1 rule of this codebase. Hardcoded values break the design system.
 
-Before writing any CSS, follow this decision tree:
+**CRITICAL RULE: Every CSS value MUST use a design token.**
+
+If you're writing a CSS property that uses a numeric value, color, or dimension - it MUST be a token.
+
+**Before writing any CSS, follow this decision tree:**
 
 1. **Does a token exist for this value?** → Use it
-2. **Is this a reusable pattern?** → Create a new token, then use it
-3. **Is this truly one-off and component-specific?** → Hardcode with a comment explaining why
+2. **No token exists but I need this value?** → **Create a new token first**, then use it
+3. **This is truly a one-off documented exception?** → Hardcode ONLY with a comment explaining why (see Exceptions below)
 
-**Why tokens matter:**
-- **Consistency**: Change `--space-md` once, update everywhere
-- **Maintainability**: No hunting through files for hardcoded `16px`
+**Why "tokenize everything":**
+- **Consistency**: Change `--space-md` once, update everywhere instantly
+- **Maintainability**: No hunting through 5000+ lines of CSS for hardcoded `16px`
 - **Intent**: `--opacity-disabled` communicates purpose, `0.4` doesn't
-- **Future-proofing**: Easy to adjust the entire system
+- **Future-proofing**: Entire UI can be adjusted from the :root section
+- **Industry standard**: Tailwind, Material Design, IBM Carbon, Shopify Polaris all do this
+
+**This is not over-engineering.** Every major design system in production follows this pattern.
 
 **When adding new features:**
 ```css
-/* WRONG - hardcoded values */
+/* WRONG - hardcoded values (NEVER do this) */
 .new-component {
     padding: 16px;
     opacity: 0.5;
     z-index: 100;
+    max-height: 250px;
     transition: opacity 0.15s;
 }
 
@@ -60,7 +70,18 @@ Before writing any CSS, follow this decision tree:
     padding: var(--space-md);
     opacity: var(--opacity-dim);
     z-index: var(--z-sticky);
+    max-height: var(--dropdown-max-height);
     transition: opacity var(--duration-base);
+}
+
+/* ADDING A NEW TOKEN when needed */
+/* 1. First, add to :root in DESIGN TOKENS section */
+:root {
+    --my-new-height: 180px;  /* Component-specific height */
+}
+/* 2. Then use the token */
+.new-component {
+    height: var(--my-new-height);
 }
 ```
 
@@ -257,6 +278,7 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--opacity-dim` | 0.5 | Dimmed/inactive elements, separators |
 | `--opacity-faded` | 0.6 | Slightly faded labels, secondary info |
 | `--opacity-muted` | 0.7 | Muted text, hover states, loading |
+| `--opacity-moderate` | 0.75 | Between muted and subtle |
 | `--opacity-subtle` | 0.9 | Nearly full, subtle fade |
 
 #### Constraints (Max/Min Dimensions)
@@ -264,13 +286,19 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 |-------|-------|-------|
 | `--dropdown-max-height` | 250px | Standard dropdown height |
 | `--dropdown-lg-max-height` | 300px | Large dropdown height |
-| `--modal-sm-max-height` | 120px | Small modal/content area |
 | `--textarea-min-height` | 60px | Minimum textarea height |
 | `--textarea-max-height` | 100px | Maximum textarea height |
 | `--icon-grid-max-height` | 180px | Icon/emoji picker grid |
 | `--icon-grid-sm-max-height` | 140px | Small icon grid |
 | `--list-max-height` | 200px | Scrollable list sections |
 | `--notes-compact-max-height` | 120px | Compact notes areas |
+| `--modal-sm-max-height` | 120px | Small modal/content area |
+| `--panel-loading-height` | 200px | Panel loading placeholder |
+| `--notes-lg-height` | 250px | Large notes textarea |
+| `--export-min-height` | 400px | Export preview min height |
+| `--table-cell-max-width` | 200px | Table cell truncation |
+| `--modal-panel-max-width` | 350px | Panel notes modal width |
+| `--setting-max-width` | 500px | Toggle setting row width |
 
 ### Token Usage Rules
 

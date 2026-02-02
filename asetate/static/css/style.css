@@ -232,21 +232,28 @@
     --opacity-dim: 0.5;         /* Dimmed/inactive elements, separators */
     --opacity-faded: 0.6;       /* Slightly faded labels, secondary info */
     --opacity-muted: 0.7;       /* Muted text, hover states, loading */
+    --opacity-moderate: 0.75;   /* Between muted and subtle */
     --opacity-subtle: 0.9;      /* Nearly full, subtle fade */
 
     /* -----------------------------------------
        CONSTRAINTS
        Max/min dimensions for common patterns
        ----------------------------------------- */
-    --dropdown-max-height: 250px;   /* Standard dropdown height */
-    --dropdown-lg-max-height: 300px; /* Large dropdown height */
-    --modal-sm-max-height: var(--notes-compact-max-height);   /* Small modal/content area */
-    --textarea-min-height: 60px;    /* Minimum textarea height */
-    --textarea-max-height: 100px;   /* Maximum textarea height */
-    --icon-grid-max-height: var(--icon-grid-max-height);  /* Icon/emoji picker grid height */
-    --icon-grid-sm-max-height: var(--icon-grid-sm-max-height); /* Small icon grid height */
-    --list-max-height: var(--list-max-height);       /* Scrollable list sections */
-    --notes-compact-max-height: var(--notes-compact-max-height); /* Compact notes areas */
+    --dropdown-max-height: 250px;       /* Standard dropdown height */
+    --dropdown-lg-max-height: 300px;    /* Large dropdown height */
+    --textarea-min-height: 60px;        /* Minimum textarea height */
+    --textarea-max-height: 100px;       /* Maximum textarea height */
+    --icon-grid-max-height: 180px;      /* Icon/emoji picker grid height */
+    --icon-grid-sm-max-height: 140px;   /* Small icon grid height */
+    --list-max-height: 200px;           /* Scrollable list sections */
+    --notes-compact-max-height: 120px;  /* Compact notes areas */
+    --modal-sm-max-height: 120px;       /* Small modal/content area */
+    --panel-loading-height: 200px;      /* Panel loading placeholder */
+    --notes-lg-height: 250px;           /* Large notes textarea */
+    --export-min-height: 400px;         /* Export preview min height */
+    --table-cell-max-width: 200px;      /* Table cell truncation */
+    --modal-panel-max-width: 350px;     /* Panel notes modal width */
+    --setting-max-width: 500px;         /* Toggle setting row */
 
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
@@ -2054,7 +2061,7 @@ input::placeholder, textarea::placeholder {
 /* Release notes simple - size variant for detail page */
 .release-notes-simple {
     width: var(--max-width-sidebar);
-    height: 250px;
+    height: var(--notes-lg-height);
 }
 
 /* Notes modal textareas - MPC2000 rectangular, no border-radius */
@@ -3566,7 +3573,7 @@ body.crate-panel-open .crates-main {
 .export-main {
     background-color: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    min-height: 400px;
+    min-height: var(--export-min-height);
     display: flex;
     flex-direction: column;
 }
@@ -3628,7 +3635,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm) var(--space-md);
     border-bottom: var(--border-width-sm) solid var(--border);
     white-space: nowrap;
-    max-width: 200px;
+    max-width: var(--table-cell-max-width);
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--lcd-text);
@@ -4136,7 +4143,7 @@ body.crate-panel-open .crates-main {
     gap: var(--space-md);
     padding: var(--space-sm) 0;
     cursor: pointer;
-    max-width: 500px;
+    max-width: var(--setting-max-width);
 }
 
 .toggle-setting-text {
@@ -4305,7 +4312,7 @@ body.crate-panel-open .crates-main {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 200px;
+    height: var(--panel-loading-height);
     color: var(--text-muted);
 }
 
@@ -5088,7 +5095,7 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-md) solid var(--border);
     padding: var(--space-md);
     width: 90%;
-    max-width: 350px;
+    max-width: var(--modal-panel-max-width);
 }
 
 .panel-notes-modal-header {
@@ -5702,7 +5709,7 @@ body.crate-panel-open .crates-main {
    ----------------------------------------- */
 .opacity-0 { opacity: 0; }
 .opacity-50 { opacity: var(--opacity-dim); }
-.opacity-75 { opacity: 0.75; }
+.opacity-75 { opacity: var(--opacity-moderate); }
 .opacity-100 { opacity: 1; }
 
 /* -----------------------------------------
