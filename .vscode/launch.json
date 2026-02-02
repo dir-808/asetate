@@ -6,7 +6,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "flask",
-            "args": ["run", "--debug"],
+            "args": ["run", "--debug", "--port", "5001"],
             "env": {
                 "FLASK_APP": "asetate",
                 "FLASK_ENV": "development"
