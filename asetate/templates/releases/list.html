@@ -88,11 +88,14 @@
                 <div class="release-info">
                     <h3 class="release-title">{{ release.display_title }}</h3>
                     <p class="release-artist">{{ release.display_artist }}</p>
-                    {% if release.label or release.year %}
+                    {% if release.label %}
+                    <p class="release-label">{{ release.label }}</p>
+                    {% endif %}
+                    {% if release.year or release.format_details %}
                     <p class="release-meta">
-                        {% if release.label %}{{ release.label }}{% endif %}
-                        {% if release.label and release.year %} • {% endif %}
                         {% if release.year %}{{ release.year }}{% endif %}
+                        {% if release.year and release.format_details %} · {% endif %}
+                        {% if release.format_details %}{{ release.format_details }}{% endif %}
                     </p>
                     {% endif %}
                 </div>

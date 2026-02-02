@@ -1705,7 +1705,16 @@ input::placeholder, textarea::placeholder {
     font-size: var(--text-caption);
     font-weight: var(--weight-semibold);
     color: var(--lcd-text);
-    opacity: var(--opacity-muted);  /* Dimmed but readable */
+    opacity: var(--opacity-faded);  /* Slightly darker than title */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.release-label {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);  /* Light grey, almost white */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
