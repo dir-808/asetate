@@ -5771,8 +5771,8 @@ body.crate-panel-open .crates-main {
 
 /* -----------------------------------------
    Display utilities
+   NOTE: .hidden is defined earlier (line ~983) with !important
    ----------------------------------------- */
-.hidden { display: none; }
 .block { display: block; }
 .inline { display: inline; }
 .inline-block { display: inline-block; }
