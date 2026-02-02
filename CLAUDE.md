@@ -106,24 +106,6 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 >
 > Before writing any CSS value, check if a token exists. If you need a value not covered by tokens, consider if it should be added as a new token.
 
-#### Spacing (8pt grid)
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--space-2xs` | 2px | Fine detail: segment gaps, icon spacing |
-| `--space-xs` | 4px | Tight: tag gaps, inline spacing |
-| `--space-sm` | 8px | Standard: component padding, gaps |
-| `--space-md` | 16px | Section: card padding, form groups |
-| `--space-lg` | 24px | Major: section gaps, large padding |
-| `--space-xl` | 32px | Page: main content padding |
-| `--space-2xl` | 48px | Hero: dashboard spacing |
-
-#### Borders
-| Context | Width | Token |
-|---------|-------|-------|
-| Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
-| Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
-| Accent/indicator borders | 3px | `--border-width-accent` |
-
 #### Colors
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -189,6 +171,24 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--overlay-heavy` | rgba(0,0,0,0.7) | Heavy overlay |
 | `--overlay-strong` | rgba(0,0,0,0.8) | Strong overlay |
 | `--lcd-dim-alpha` | rgba(34,84,61,0.5) | LCD dim at 50% |
+
+#### Spacing (8pt grid)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--space-2xs` | 2px | Fine detail: segment gaps, icon spacing |
+| `--space-xs` | 4px | Tight: tag gaps, inline spacing |
+| `--space-sm` | 8px | Standard: component padding, gaps |
+| `--space-md` | 16px | Section: card padding, form groups |
+| `--space-lg` | 24px | Major: section gaps, large padding |
+| `--space-xl` | 32px | Page: main content padding |
+| `--space-2xl` | 48px | Hero: dashboard spacing |
+
+#### Borders
+| Context | Width | Token |
+|---------|-------|-------|
+| Containers (cards, panels, buttons, modals) | 2px | `--border-width-md` |
+| Internal (separators, inputs, table cells) | 1px | `--border-width-sm` |
+| Accent/indicator borders | 3px | `--border-width-accent` |
 
 #### Icon Sizes
 | Token | Value | Usage |
@@ -353,6 +353,11 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--shadow-focus` | 0 0 0 1px var(--primary-dim) | Focus ring (primary) |
 | `--shadow-focus-success` | 0 0 0 1px var(--success) | Focus ring (success) |
 
+#### Filters
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--filter-invert` | invert(1) | White icons on dark background |
+
 #### Transition Durations
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -383,11 +388,6 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--opacity-muted` | 0.7 | Muted text, hover states, loading |
 | `--opacity-moderate` | 0.75 | Between muted and subtle |
 | `--opacity-subtle` | 0.9 | Nearly full, subtle fade |
-
-#### Filters
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--filter-invert` | invert(1) | White icons on dark background |
 
 #### Constraints (Max/Min Dimensions)
 | Token | Value | Usage |
