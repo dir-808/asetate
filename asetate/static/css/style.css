@@ -81,6 +81,48 @@
     --crate-wood-mid: #2a2520;      /* Medium wood - base */
     --crate-wood-light: #3d352d;    /* Lighter wood - highlights/borders */
 
+    /* Discogs brand colors (third-party, keep in sync with Discogs branding) */
+    --discogs-bg: #333333;          /* Discogs button background */
+    --discogs-bg-hover: #444444;    /* Discogs button hover */
+    --discogs-border: #444444;      /* Discogs button border */
+    --discogs-border-hover: #555555;/* Discogs button border hover */
+    --discogs-text: #ffffff;        /* Discogs button text */
+
+    /* -----------------------------------------
+       BACKGROUND TINTS
+       Semi-transparent color overlays for subtle backgrounds
+       ----------------------------------------- */
+    /* Primary (orange) tints */
+    --primary-bg-faint: rgba(249, 115, 22, 0.03);   /* Very subtle background */
+    --primary-bg-subtle: rgba(249, 115, 22, 0.06);  /* Subtle background */
+    --primary-bg-muted: rgba(249, 115, 22, 0.08);   /* Muted background */
+    --primary-bg-light: rgba(249, 115, 22, 0.1);    /* Light background */
+    --primary-bg-medium: rgba(249, 115, 22, 0.15);  /* Medium background */
+    --primary-border-alpha: rgba(249, 115, 22, 0.4);/* Semi-transparent border */
+
+    /* Success (green) tints */
+    --success-bg-faint: rgba(74, 222, 128, 0.05);   /* Very subtle background */
+    --success-bg-light: rgba(74, 222, 128, 0.1);    /* Light background */
+    --success-bg-medium: rgba(74, 222, 128, 0.15);  /* Medium background */
+
+    /* Warning (amber) tints */
+    --warning-bg-light: rgba(251, 191, 36, 0.1);    /* Light background */
+    --warning-bg-medium: rgba(251, 191, 36, 0.15);  /* Medium background */
+    --warning-bg-strong: rgba(251, 191, 36, 0.3);   /* Strong background */
+
+    /* Error (red) tints */
+    --error-bg-light: rgba(239, 68, 68, 0.1);       /* Light background */
+    --error-bg-medium: rgba(239, 68, 68, 0.2);      /* Medium background */
+
+    /* Overlay (black) tints */
+    --overlay-light: rgba(0, 0, 0, 0.3);            /* Light overlay */
+    --overlay-medium: rgba(0, 0, 0, 0.5);           /* Medium overlay */
+    --overlay-heavy: rgba(0, 0, 0, 0.7);            /* Heavy overlay */
+    --overlay-strong: rgba(0, 0, 0, 0.8);           /* Strong overlay */
+
+    /* LCD dim border alpha */
+    --lcd-dim-alpha: rgba(34, 84, 61, 0.5);         /* LCD dim at 50% opacity */
+
     /* -----------------------------------------
        SPACING - Based on 8pt grid
        Use these tokens, never hardcode values
@@ -143,6 +185,7 @@
 
     /* Cover sizes */
     --cover-lg: 250px;            /* Large cover (release detail) */
+    --cover-md: 200px;            /* Medium cover (responsive) */
     --cover-sm: 100px;            /* Small cover (sidebar) */
     --cover-xs: 50px;             /* Mini cover (list items) */
 
@@ -224,6 +267,8 @@
     --z-raised: 1;              /* Slightly raised elements */
     --z-above: 5;               /* Above siblings (tabs, positioned) */
     --z-dropdown: 10;           /* Dropdowns, tooltips */
+    --z-popover: 20;            /* Popovers, floating elements */
+    --z-fixed: 50;              /* Fixed position elements */
     --z-sticky: 100;            /* Sticky headers, toolbars */
     --z-overlay: 900;           /* Overlays, backdrops */
     --z-modal: 1000;            /* Modals, dialogs (highest) */
@@ -358,7 +403,7 @@ a:hover {
     padding: var(--space-md) var(--space-xl);
     background-color: var(--bg-surface);
     /* Functional depth: light top edge, dark bottom edge (like hardware panel seam) */
-    border-top: var(--border-width-sm) solid rgba(255, 255, 255, 0.05);
+    border-top: var(--border-width-sm) solid var(--bg-hover);
     border-bottom: var(--border-width-md) solid var(--border);
     box-shadow: var(--shadow-edge);
 }
@@ -1038,7 +1083,7 @@ input::placeholder, textarea::placeholder {
 
 .sync-error {
     padding: var(--space-md);
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: var(--error-bg-light);
     border: var(--border-width-md) solid var(--error);
     color: var(--error);
     font-size: var(--text-sm);
@@ -1260,7 +1305,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .badge-removed {
-    background: rgba(239, 68, 68, 0.2);
+    background: var(--error-bg-medium);
     color: var(--error);
 }
 
@@ -1538,7 +1583,7 @@ input::placeholder, textarea::placeholder {
 .release-crate-icon {
     width: var(--icon-lg);
     height: var(--icon-lg);
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--overlay-heavy);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1555,7 +1600,7 @@ input::placeholder, textarea::placeholder {
 .release-crate-more {
     width: var(--icon-lg);
     height: var(--icon-lg);
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--overlay-heavy);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1874,24 +1919,24 @@ input::placeholder, textarea::placeholder {
 
 /* Playable tracks get orange left/right borders, grey top/bottom for consistent separation */
 .track-row.track-playable {
-    background-color: rgba(249, 115, 22, 0.03);
-    border-left-color: rgba(249, 115, 22, 0.4);
-    border-right-color: rgba(249, 115, 22, 0.4);
+    background-color: var(--primary-bg-faint);
+    border-left-color: var(--primary-border-alpha);
+    border-right-color: var(--primary-border-alpha);
 }
 
 /* First playable track gets orange top border */
 .track-row.track-playable:first-child {
-    border-top-color: rgba(249, 115, 22, 0.4);
+    border-top-color: var(--primary-border-alpha);
 }
 
 /* Non-playable followed by playable: make its bottom border orange (this IS the top edge of the playable section) */
 .track-row:not(.track-playable):has(+ .track-row.track-playable) {
-    border-bottom-color: rgba(249, 115, 22, 0.4);
+    border-bottom-color: var(--primary-border-alpha);
 }
 
 /* Last playable in a group (not followed by another playable) gets orange bottom border */
 .track-row.track-playable:not(:has(+ .track-row.track-playable)) {
-    border-bottom-color: rgba(249, 115, 22, 0.4);
+    border-bottom-color: var(--primary-border-alpha);
 }
 
 /* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
@@ -1911,7 +1956,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-row.track-playable:hover {
-    background-color: rgba(249, 115, 22, 0.06);
+    background-color: var(--primary-bg-subtle);
 }
 
 /* Non-playable tracks are dimmed */
@@ -1939,14 +1984,14 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-2xs) var(--space-xs);
     font-size: var(--text-2xs);
     color: var(--warning);
-    background-color: rgba(251, 191, 36, 0.15);
+    background-color: var(--warning-bg-medium);
     cursor: pointer;
     text-transform: uppercase;
     transition: background-color var(--duration-base);
 }
 
 .track-notes-indicator:hover {
-    background-color: rgba(251, 191, 36, 0.3);
+    background-color: var(--warning-bg-strong);
 }
 
 .col-duration {
@@ -2711,7 +2756,7 @@ body.crate-panel-open .crates-main {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.3);
+    background: var(--overlay-light);
     /* No border-radius - MPC style */
     margin-bottom: var(--space-sm);
 }
@@ -3331,7 +3376,7 @@ body.crate-panel-open .crates-main {
 .modal-backdrop {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--overlay-strong);
 }
 
 .modal-content {
@@ -3673,7 +3718,7 @@ body.crate-panel-open .crates-main {
 }
 
 .preview-table tbody tr:hover {
-    background-color: rgba(74, 222, 128, 0.05);
+    background-color: var(--success-bg-faint);
 }
 
 .preview-note {
@@ -3810,7 +3855,7 @@ body.crate-panel-open .crates-main {
 
 /* Seller mode column highlighting */
 .seller-column {
-    background: rgba(249, 115, 22, 0.1);
+    background: var(--primary-bg-light);
 }
 
 /* Toggle switch for export format */
@@ -3854,25 +3899,25 @@ body.crate-panel-open .crates-main {
 }
 
 .flash-success {
-    background-color: rgba(74, 222, 128, 0.1);
+    background-color: var(--success-bg-light);
     border-color: var(--success);
     color: var(--success);
 }
 
 .flash-error {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: var(--error-bg-light);
     border-color: var(--error);
     color: var(--error);
 }
 
 .flash-info {
-    background-color: rgba(249, 115, 22, 0.1);
+    background-color: var(--primary-bg-light);
     border-color: var(--primary);
     color: var(--primary);
 }
 
 .flash-warning {
-    background-color: rgba(251, 191, 36, 0.1);
+    background-color: var(--warning-bg-light);
     border-color: var(--warning);
     color: var(--warning);
 }
@@ -3981,9 +4026,9 @@ body.crate-panel-open .crates-main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: #333;
-    color: #fff;
-    border: var(--border-width-md) solid #444;
+    background-color: var(--discogs-bg);
+    color: var(--discogs-text);
+    border: var(--border-width-md) solid var(--discogs-border);
     padding: var(--space-sm) var(--space-lg);
     font-family: var(--font-mono);
     font-size: var(--text-body);
@@ -3996,9 +4041,9 @@ body.crate-panel-open .crates-main {
 }
 
 .btn-discogs:hover {
-    background-color: #444;
-    border-color: #555;
-    color: #fff;
+    background-color: var(--discogs-bg-hover);
+    border-color: var(--discogs-border-hover);
+    color: var(--discogs-text);
 }
 
 .btn-discogs svg {
@@ -4122,7 +4167,7 @@ body.crate-panel-open .crates-main {
 }
 
 .seller-enabled {
-    background-color: rgba(74, 222, 128, 0.1);
+    background-color: var(--success-bg-light);
     border: var(--border-width-sm) solid var(--success);
 }
 
@@ -4232,8 +4277,8 @@ body.crate-panel-open .crates-main {
     }
 
     .release-cover-large {
-        width: 200px;
-        height: 200px;
+        width: var(--cover-md);
+        height: var(--cover-md);
     }
 
     .release-info-large {
@@ -4413,7 +4458,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-discogs-btn:hover {
-    background-color: rgba(249, 115, 22, 0.15);
+    background-color: var(--primary-bg-medium);
     color: var(--primary);
 }
 
@@ -4715,7 +4760,7 @@ body.crate-panel-open .crates-main {
 /* Editable variant - shows it's interactive */
 .panel-input--editable {
     /* Always solid border to prevent layout shift - use subtle color for empty state */
-    border: var(--border-width-sm) solid rgba(34, 84, 61, 0.5);  /* --lcd-dim at 50% opacity */
+    border: var(--border-width-sm) solid var(--lcd-dim-alpha);
     color: var(--lcd-text);
 }
 
@@ -4738,12 +4783,12 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-input--editable:hover {
-    background: rgba(74, 222, 128, 0.1);
+    background: var(--success-bg-light);
     border-color: var(--lcd-text);
 }
 
 .panel-input--editable:focus {
-    background: rgba(74, 222, 128, 0.15);
+    background: var(--success-bg-medium);
     border-color: var(--success);
     outline: none;
 }
@@ -4881,7 +4926,7 @@ body.crate-panel-open .crates-main {
     border-style: solid;
     border-color: var(--warning);
     color: var(--warning);
-    background-color: rgba(251, 191, 36, 0.15);
+    background-color: var(--warning-bg-medium);
 }
 
 /* Panel tag add - icon button for LCD background */
@@ -4913,7 +4958,7 @@ body.crate-panel-open .crates-main {
     width: var(--slider-width);
     padding: var(--space-2xs) var(--space-xs);
     font-size: var(--text-3xs);
-    background-color: rgba(74, 222, 128, 0.1);
+    background-color: var(--success-bg-light);
     border: var(--border-width-sm) solid var(--lcd-text);
     color: var(--lcd-text);
 }
@@ -5114,7 +5159,7 @@ body.crate-panel-open .crates-main {
     right: 0;
     width: var(--sidebar-width);
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: var(--overlay-heavy);
     z-index: var(--z-modal);
     display: flex;
     align-items: center;
@@ -5394,12 +5439,12 @@ body.crate-panel-open .crates-main {
 
 .track-notes-btn--has-notes {
     color: var(--warning);
-    background-color: rgba(251, 191, 36, 0.15);
+    background-color: var(--warning-bg-medium);
     border: var(--border-width-sm) solid transparent;
 }
 
 .track-notes-btn--has-notes:hover {
-    background-color: rgba(251, 191, 36, 0.3);
+    background-color: var(--warning-bg-strong);
 }
 
 /* Panel variant - smaller */
@@ -5420,7 +5465,7 @@ body.crate-panel-open .crates-main {
     border-style: solid;
     border-color: var(--warning);
     color: var(--warning);
-    background-color: rgba(251, 191, 36, 0.1);
+    background-color: var(--warning-bg-light);
 }
 
 /* --------------------------------------------
@@ -5443,24 +5488,24 @@ body.crate-panel-open .crates-main {
 
 /* Playable tracks (not dimmed) get orange left/right borders */
 .panel-track-row:not(.track-dimmed) {
-    border-left-color: rgba(249, 115, 22, 0.4);
-    border-right-color: rgba(249, 115, 22, 0.4);
-    background-color: rgba(249, 115, 22, 0.03);
+    border-left-color: var(--primary-border-alpha);
+    border-right-color: var(--primary-border-alpha);
+    background-color: var(--primary-bg-faint);
 }
 
 /* First playable track gets orange top border */
 .panel-track-row:not(.track-dimmed):first-child {
-    border-top-color: rgba(249, 115, 22, 0.4);
+    border-top-color: var(--primary-border-alpha);
 }
 
 /* Non-playable followed by playable: orange bottom = top edge of playable section */
 .panel-track-row.track-dimmed:has(+ .panel-track-row:not(.track-dimmed)) {
-    border-bottom-color: rgba(249, 115, 22, 0.4);
+    border-bottom-color: var(--primary-border-alpha);
 }
 
 /* Last playable in group gets orange bottom border */
 .panel-track-row:not(.track-dimmed):not(:has(+ .panel-track-row:not(.track-dimmed))) {
-    border-bottom-color: rgba(249, 115, 22, 0.4);
+    border-bottom-color: var(--primary-border-alpha);
 }
 
 /* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
@@ -5480,7 +5525,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-track-row:not(.track-dimmed):hover {
-    background-color: rgba(249, 115, 22, 0.08);
+    background-color: var(--primary-bg-muted);
 }
 
 /* =============================================
@@ -5782,8 +5827,8 @@ body.crate-panel-open .crates-main {
 /* Legacy numeric utilities (for backwards compatibility) */
 .z-0 { z-index: var(--z-base); }
 .z-10 { z-index: var(--z-dropdown); }
-.z-20 { z-index: 20; }
-.z-50 { z-index: 50; }
+.z-20 { z-index: var(--z-popover); }
+.z-50 { z-index: var(--z-fixed); }
 .z-100 { z-index: var(--z-sticky); }
 
 /* =============================================
