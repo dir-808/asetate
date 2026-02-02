@@ -74,7 +74,7 @@
     /* Text hierarchy */
     --text-primary: #e5e5e5;
     --text-secondary: #a3a3a3;
-    --text-muted: #737373;
+    --text-muted: #8a8a8a;        /* WCAG AA compliant (4.5:1 on dark bg) */
 
     /* Crate box theme (wooden crate) */
     --crate-wood-dark: #1a1815;     /* Darkest wood - inner shadow */
@@ -312,6 +312,12 @@
     --shadow-edge: 0 1px 0 rgba(0, 0, 0, 0.2);              /* Bottom edge depth */
     --shadow-focus: 0 0 0 1px var(--primary-dim);           /* Focus ring (primary) */
     --shadow-focus-success: 0 0 0 1px var(--success);       /* Focus ring (success) */
+
+    /* -----------------------------------------
+       FILTERS
+       Visual effects for icons and images
+       ----------------------------------------- */
+    --filter-invert: invert(1);   /* White icons on dark background */
 
     /* -----------------------------------------
        TRANSITIONS
@@ -3011,7 +3017,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-xl);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 .icon-search-input {
@@ -3068,7 +3074,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-lg);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 /* Pixel Icon Grid (for icon picker) */
@@ -3150,7 +3156,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-2xl);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 /* Large pixel icon on crate detail page */
@@ -3159,7 +3165,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-3xl);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1); /* White icons on dark background */
+    filter: var(--filter-invert);
 }
 
 /* Pixel icons on release cards (crate indicators) */
@@ -3168,7 +3174,7 @@ body.crate-panel-open .crates-main {
     height: var(--icon-sm);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    filter: invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.5));
+    filter: var(--filter-invert) drop-shadow(0 0 1px rgba(0,0,0,0.5));
 }
 
 /* ============================================
@@ -3266,7 +3272,7 @@ body.crate-panel-open .crates-main {
     width: var(--icon-xl);
     height: var(--icon-xl);
     /* Use filter for preview - actual icons use mask */
-    filter: invert(1);
+    filter: var(--filter-invert);
 }
 
 .color-picker {

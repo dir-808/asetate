@@ -384,6 +384,11 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--opacity-moderate` | 0.75 | Between muted and subtle |
 | `--opacity-subtle` | 0.9 | Nearly full, subtle fade |
 
+#### Filters
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--filter-invert` | invert(1) | White icons on dark background |
+
 #### Constraints (Max/Min Dimensions)
 | Token | Value | Usage |
 |-------|-------|-------|
