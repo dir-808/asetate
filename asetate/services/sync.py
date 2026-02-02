@@ -229,6 +229,8 @@ class SyncService:
         release.year = release_data.year
         release.cover_art_url = release_data.cover_art_url
         release.discogs_uri = release_data.discogs_uri
+        release.format_details = release_data.format_details
+        release.catno = release_data.catno
         release.synced_at = datetime.utcnow()
 
         # Clear removed status if it was previously removed
@@ -342,6 +344,8 @@ class SyncService:
         release.year = release_data.year
         release.cover_art_url = release_data.cover_art_url
         release.discogs_uri = release_data.discogs_uri
+        release.format_details = release_data.format_details
+        release.catno = release_data.catno
         release.synced_at = datetime.utcnow()
 
         # Sync tracks (preserves user DJ metadata)

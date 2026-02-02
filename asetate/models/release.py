@@ -32,6 +32,7 @@ class Release(db.Model):
     # Additional Discogs metadata
     country = db.Column(db.String(100))  # Country of release
     format_details = db.Column(db.String(500))  # Format description (e.g., "LP, Album, 180g")
+    catno = db.Column(db.String(100))  # Catalogue number (e.g., "WARP LP1")
     genres = db.Column(db.JSON)  # List of genres
     styles = db.Column(db.JSON)  # List of styles
 

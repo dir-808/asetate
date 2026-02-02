@@ -41,6 +41,8 @@ class DiscogsRelease:
     cover_art_url: str | None
     discogs_uri: str
     tracks: list[dict]
+    format_details: str | None = None
+    catno: str | None = None
 
 
 @dataclass
@@ -330,9 +332,20 @@ class DiscogsClient:
         # Clean up Discogs artist numbering like "Artist (2)"
         artist_name = self._clean_artist_name(artist_name)
 
-        # Extract label
+        # Extract label and catalogue number
         labels = basic_info.get("labels", [])
         label = labels[0].get("name") if labels else None
+        catno = labels[0].get("catno") if labels else None
+
+        # Extract format details (e.g., "LP, Album, 180g")
+        formats = basic_info.get("formats", [])
+        format_parts = []
+        for fmt in formats:
+            if fmt.get("name"):
+                format_parts.append(fmt["name"])
+            if fmt.get("descriptions"):
+                format_parts.extend(fmt["descriptions"])
+        format_details = ", ".join(format_parts) if format_parts else None
 
         # Extract cover art (prefer larger images)
         cover_url = None
@@ -363,6 +376,8 @@ class DiscogsClient:
             cover_art_url=cover_url,
             discogs_uri=f"https://www.discogs.com/release/{basic_info.get('id')}",
             tracks=tracks,
+            format_details=format_details,
+            catno=catno,
         )
 
     def _clean_artist_name(self, name: str) -> str:
