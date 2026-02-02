@@ -315,6 +315,17 @@
     --duration-pulse: 2s;       /* Slow pulse animations */
 
     /* -----------------------------------------
+       TRANSFORMS
+       Scale and translate values for hover effects
+       ----------------------------------------- */
+    --scale-hover: 1.1;         /* Standard hover scale */
+    --scale-hover-lg: 1.2;      /* Larger hover scale */
+    --scale-hover-y: 1.15;      /* Vertical scale (energy bars) */
+    --lift-hover: -4px;         /* Hover lift effect */
+    --lift-hover-lg: -8px;      /* Larger hover lift */
+    --tilt-crate-lid: -75deg;   /* Crate lid rotation */
+
+    /* -----------------------------------------
        OPACITY
        Consistent transparency levels
        ----------------------------------------- */
@@ -2085,7 +2096,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-energy-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
+    transform: scale(var(--scale-hover-lg));
 }
 
 .track-energy-slider::-moz-range-thumb {
@@ -2707,7 +2718,7 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-box:hover {
-    transform: translateY(-4px);
+    transform: translateY(var(--lift-hover));
     border-color: var(--crate-accent);
 }
 
@@ -2754,7 +2765,7 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-box:hover .crate-lid {
-    transform: rotateX(-75deg) translateY(-8px);
+    transform: rotateX(var(--tilt-crate-lid)) translateY(var(--lift-hover-lg));
 }
 
 /* Crate body */
@@ -3263,7 +3274,7 @@ body.crate-panel-open .crates-main {
 }
 
 .color-option:hover {
-    transform: scale(1.1);
+    transform: scale(var(--scale-hover));
 }
 
 .color-option.selected {
@@ -5281,7 +5292,7 @@ body.crate-panel-open .crates-main {
 }
 
 .energy-bar .energy-segment:hover {
-    transform: scaleY(1.15);
+    transform: scaleY(var(--scale-hover-y));
 }
 
 /* Energy color states - green → lime → yellow → orange → red */

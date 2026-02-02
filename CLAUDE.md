@@ -351,6 +351,16 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--duration-spin` | 1s | Spin/rotation animations |
 | `--duration-pulse` | 2s | Slow pulse animations |
 
+#### Transforms
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--scale-hover` | 1.1 | Standard hover scale effect |
+| `--scale-hover-lg` | 1.2 | Larger hover scale effect |
+| `--scale-hover-y` | 1.15 | Vertical scale (energy bars) |
+| `--lift-hover` | -4px | Hover lift effect |
+| `--lift-hover-lg` | -8px | Larger hover lift |
+| `--tilt-crate-lid` | -75deg | Crate lid rotation |
+
 #### Opacity
 | Token | Value | Usage |
 |-------|-------|-------|
