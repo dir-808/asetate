@@ -38,6 +38,7 @@
     /* LCD green tint for displays/data */
     --lcd-bg: #0a1210;
     --lcd-text: #4ade80;
+    --lcd-muted: #6ab893;            /* Readable secondary LCD text */
     --lcd-dim: #22543d;
 
     /* Primary accent - MPC Orange */
@@ -1702,7 +1703,7 @@ input::placeholder, textarea::placeholder {
 
 .release-artist {
     font-size: var(--text-xs);
-    color: var(--lcd-text);
+    color: var(--lcd-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4515,6 +4516,7 @@ body.crate-panel-open .crates-main {
 
 .panel-discogs-btn .emoji-icon {
     font-size: var(--icon-md);
+    font-weight: var(--weight-bold);
     /* Centering: flex container handles alignment,
        line-height ensures vertical centering within the icon itself */
     line-height: var(--leading-none);
