@@ -1752,7 +1752,7 @@ input::placeholder, textarea::placeholder {
     width: var(--border-width-sm);
     height: 0.8em;
     background: var(--text-muted);
-    opacity: var(--opacity-dim);
+    opacity: var(--opacity-disabled);
     flex-shrink: 0;
 }
 
