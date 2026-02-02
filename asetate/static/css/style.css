@@ -4676,27 +4676,33 @@ body.crate-panel-open .crates-main {
 .panel-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.panel-info-top,
+.panel-info-bottom {
+    display: flex;
+    flex-direction: column;
 }
 
 .panel-info h2 {
     font-size: var(--text-base);
     font-weight: var(--weight-bold);
     line-height: var(--leading-tight);
-    margin-bottom: var(--space-xs);
 }
 
 .panel-artist {
     font-size: var(--text-sm);
     color: var(--lcd-text);
     opacity: var(--opacity-faded);
-    margin-bottom: var(--space-xs);
 }
 
 .panel-meta {
     display: flex;
     justify-content: space-between;
     font-size: var(--text-xs);
-    margin-bottom: var(--space-xs);
 }
 
 .panel-label {

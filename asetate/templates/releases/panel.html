@@ -14,17 +14,21 @@
                 {% endif %}
             </div>
             <div class="panel-info">
-                <h2>{{ release.display_title }}</h2>
-                <p class="panel-artist">{{ release.display_artist }}</p>
-                {% if release.label or release.year %}
-                <div class="panel-meta">
-                    {% if release.label %}<span class="panel-label">{{ release.label }}</span>{% endif %}
-                    {% if release.year %}<span class="panel-year">{{ release.year }}</span>{% endif %}
+                <div class="panel-info-top">
+                    <h2>{{ release.display_title }}</h2>
+                    <p class="panel-artist">{{ release.display_artist }}</p>
                 </div>
-                {% endif %}
-                {% if release.catno %}
-                <div class="panel-catno">{{ release.catno }}</div>
-                {% endif %}
+                <div class="panel-info-bottom">
+                    {% if release.catno %}
+                    <div class="panel-catno">{{ release.catno }}</div>
+                    {% endif %}
+                    {% if release.label or release.year %}
+                    <div class="panel-meta">
+                        {% if release.label %}<span class="panel-label">{{ release.label }}</span>{% endif %}
+                        {% if release.year %}<span class="panel-year">{{ release.year }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
         <div class="panel-discogs-buttons">
