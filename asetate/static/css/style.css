@@ -1330,11 +1330,11 @@ input::placeholder, textarea::placeholder {
 .filter-btn.active::after {
     content: '';
     position: absolute;
-    bottom: 4px;
+    bottom: var(--space-xs);
     left: 50%;
     transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+    width: var(--led-size-sm);
+    height: var(--led-size-sm);
     background: var(--primary);
     border-radius: 50%; /* LED dots are round - mimics hardware */
 }
