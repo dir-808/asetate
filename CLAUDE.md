@@ -158,6 +158,38 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--neutral-lighter` | #6b7280 | Secondary hover light edge |
 | `--neutral-darker` | #1f2937 | Secondary hover dark edge |
 
+#### Discogs Brand Colors
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--discogs-bg` | #333333 | Discogs button background |
+| `--discogs-bg-hover` | #444444 | Discogs button hover |
+| `--discogs-border` | #444444 | Discogs button border |
+| `--discogs-border-hover` | #555555 | Discogs button border hover |
+| `--discogs-text` | #ffffff | Discogs button text |
+
+#### Background Tints (Semi-transparent)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary-bg-faint` | rgba(249,115,22,0.03) | Very subtle primary bg |
+| `--primary-bg-subtle` | rgba(249,115,22,0.06) | Subtle primary bg |
+| `--primary-bg-muted` | rgba(249,115,22,0.08) | Muted primary bg |
+| `--primary-bg-light` | rgba(249,115,22,0.1) | Light primary bg |
+| `--primary-bg-medium` | rgba(249,115,22,0.15) | Medium primary bg |
+| `--primary-border-alpha` | rgba(249,115,22,0.4) | Semi-transparent primary border |
+| `--success-bg-faint` | rgba(74,222,128,0.05) | Very subtle success bg |
+| `--success-bg-light` | rgba(74,222,128,0.1) | Light success bg |
+| `--success-bg-medium` | rgba(74,222,128,0.15) | Medium success bg |
+| `--warning-bg-light` | rgba(251,191,36,0.1) | Light warning bg |
+| `--warning-bg-medium` | rgba(251,191,36,0.15) | Medium warning bg |
+| `--warning-bg-strong` | rgba(251,191,36,0.3) | Strong warning bg |
+| `--error-bg-light` | rgba(239,68,68,0.1) | Light error bg |
+| `--error-bg-medium` | rgba(239,68,68,0.2) | Medium error bg |
+| `--overlay-light` | rgba(0,0,0,0.3) | Light overlay |
+| `--overlay-medium` | rgba(0,0,0,0.5) | Medium overlay |
+| `--overlay-heavy` | rgba(0,0,0,0.7) | Heavy overlay |
+| `--overlay-strong` | rgba(0,0,0,0.8) | Strong overlay |
+| `--lcd-dim-alpha` | rgba(34,84,61,0.5) | LCD dim at 50% |
+
 #### Icon Sizes
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -226,6 +258,7 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--cover-lg` | 250px | Large cover (release detail) |
+| `--cover-md` | 200px | Medium cover (responsive) |
 | `--cover-sm` | 100px | Small cover (sidebar) |
 | `--cover-xs` | 50px | Mini cover (list items) |
 
@@ -266,6 +299,14 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--leading-normal` | 1.5 | Standard readable text |
 | `--leading-relaxed` | 1.6 | Body text, long-form reading |
 
+#### Font Weights
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--weight-normal` | 400 | Normal/regular text |
+| `--weight-medium` | 500 | Medium emphasis |
+| `--weight-semibold` | 600 | Semi-bold, labels, buttons |
+| `--weight-bold` | 700 | Bold, headings, strong emphasis |
+
 #### Z-Index Scale
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -273,6 +314,8 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--z-raised` | 1 | Slightly raised elements |
 | `--z-above` | 5 | Above siblings (tabs, positioned) |
 | `--z-dropdown` | 10 | Dropdowns, tooltips |
+| `--z-popover` | 20 | Popovers, floating elements |
+| `--z-fixed` | 50 | Fixed position elements |
 | `--z-sticky` | 100 | Sticky headers, toolbars |
 | `--z-overlay` | 900 | Overlays, side panels |
 | `--z-modal` | 1000 | Modals, dialogs (highest) |
@@ -295,6 +338,8 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--duration-moderate` | 0.2s | Slightly longer animations |
 | `--duration-slow` | 0.3s | Large movements, panels |
 | `--duration-blink` | 0.6s | LED blink, activity indicators |
+| `--duration-spin` | 1s | Spin/rotation animations |
+| `--duration-pulse` | 2s | Slow pulse animations |
 
 #### Opacity
 | Token | Value | Usage |
