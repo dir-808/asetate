@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Asetate",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "args": ["run", "--debug"],
+            "env": {
+                "FLASK_APP": "asetate",
+                "FLASK_ENV": "development"
+            },
+            "jinja": true,
+            "autoStartBrowser": false
+        }
+    ]
+}
