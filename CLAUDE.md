@@ -78,6 +78,8 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--lime` | #84cc16 | Lime - energy level 2 |
 | `--warning` | #fbbf24 | Amber - notes, caution |
 | `--error` | #ef4444 | Red - errors, high energy |
+| `--tag-default` | #E07A5F | Default tag color (terracotta) |
+| `--color-none` | #e0e0e0 | "No color" option in color pickers |
 | `--lcd-bg` | #0a1210 | LCD background |
 | `--lcd-text` | #4ade80 | LCD text (green) |
 | `--lcd-dim` | #22543d | LCD muted text |
@@ -475,11 +477,11 @@ All icons in Asetate use Google's Noto Emoji font (monochrome, medium weight). I
 {# Import at top of template #}
 {% from "_icons.html" import emoji_icon, crate_icon %}
 
-{# Render a basic emoji icon (size = font-size in pixels) #}
-{{ emoji_icon('vinyl', size=24, color='#F97316') }}
+{# Render a basic emoji icon (size = modifier, not pixels!) #}
+{{ emoji_icon('vinyl', size='xl', color='#F97316') }}
 
 {# Render a crate's icon with its color #}
-{{ crate_icon(crate, size=32) }}
+{{ crate_icon(crate, size='2xl') }}
 ```
 
 **JavaScript Module (static/js/icons.js):**
@@ -488,28 +490,41 @@ All icons in Asetate use Google's Noto Emoji font (monochrome, medium weight). I
 import { renderEmojiIcon, renderCrateIcon, renderEmojiIconGrid, EMOJI_ICONS, EMOJI_CHARS } from '/static/js/icons.js';
 
 // Or use global (for AJAX-loaded content)
-const icon = window.AsetateIcons.renderCrateIcon(crate, 24);
+const icon = window.AsetateIcons.renderCrateIcon(crate, 'xl');
 ```
 
 **Available functions:**
 | Function | Description |
 |----------|-------------|
-| `renderEmojiIcon(name, size, color)` | Render icon by name (size = font-size in px) |
+| `renderEmojiIcon(name, size, color)` | Render icon by name (size = modifier string) |
 | `renderCrateIcon(crate, size)` | Render crate's icon with color |
 | `renderEmojiIconGrid(container, onSelect, selected)` | Render icon picker grid |
 | `getIconName(iconField)` | Extract icon name from `emoji:name` or `pixel:name` format |
 | `formatIconForStorage(name)` | Format name as `emoji:name` for storage |
 
-**Common size values:**
-| Size | Usage |
-|------|-------|
-| 12px | Small action icons (notes, tag buttons) |
-| 14px | Crate badges on release cards |
-| 16px | Crate badges in panel |
-| 18px | Discogs action buttons |
-| 24px | Icon grid picker, default |
-| 32px | Icon preview in forms, crate cards |
-| 36px | Crate detail header |
+**Size modifiers (use these, NOT pixel values):**
+| Modifier | Token | Value |
+|----------|-------|-------|
+| `'sm'` | `--icon-sm` | 14px |
+| `'base'` | `--icon-base` | 16px |
+| `'md'` | `--icon-md` | 18px |
+| `'lg'` | `--icon-lg` | 20px |
+| `'xl'` | `--icon-xl` | 24px (default) |
+| `'2xl'` | `--icon-2xl` | 32px |
+| `'3xl'` | `--icon-3xl` | 40px |
+| `'4xl'` | `--icon-4xl` | 64px |
+
+**Common size usage:**
+| Modifier | Usage |
+|----------|-------|
+| `'sm'` (14px) | Crate badges on cards, small icons |
+| `'base'` (16px) | Crate badges in panel, inline icons |
+| `'md'` (18px) | Discogs action buttons |
+| `'lg'` (20px) | Emoji picker grid items |
+| `'xl'` (24px) | Icon grid picker, default size |
+| `'2xl'` (32px) | Icon preview in forms, crate cards |
+| `'3xl'` (40px) | Large icon previews |
+| `'4xl'` (64px) | Crate detail header, avatars |
 
 **Available icons:**
 
