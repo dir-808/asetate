@@ -88,19 +88,12 @@
                 <div class="release-info">
                     <h3 class="release-title">{{ release.display_title }}</h3>
                     <p class="release-artist">{{ release.display_artist }}</p>
-                    {% if release.label or release.catno or release.year %}
+                    {% if release.label or release.year %}
                     <div class="release-label-row">
                         {% if release.label %}
                         <span class="release-label">{{ release.label }}</span>
                         {% endif %}
-                        {% if release.label and release.catno %}
-                        <span class="release-label-divider"></span>
-                        {% endif %}
-                        {% if release.catno %}
-                        <span class="release-catno">{{ release.catno }}</span>
-                        {% endif %}
                         {% if release.year %}
-                        <span class="release-label-divider"></span>
                         <span class="release-year">{{ release.year }}</span>
                         {% endif %}
                     </div>

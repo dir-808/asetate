@@ -1715,7 +1715,7 @@ input::placeholder, textarea::placeholder {
 .release-year {
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
-    color: var(--text-primary);
+    color: var(--text-secondary);
     flex-shrink: 0;
 }
 
