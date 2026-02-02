@@ -168,6 +168,14 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--text-xl` | 1.5rem | Headings |
 | `--text-2xl` | 2rem | Page titles, large icons |
 
+#### Letter Spacing
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--tracking-tight` | 0.02em | Dense text, position labels |
+| `--tracking-normal` | 0.05em | Standard uppercase labels, buttons |
+| `--tracking-wide` | 0.08em | Nav links, small caps |
+| `--tracking-wider` | 0.1em | Section headings, emphasis |
+
 ### Token Usage Rules
 
 **DO:**
