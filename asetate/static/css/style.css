@@ -336,8 +336,8 @@
     --table-cell-max-width: 200px;      /* Table cell truncation */
     --modal-panel-max-width: 350px;     /* Panel notes modal width */
     --setting-max-width: 500px;         /* Toggle setting row */
-    --crate-name-max-width: var(--crate-name-max-width);      /* Crate name in cards */
-    --energy-val-min-width: var(--energy-val-min-width);       /* Energy value display */
+    --crate-name-max-width: 120px;      /* Crate name in cards */
+    --energy-val-min-width: 12px;       /* Energy value display */
 
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
