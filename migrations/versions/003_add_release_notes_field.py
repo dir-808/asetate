@@ -1,7 +1,7 @@
 """Add notes field to releases table.
 
 Revision ID: 003
-Revises: a9fd410f4ca5
+Revises: None (base migration - previous migrations lost)
 Create Date: 2026-01-31
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '003_add_release_notes_field'
-down_revision = 'a9fd410f4ca5'
+down_revision = None
 branch_labels = None
 depends_on = None
 
