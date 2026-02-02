@@ -1688,6 +1688,11 @@ input::placeholder, textarea::placeholder {
     gap: var(--space-2xs);
     background-color: var(--lcd-bg);
     flex: 1; /* Fill remaining card height so no grey gap shows */
+    transition: background-color var(--duration-base) ease;
+}
+
+.release-card:hover .release-info {
+    background-color: var(--primary-bg-muted);
 }
 
 .release-title {
@@ -4502,11 +4507,12 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     /* Functional shadow for recessed LCD screen effect */
     box-shadow: var(--shadow-inset-lcd);
-    transition: border-color var(--duration-base) ease;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .panel-discogs-card:hover {
     border-color: var(--primary);
+    background-color: var(--primary-bg-muted);
 }
 
 /* Main content area (cover + info) */
@@ -4600,19 +4606,8 @@ body.crate-panel-open .crates-main {
     to { transform: rotate(360deg); }
 }
 
-.panel-discogs-card .panel-info h2,
-.panel-discogs-card .panel-artist,
-.panel-discogs-card .panel-meta,
-.panel-discogs-card .panel-stats {
+.panel-discogs-card .panel-info h2 {
     color: var(--lcd-text);
-}
-
-.panel-discogs-card .panel-stats .text-success {
-    color: var(--success);
-}
-
-.panel-discogs-card .panel-meta {
-    opacity: var(--opacity-muted);
 }
 
 /* Compact stats display */
@@ -4686,24 +4681,41 @@ body.crate-panel-open .crates-main {
 .panel-info h2 {
     font-size: var(--text-base);
     font-weight: var(--weight-bold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-normal);
     line-height: var(--leading-tight);
     margin-bottom: var(--space-xs);
 }
 
 .panel-artist {
     font-size: var(--text-sm);
-    color: var(--text-secondary);
+    color: var(--lcd-text);
+    opacity: var(--opacity-faded);
     margin-bottom: var(--space-xs);
 }
 
 .panel-meta {
     display: flex;
-    gap: var(--space-sm);
+    justify-content: space-between;
     font-size: var(--text-xs);
-    color: var(--text-muted);
     margin-bottom: var(--space-xs);
+}
+
+.panel-label {
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.panel-year {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.panel-catno {
+    font-size: var(--text-xs);
+    color: var(--text-primary);
 }
 
 /* NOTE: .panel-actions is defined in the form panel section (~line 3344) */
