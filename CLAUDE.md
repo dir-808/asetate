@@ -29,6 +29,41 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 > ⚠️ **ALWAYS put CSS in `static/css/style.css`** - never in template `<style>` blocks. This ensures consistency, easier maintenance, and better caching.
 
+### Token-First Philosophy
+
+**CRITICAL: Every CSS value should use a design token unless it's truly one-off.**
+
+Before writing any CSS, follow this decision tree:
+
+1. **Does a token exist for this value?** → Use it
+2. **Is this a reusable pattern?** → Create a new token, then use it
+3. **Is this truly one-off and component-specific?** → Hardcode with a comment explaining why
+
+**Why tokens matter:**
+- **Consistency**: Change `--space-md` once, update everywhere
+- **Maintainability**: No hunting through files for hardcoded `16px`
+- **Intent**: `--opacity-disabled` communicates purpose, `0.4` doesn't
+- **Future-proofing**: Easy to adjust the entire system
+
+**When adding new features:**
+```css
+/* WRONG - hardcoded values */
+.new-component {
+    padding: 16px;
+    opacity: 0.5;
+    z-index: 100;
+    transition: opacity 0.15s;
+}
+
+/* RIGHT - tokens communicate intent and enable central updates */
+.new-component {
+    padding: var(--space-md);
+    opacity: var(--opacity-dim);
+    z-index: var(--z-sticky);
+    transition: opacity var(--duration-base);
+}
+```
+
 ### File Structure
 - **`static/css/style.css`** - Single source of truth for ALL CSS
 - Templates should have **no** `<style>` blocks (legacy ones are being migrated)
@@ -213,6 +248,25 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--duration-base` | 0.15s | Standard transitions |
 | `--duration-moderate` | 0.2s | Slightly longer animations |
 | `--duration-slow` | 0.3s | Large movements, panels |
+| `--duration-blink` | 0.6s | LED blink, activity indicators |
+
+#### Opacity
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--opacity-disabled` | 0.4 | Disabled buttons, inactive controls |
+| `--opacity-dim` | 0.5 | Dimmed/inactive elements, separators |
+| `--opacity-faded` | 0.6 | Slightly faded labels, secondary info |
+| `--opacity-muted` | 0.7 | Muted text, hover states, loading |
+| `--opacity-subtle` | 0.9 | Nearly full, subtle fade |
+
+#### Constraints (Max/Min Dimensions)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--dropdown-max-height` | 250px | Standard dropdown height |
+| `--dropdown-lg-max-height` | 300px | Large dropdown height |
+| `--modal-sm-max-height` | 120px | Small modal/content area |
+| `--textarea-min-height` | 60px | Minimum textarea height |
+| `--textarea-max-height` | 100px | Maximum textarea height |
 
 ### Token Usage Rules
 
@@ -248,6 +302,15 @@ transition: transform var(--duration-slow) ease;
 /* Use line-height tokens */
 line-height: var(--leading-normal);
 line-height: var(--leading-none);
+
+/* Use opacity tokens */
+opacity: var(--opacity-disabled);
+opacity: var(--opacity-dim);
+opacity: var(--opacity-muted);
+
+/* Use constraint tokens */
+max-height: var(--dropdown-max-height);
+min-height: var(--textarea-min-height);
 ```
 
 **DON'T:**
@@ -270,6 +333,13 @@ z-index: 900;            /* Use var(--z-overlay) */
 
 /* NO hardcoded durations */
 transition: opacity 0.15s ease; /* Use var(--duration-base) */
+
+/* NO hardcoded opacity */
+opacity: 0.5;            /* Use var(--opacity-dim) */
+opacity: 0.7;            /* Use var(--opacity-muted) */
+
+/* NO hardcoded constraints */
+max-height: 250px;       /* Use var(--dropdown-max-height) */
 ```
 
 **Exceptions (OK to hardcode):**
@@ -277,6 +347,7 @@ transition: opacity 0.15s ease; /* Use var(--duration-base) */
 - Responsive breakpoint values in `@media` queries
 - Third-party brand colors (e.g., Discogs button) with a comment explaining why
 - Component-internal z-index layering (e.g., z-index: 3 for stacking within a single component)
+- Keyframe animation intermediate values (e.g., `opacity: 0.3` in blink animation)
 
 ### Utility Classes
 Use utility classes instead of inline styles. Full list available in style.css.

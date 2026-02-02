@@ -218,10 +218,31 @@
        TRANSITIONS
        Animation durations for consistent motion
        ----------------------------------------- */
-    --duration-fast: var(--duration-fast);      /* Fast/micro interactions */
-    --duration-base: var(--duration-base);     /* Standard transitions */
-    --duration-moderate: 0.2s;  /* Slightly longer */
-    --duration-slow: 0.3s;      /* Larger movements, panels */
+    --duration-fast: 0.1s;      /* Micro interactions, quick feedback */
+    --duration-base: 0.15s;     /* Standard transitions */
+    --duration-moderate: 0.2s;  /* Slightly longer animations */
+    --duration-slow: 0.3s;      /* Large movements, panels */
+    --duration-blink: 0.6s;     /* LED blink, activity indicators */
+
+    /* -----------------------------------------
+       OPACITY
+       Consistent transparency levels
+       ----------------------------------------- */
+    --opacity-disabled: 0.4;    /* Disabled buttons, inactive controls */
+    --opacity-dim: 0.5;         /* Dimmed/inactive elements, separators */
+    --opacity-faded: 0.6;       /* Slightly faded labels, secondary info */
+    --opacity-muted: 0.7;       /* Muted text, hover states, loading */
+    --opacity-subtle: 0.9;      /* Nearly full, subtle fade */
+
+    /* -----------------------------------------
+       CONSTRAINTS
+       Max/min dimensions for common patterns
+       ----------------------------------------- */
+    --dropdown-max-height: 250px;   /* Standard dropdown height */
+    --dropdown-lg-max-height: 300px; /* Large dropdown height */
+    --modal-sm-max-height: 120px;   /* Small modal/content area */
+    --textarea-min-height: 60px;    /* Minimum textarea height */
+    --textarea-max-height: 100px;   /* Maximum textarea height */
 
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
@@ -586,7 +607,7 @@ a:hover {
 }
 
 .btn:disabled {
-    opacity: 0.4;
+    opacity: var(--opacity-disabled);
     cursor: not-allowed;
 }
 
@@ -1059,7 +1080,7 @@ input::placeholder, textarea::placeholder {
 
 @keyframes pulse-text {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+    50% { opacity: var(--opacity-muted); }
 }
 
 /* Live stats during sync */
@@ -1077,7 +1098,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .live-stat-sep {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
 }
 
 /* Enhanced error display */
@@ -1125,7 +1146,7 @@ input::placeholder, textarea::placeholder {
     background: currentColor;
     border-radius: 50%; /* LED indicator - round is OK per MPC2000 guidelines */
     margin-right: var(--space-xs);
-    animation: led-blink 0.6s ease-in-out infinite;
+    animation: led-blink var(--duration-blink) ease-in-out infinite;
 }
 
 .btn.is-loading .activity-led {
@@ -1133,7 +1154,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .btn.is-loading {
-    opacity: 0.9;
+    opacity: var(--opacity-subtle);
     pointer-events: none;
 }
 
@@ -1853,11 +1874,11 @@ input::placeholder, textarea::placeholder {
 
 /* Non-playable tracks are dimmed */
 .track-row:not(.track-playable) {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
 }
 
 .track-row:not(.track-playable):hover {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .col-pos {
@@ -2506,7 +2527,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-select-list {
-    max-height: 300px;
+    max-height: var(--dropdown-lg-max-height);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -3375,7 +3396,7 @@ body.crate-panel-open .crates-main {
 }
 
 .tag-badge:hover .tag-remove {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .tag-remove:hover {
@@ -4414,7 +4435,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-discogs-card .panel-meta {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 /* Compact stats display */
@@ -4436,14 +4457,14 @@ body.crate-panel-open .crates-main {
 
 .panel-stat .stat-icon {
     font-size: 0.6rem;
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .panel-stat .stat-label {
     font-size: 0.55rem;
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
-    opacity: 0.6;
+    opacity: var(--opacity-faded);
     margin-left: 1px;
 }
 
@@ -4671,7 +4692,7 @@ body.crate-panel-open .crates-main {
 
 .panel-input--editable::placeholder {
     color: var(--lcd-dim);
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .panel-input--editable:hover {
@@ -4870,7 +4891,7 @@ body.crate-panel-open .crates-main {
 }
 
 .tag-badge-sm:hover .tag-remove-sm {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 /* Panel header section */
@@ -4959,8 +4980,8 @@ body.crate-panel-open .crates-main {
     border-top: var(--border-width-sm) solid var(--lcd-dim);  /* Subtle separator within LCD area */
     margin-top: calc(var(--border-width-md) * -1);  /* Overlap border to create seamless connection */
     color: var(--lcd-text);
-    min-height: 60px;
-    max-height: 100px;
+    min-height: var(--textarea-min-height);
+    max-height: var(--textarea-max-height);
     font-family: var(--font-mono);
     font-size: 0.8rem;
     caret-color: var(--success);
@@ -4985,7 +5006,7 @@ body.crate-panel-open .crates-main {
     top: 100%;
     left: 0;
     min-width: 180px;
-    max-height: 250px;
+    max-height: var(--dropdown-max-height);
     overflow-y: auto;
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
@@ -5202,7 +5223,7 @@ body.crate-panel-open .crates-main {
     top: 100%;
     left: 0;
     min-width: 180px;
-    max-height: 250px;
+    max-height: var(--dropdown-max-height);
     overflow-y: auto;
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
@@ -5212,7 +5233,7 @@ body.crate-panel-open .crates-main {
 
 .crate-dropdown--lg {
     min-width: 200px;
-    max-height: 300px;
+    max-height: var(--dropdown-lg-max-height);
 }
 
 .crate-dropdown-list {
@@ -5371,11 +5392,11 @@ body.crate-panel-open .crates-main {
 
 /* Non-playable tracks are dimmed */
 .panel-track-row.track-dimmed {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
 }
 
 .panel-track-row.track-dimmed:hover {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 /* Playable tracks (not dimmed) get orange left/right borders */
@@ -5676,7 +5697,7 @@ body.crate-panel-open .crates-main {
    Opacity utilities
    ----------------------------------------- */
 .opacity-0 { opacity: 0; }
-.opacity-50 { opacity: 0.5; }
+.opacity-50 { opacity: var(--opacity-dim); }
 .opacity-75 { opacity: 0.75; }
 .opacity-100 { opacity: 1; }
 
@@ -5730,13 +5751,13 @@ body.crate-panel-open .crates-main {
 
 /* Loading states */
 .is-loading {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
     pointer-events: none;
 }
 
 /* Disabled states */
 .is-disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
     pointer-events: none;
     cursor: not-allowed;
 }
