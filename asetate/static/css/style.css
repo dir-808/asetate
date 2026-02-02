@@ -184,6 +184,45 @@
     --tracking-wide: 0.08em;    /* Wide: nav links, small caps */
     --tracking-wider: 0.1em;    /* Widest: section headings, emphasis */
 
+    /* Line height (leading) */
+    --leading-none: 1;          /* Icons, single-line elements */
+    --leading-tight: 1.2;       /* Compact text, headings */
+    --leading-snug: 1.3;        /* Slightly tight */
+    --leading-normal: 1.5;      /* Standard readable text */
+    --leading-relaxed: 1.6;     /* Body text, long-form reading */
+
+    /* -----------------------------------------
+       Z-INDEX SCALE
+       Layering system for stacking contexts
+       ----------------------------------------- */
+    --z-base: 0;                /* Base level, resets stacking */
+    --z-raised: 1;              /* Slightly raised elements */
+    --z-above: 5;               /* Above siblings (tabs, positioned) */
+    --z-dropdown: 10;           /* Dropdowns, tooltips */
+    --z-sticky: 100;            /* Sticky headers, toolbars */
+    --z-overlay: 900;           /* Overlays, backdrops */
+    --z-modal: 1000;            /* Modals, dialogs (highest) */
+
+    /* -----------------------------------------
+       SHADOWS
+       Functional shadows for hardware depth
+       ----------------------------------------- */
+    --shadow-inset-sm: inset 0 1px 2px rgba(0, 0, 0, 0.2);  /* Light inset */
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.3);     /* Standard inset */
+    --shadow-inset-lcd: inset 0 1px 3px rgba(0, 0, 0, 0.3); /* LCD/recessed effect */
+    --shadow-edge: 0 1px 0 rgba(0, 0, 0, 0.2);              /* Bottom edge depth */
+    --shadow-focus: 0 0 0 1px var(--primary-dim);           /* Focus ring (primary) */
+    --shadow-focus-success: 0 0 0 1px var(--success);       /* Focus ring (success) */
+
+    /* -----------------------------------------
+       TRANSITIONS
+       Animation durations for consistent motion
+       ----------------------------------------- */
+    --duration-fast: var(--duration-fast);      /* Fast/micro interactions */
+    --duration-base: var(--duration-base);     /* Standard transitions */
+    --duration-moderate: 0.2s;  /* Slightly longer */
+    --duration-slow: 0.3s;      /* Larger movements, panels */
+
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
        Kept for backward compatibility
@@ -210,7 +249,7 @@ body {
     font-family: var(--font-mono);
     background-color: var(--bg-body);
     color: var(--text-primary);
-    line-height: 1.6;
+    line-height: var(--leading-relaxed);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -226,7 +265,7 @@ body {
 a {
     color: var(--primary);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color var(--duration-base) ease;
 }
 
 a:hover {
@@ -258,7 +297,7 @@ a:hover {
     /* Functional depth: light top edge, dark bottom edge (like hardware panel seam) */
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     border-bottom: var(--border-width-md) solid var(--border);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-edge);
 }
 
 .nav-brand a {
@@ -289,7 +328,7 @@ a:hover {
     padding: var(--space-sm) var(--space-md);
     border: var(--border-width-md) solid var(--border);
     background: transparent;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
     /* Prevent layout shift on state change */
     min-width: max-content;
     text-rendering: geometricPrecision;
@@ -302,7 +341,7 @@ a:hover {
     height: var(--led-size);
     background: var(--border);
     border-radius: 50%; /* LED dots are round - mimics hardware */
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .nav-links a:hover {
@@ -338,7 +377,7 @@ a:hover {
     text-transform: uppercase;
     padding: var(--space-sm) var(--space-md);
     border: var(--border-width-md) solid var(--border);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
     /* Prevent layout shift on state change */
     min-width: max-content;
     text-rendering: geometricPrecision;
@@ -351,7 +390,7 @@ a:hover {
     height: var(--led-size);
     background: var(--border);
     border-radius: 50%;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .user-link:hover {
@@ -499,7 +538,7 @@ a:hover {
     letter-spacing: var(--tracking-normal);
     border: var(--border-width-md) solid transparent;
     cursor: pointer;
-    transition: background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease, opacity 0.1s ease;
+    transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease, opacity var(--duration-fast) ease;
 }
 
 .btn-primary {
@@ -611,13 +650,13 @@ input, select, textarea {
     border: var(--border-width-md) solid var(--border);
     color: var(--text-primary);
     width: 100%;
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-base) ease;
 }
 
 input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary-dim);
+    box-shadow: var(--shadow-focus);
 }
 
 input::placeholder, textarea::placeholder {
@@ -659,7 +698,7 @@ input::placeholder, textarea::placeholder {
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
     color: var(--text-secondary);
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .toggle-btn:hover {
@@ -679,7 +718,7 @@ input::placeholder, textarea::placeholder {
     height: var(--led-size);
     background: var(--border);
     border-radius: 50%; /* LED dots are round - mimics hardware */
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .toggle-btn.active .led {
@@ -688,7 +727,7 @@ input::placeholder, textarea::placeholder {
 
 /* Pressed effect */
 .toggle-btn:active {
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset);
 }
 
 /* Toggle button with hidden checkbox - active via :has() */
@@ -721,7 +760,7 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     inset: 0;
     background-color: var(--border);
-    transition: background-color 0.15s;
+    transition: background-color var(--duration-base);
     border: var(--border-width-md) solid var(--border);
 }
 
@@ -733,7 +772,7 @@ input::placeholder, textarea::placeholder {
     left: var(--space-2xs);
     bottom: var(--space-2xs);
     background-color: var(--text-muted);
-    transition: transform 0.15s, background-color 0.15s;
+    transition: transform var(--duration-base), background-color var(--duration-base);
     /* Square slider knob - MPC style */
 }
 
@@ -894,7 +933,7 @@ input::placeholder, textarea::placeholder {
 .progress-fill {
     height: 100%;
     background-color: var(--primary);
-    transition: width 0.3s ease;
+    transition: width var(--duration-slow) ease;
 }
 
 .progress-text {
@@ -1232,7 +1271,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
-    transition: margin-right 0.3s ease-out;
+    transition: margin-right var(--duration-slow) ease-out;
 }
 
 .collection-page.panel-open {
@@ -1284,11 +1323,11 @@ input::placeholder, textarea::placeholder {
 .search-input {
     width: 100%;
     /* LCD-like inset shadow for recessed screen effect */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .search-input:focus {
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--primary-dim);
+    box-shadow: var(--shadow-inset-lcd), var(--shadow-focus);
 }
 
 .filter-buttons {
@@ -1310,7 +1349,7 @@ input::placeholder, textarea::placeholder {
     letter-spacing: var(--tracking-normal);
     border: var(--border-width-md) solid var(--border);
     background: transparent;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
     cursor: pointer;
 }
 
@@ -1355,7 +1394,7 @@ input::placeholder, textarea::placeholder {
     border: var(--border-width-md) solid var(--border);
     background: transparent;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .filter-select:hover {
@@ -1386,7 +1425,7 @@ input::placeholder, textarea::placeholder {
     border: var(--border-width-sm) solid var(--border);
     color: var(--text-secondary);
     text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition: background-color var(--duration-base), border-color var(--duration-base);
 }
 
 .crate-badge-panel:hover {
@@ -1409,7 +1448,7 @@ input::placeholder, textarea::placeholder {
     overflow: hidden;
     background-color: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-base) ease;
 }
 
 .release-card:hover {
@@ -1466,7 +1505,7 @@ input::placeholder, textarea::placeholder {
     height: 100%;
     object-fit: cover;
     filter: grayscale(20%);
-    transition: filter 0.15s ease;
+    transition: filter var(--duration-base) ease;
 }
 
 .release-card:hover .release-cover img {
@@ -1496,7 +1535,7 @@ input::placeholder, textarea::placeholder {
 .release-title {
     font-size: 0.8rem;
     font-weight: 600;
-    line-height: 1.3;
+    line-height: var(--leading-snug);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -1539,7 +1578,7 @@ input::placeholder, textarea::placeholder {
     border: var(--border-width-md) solid var(--border);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .pagination-btn:hover {
@@ -1646,7 +1685,7 @@ input::placeholder, textarea::placeholder {
 .release-info-large h1 {
     font-size: 1.5rem;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: var(--leading-tight);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
 }
@@ -1715,7 +1754,7 @@ input::placeholder, textarea::placeholder {
 
 .save-indicator {
     font-size: 0.75rem;
-    transition: color 0.15s ease;
+    transition: color var(--duration-base) ease;
 }
 
 .save-indicator.saving { color: var(--warning); }
@@ -1759,7 +1798,7 @@ input::placeholder, textarea::placeholder {
     border-left: var(--border-width-sm) solid var(--border);
     border-right: var(--border-width-sm) solid var(--border);
     border-bottom: var(--border-width-sm) solid var(--border);
-    transition: background-color 0.15s ease, opacity 0.15s ease;
+    transition: background-color var(--duration-base) ease, opacity var(--duration-base) ease;
 }
 
 .track-row:first-child {
@@ -1840,7 +1879,7 @@ input::placeholder, textarea::placeholder {
     background-color: rgba(251, 191, 36, 0.15);
     cursor: pointer;
     text-transform: uppercase;
-    transition: background-color 0.15s;
+    transition: background-color var(--duration-base);
 }
 
 .track-notes-indicator:hover {
@@ -1914,7 +1953,7 @@ input::placeholder, textarea::placeholder {
     /* Square thumb - MPC style */
     background: var(--primary);
     cursor: pointer;
-    transition: transform 0.15s;
+    transition: transform var(--duration-base);
 }
 
 .track-energy-slider::-webkit-slider-thumb:hover {
@@ -2021,7 +2060,7 @@ input::placeholder, textarea::placeholder {
     border: var(--border-width-sm) dashed var(--border);
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity var(--duration-base);
 }
 
 .track-row:hover .track-notes-add {
@@ -2111,7 +2150,7 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-sm) var(--space-md);
     padding-left: calc(var(--space-md) + calc(var(--depth, 0) * var(--space-lg)));
     border-bottom: var(--border-width-sm) solid var(--border);
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .crate-item:last-child {
@@ -2166,7 +2205,7 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     font-family: var(--font-mono);
     font-size: 0.85rem;
-    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: opacity var(--duration-base) ease, background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .crate-item:hover .crate-action {
@@ -2279,7 +2318,7 @@ input::placeholder, textarea::placeholder {
     border: var(--border-width-md) solid var(--border);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-base) ease;
 }
 
 .sub-crate-card:hover {
@@ -2374,10 +2413,10 @@ input::placeholder, textarea::placeholder {
     color: var(--text-muted);
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    transition: opacity var(--duration-base) ease, background-color var(--duration-base) ease, color var(--duration-base) ease;
     font-size: 1rem;
     font-family: var(--font-mono);
-    line-height: 1;
+    line-height: var(--leading-none);
 }
 
 .crate-release-card:hover .btn-remove,
@@ -2443,7 +2482,7 @@ input::placeholder, textarea::placeholder {
     /* No border-radius - MPC style */
     color: var(--text-secondary);
     text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition: background-color var(--duration-base), border-color var(--duration-base);
 }
 
 .crate-badge:hover {
@@ -2479,7 +2518,7 @@ input::placeholder, textarea::placeholder {
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .crate-select-item:hover {
@@ -2510,7 +2549,7 @@ input::placeholder, textarea::placeholder {
 .crates-main {
     flex: 1;
     min-width: 0;
-    transition: padding-right 0.3s ease;
+    transition: padding-right var(--duration-slow) ease;
 }
 
 body.crate-panel-open .crates-main {
@@ -2535,7 +2574,7 @@ body.crate-panel-open .crates-main {
     background: linear-gradient(135deg, var(--crate-wood-mid) 0%, var(--crate-wood-dark) 100%);
     border: var(--border-width-md) solid var(--crate-wood-light);
     overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s;
+    transition: transform var(--duration-moderate), border-color var(--duration-moderate);
     --crate-accent: var(--primary);
 }
 
@@ -2552,7 +2591,7 @@ body.crate-panel-open .crates-main {
     left: var(--space-xs);
     font-size: 0.7rem;
     color: var(--text-muted);
-    z-index: 5;
+    z-index: var(--z-above);
 }
 
 /* Crate lid - opens on hover */
@@ -2565,8 +2604,8 @@ body.crate-panel-open .crates-main {
     background: linear-gradient(180deg, var(--crate-wood-light) 0%, var(--crate-wood-mid) 100%);
     border-bottom: var(--border-width-md) solid var(--crate-wood-dark);
     transform-origin: top center;
-    transition: transform 0.3s ease;
-    z-index: 3;
+    transition: transform var(--duration-slow) ease;
+    z-index: 3; /* Component-internal layering (below badge) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2600,7 +2639,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-md);
     padding-top: var(--space-xl);
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
 }
 
 .crate-icon-container {
@@ -2650,7 +2689,7 @@ body.crate-panel-open .crates-main {
         var(--crate-wood-light) 10%,
         var(--crate-wood-light) 90%,
         transparent 100%);
-    z-index: 0;
+    z-index: var(--z-base);
 }
 
 .crate-slat-1 {
@@ -2669,8 +2708,8 @@ body.crate-panel-open .crates-main {
     display: flex;
     gap: var(--space-xs);
     opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 10;
+    transition: opacity var(--duration-base);
+    z-index: var(--z-dropdown);
 }
 
 .crate-box:hover .crate-hover-actions {
@@ -2689,7 +2728,7 @@ body.crate-panel-open .crates-main {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .crate-action-btn:hover {
@@ -2707,9 +2746,9 @@ body.crate-panel-open .crates-main {
     height: 100vh;
     background: var(--bg-surface);
     border-left: var(--border-width-md) solid var(--border);
-    z-index: 900;
+    z-index: var(--z-overlay);
     transform: translateX(100%);
-    transition: transform 0.25s ease;
+    transition: transform var(--duration-slow) ease;
     overflow-y: auto;
 }
 
@@ -2995,7 +3034,7 @@ body.crate-panel-open .crates-main {
     font-weight: 500; /* Medium weight */
     font-style: normal;
     font-size: var(--icon-xl); /* Default size (24px), override with size modifiers */
-    line-height: 1;
+    line-height: var(--leading-none);
     /* Force text/monochrome presentation */
     font-variant-emoji: text;
     /* Centering within parent */
@@ -3217,7 +3256,7 @@ body.crate-panel-open .crates-main {
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 1000;
+    z-index: var(--z-modal);
 }
 
 .modal.open {
@@ -3270,7 +3309,7 @@ body.crate-panel-open .crates-main {
     color: var(--text-muted);
     cursor: pointer;
     padding: 0;
-    line-height: 1;
+    line-height: var(--leading-none);
     font-family: var(--font-mono);
 }
 
@@ -3329,10 +3368,10 @@ body.crate-panel-open .crates-main {
     padding: 0;
     margin-left: var(--space-2xs);
     font-size: 0.85rem;
-    line-height: 1;
+    line-height: var(--leading-none);
     opacity: 0;
     font-family: var(--font-mono);
-    transition: opacity 0.1s;
+    transition: opacity var(--duration-fast);
 }
 
 .tag-badge:hover .tag-remove {
@@ -3353,8 +3392,8 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     font-size: 0.85rem;
     font-family: var(--font-mono);
-    line-height: 1;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    line-height: var(--leading-none);
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .tag-add-btn:hover {
@@ -3438,7 +3477,7 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     font-family: var(--font-mono);
     font-size: 0.8rem;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .preset-btn:hover {
@@ -3605,7 +3644,7 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     border-bottom: var(--border-width-md) solid transparent;
     margin-bottom: -2px;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition: color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .tab-btn:hover {
@@ -3867,7 +3906,7 @@ body.crate-panel-open .crates-main {
 
 .save-status {
     font-size: 0.8rem;
-    transition: color 0.15s ease;
+    transition: color var(--duration-base) ease;
 }
 
 .save-status.saving { color: var(--warning); }
@@ -3890,7 +3929,7 @@ body.crate-panel-open .crates-main {
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .btn-discogs:hover {
@@ -3938,7 +3977,7 @@ body.crate-panel-open .crates-main {
     font-family: var(--font-mono);
     font-size: 0.85rem;
     /* LCD-like inset shadow for recessed screen effect */
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-inset-sm);
 }
 
 .token-form .form-control:focus,
@@ -4174,7 +4213,7 @@ body.crate-panel-open .crates-main {
 
 .release-card.selected {
     border-color: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary-dim);
+    box-shadow: var(--shadow-focus);
 }
 
 /* Side Panel */
@@ -4187,8 +4226,8 @@ body.crate-panel-open .crates-main {
     background-color: var(--bg-surface);
     border-left: var(--border-width-md) solid var(--border);
     transform: translateX(100%);
-    transition: transform 0.3s ease-out;
-    z-index: 900;
+    transition: transform var(--duration-slow) ease-out;
+    z-index: var(--z-overlay);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4221,8 +4260,8 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     padding: var(--space-xs) var(--space-sm);
     font-family: var(--font-mono);
-    line-height: 1;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    line-height: var(--leading-none);
+    transition: color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .panel-close:hover {
@@ -4265,8 +4304,8 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-md) solid var(--border);
     cursor: pointer;
     /* Functional shadow for recessed LCD screen effect */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    transition: border-color 0.15s ease;
+    box-shadow: var(--shadow-inset-lcd);
+    transition: border-color var(--duration-base) ease;
 }
 
 .panel-discogs-card:hover {
@@ -4303,7 +4342,7 @@ body.crate-panel-open .crates-main {
     color: var(--lcd-text);
     cursor: pointer;
     text-decoration: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .panel-discogs-btn:last-child {
@@ -4319,7 +4358,7 @@ body.crate-panel-open .crates-main {
     font-size: var(--icon-md);
     /* Centering: flex container handles alignment,
        line-height ensures vertical centering within the icon itself */
-    line-height: 1;
+    line-height: var(--leading-none);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4451,7 +4490,7 @@ body.crate-panel-open .crates-main {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
-    line-height: 1.2;
+    line-height: var(--leading-tight);
     margin-bottom: var(--space-xs);
 }
 
@@ -4512,7 +4551,7 @@ body.crate-panel-open .crates-main {
     background-color: var(--lcd-bg);
     border: var(--border-width-md) solid var(--border);
     /* Functional shadow for recessed LCD screen effect */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .panel-tracks-list {
@@ -4534,7 +4573,7 @@ body.crate-panel-open .crates-main {
     border-left: var(--border-width-sm) solid var(--border);
     border-right: var(--border-width-sm) solid var(--border);
     border-bottom: var(--border-width-sm) solid var(--border);
-    transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    transition: opacity var(--duration-base) ease, background-color var(--duration-base) ease, border-color var(--duration-base) ease;
     box-sizing: border-box;
 }
 
@@ -4607,7 +4646,7 @@ body.crate-panel-open .crates-main {
     background: transparent;
     border: var(--border-width-sm) solid transparent;
     color: var(--lcd-text);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 /* Editable variant - shows it's interactive */
@@ -4730,7 +4769,7 @@ body.crate-panel-open .crates-main {
     background: transparent;
     border: var(--border-width-sm) solid var(--border);
     color: var(--primary);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .panel-expand-btn:hover {
@@ -4763,11 +4802,11 @@ body.crate-panel-open .crates-main {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 .panel-notes-btn .emoji-icon {
     font-size: var(--text-sm);
-    line-height: 1;
+    line-height: var(--leading-none);
 }
 
 .panel-notes-btn:hover {
@@ -4795,12 +4834,12 @@ body.crate-panel-open .crates-main {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .panel-tag-add-btn .emoji-icon {
     font-size: var(--text-sm);
-    line-height: 1;
+    line-height: var(--leading-none);
 }
 .panel-tag-add-btn:hover {
     border-color: var(--lcd-text);
@@ -4825,9 +4864,9 @@ body.crate-panel-open .crates-main {
     padding: 0;
     margin-left: var(--space-2xs);
     font-size: 0.7rem;
-    line-height: 1;
+    line-height: var(--leading-none);
     opacity: 0;
-    transition: opacity 0.1s;
+    transition: opacity var(--duration-fast);
 }
 
 .tag-badge-sm:hover .tag-remove-sm {
@@ -4898,7 +4937,7 @@ body.crate-panel-open .crates-main {
     color: var(--text-primary);
     font-family: inherit;
     font-size: 0.85rem;
-    line-height: 1.5;
+    line-height: var(--leading-normal);
     resize: none;
     box-sizing: border-box;
 }
@@ -4926,14 +4965,14 @@ body.crate-panel-open .crates-main {
     font-size: 0.8rem;
     caret-color: var(--success);
     /* Functional shadow for recessed effect, matching card above */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .panel-notes-lcd:focus {
     border-color: var(--success);
     border-top-color: var(--lcd-dim);
     /* Keep subtle green glow on focus to indicate active input */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--success);
+    box-shadow: var(--shadow-inset-lcd), var(--shadow-focus-success);
 }
 
 .panel-notes-lcd::placeholder {
@@ -4950,7 +4989,7 @@ body.crate-panel-open .crates-main {
     overflow-y: auto;
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    z-index: 100;
+    z-index: var(--z-sticky);
     margin-top: var(--space-2xs);
 }
 
@@ -4965,7 +5004,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-xs) var(--space-sm);
     cursor: pointer;
     font-size: 0.8rem;
-    transition: background-color 0.1s;
+    transition: background-color var(--duration-fast);
 }
 
 .panel-crate-item:hover {
@@ -5013,7 +5052,7 @@ body.crate-panel-open .crates-main {
     width: var(--sidebar-width);
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    z-index: var(--z-modal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5103,7 +5142,7 @@ body.crate-panel-open .crates-main {
     width: var(--energy-segment-width);
     background-color: var(--border);
     /* No border-radius - MPC style rectangular segments */
-    transition: background-color 0.15s, transform 0.1s;
+    transition: background-color var(--duration-base), transform var(--duration-fast);
 }
 
 .energy-bar--sm .energy-segment {
@@ -5167,7 +5206,7 @@ body.crate-panel-open .crates-main {
     overflow-y: auto;
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    z-index: 100;
+    z-index: var(--z-sticky);
     margin-top: var(--space-2xs);
 }
 
@@ -5187,7 +5226,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-xs) var(--space-sm);
     cursor: pointer;
     font-size: 0.8rem;
-    transition: background-color 0.1s;
+    transition: background-color var(--duration-fast);
 }
 
 .crate-dropdown-item:hover {
@@ -5237,7 +5276,7 @@ body.crate-panel-open .crates-main {
     color: var(--text-primary);
     font-family: inherit;
     font-size: 0.85rem;
-    line-height: 1.5;
+    line-height: var(--leading-normal);
     resize: none;
     box-sizing: border-box;
 }
@@ -5271,7 +5310,7 @@ body.crate-panel-open .crates-main {
     font-size: 0.65rem;
     font-family: var(--font-mono);
     cursor: pointer;
-    transition: opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    transition: opacity var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .track-notes-btn--empty {
@@ -5660,19 +5699,29 @@ body.crate-panel-open .crates-main {
    ----------------------------------------- */
 /* DEPRECATED: .transition uses 'all' which can cause performance issues
    Prefer specific transition utilities below */
-.transition { transition: opacity 0.15s ease, transform 0.15s ease; }
-.transition-colors { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
-.transition-opacity { transition: opacity 0.15s ease; }
-.transition-transform { transition: transform 0.15s ease; }
+.transition { transition: opacity var(--duration-base) ease, transform var(--duration-base) ease; }
+.transition-colors { transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease; }
+.transition-opacity { transition: opacity var(--duration-base) ease; }
+.transition-transform { transition: transform var(--duration-base) ease; }
 
 /* -----------------------------------------
    Z-index utilities
+   Semantic names mapping to design tokens
    ----------------------------------------- */
-.z-0 { z-index: 0; }
-.z-10 { z-index: 10; }
+.z-base { z-index: var(--z-base); }
+.z-raised { z-index: var(--z-raised); }
+.z-above { z-index: var(--z-above); }
+.z-dropdown { z-index: var(--z-dropdown); }
+.z-sticky { z-index: var(--z-sticky); }
+.z-overlay { z-index: var(--z-overlay); }
+.z-modal { z-index: var(--z-modal); }
+
+/* Legacy numeric utilities (for backwards compatibility) */
+.z-0 { z-index: var(--z-base); }
+.z-10 { z-index: var(--z-dropdown); }
 .z-20 { z-index: 20; }
 .z-50 { z-index: 50; }
-.z-100 { z-index: 100; }
+.z-100 { z-index: var(--z-sticky); }
 
 /* =============================================
    EXCEPTIONS

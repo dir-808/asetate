@@ -176,6 +176,44 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--tracking-wide` | 0.08em | Nav links, small caps |
 | `--tracking-wider` | 0.1em | Section headings, emphasis |
 
+#### Line Height (Leading)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--leading-none` | 1 | Icons, single-line elements |
+| `--leading-tight` | 1.2 | Compact text, headings |
+| `--leading-snug` | 1.3 | Slightly tight text |
+| `--leading-normal` | 1.5 | Standard readable text |
+| `--leading-relaxed` | 1.6 | Body text, long-form reading |
+
+#### Z-Index Scale
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--z-base` | 0 | Base level, resets stacking |
+| `--z-raised` | 1 | Slightly raised elements |
+| `--z-above` | 5 | Above siblings (tabs, positioned) |
+| `--z-dropdown` | 10 | Dropdowns, tooltips |
+| `--z-sticky` | 100 | Sticky headers, toolbars |
+| `--z-overlay` | 900 | Overlays, side panels |
+| `--z-modal` | 1000 | Modals, dialogs (highest) |
+
+#### Shadows
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--shadow-inset-sm` | inset 0 1px 2px rgba(0,0,0,0.2) | Light inset effect |
+| `--shadow-inset` | inset 0 1px 2px rgba(0,0,0,0.3) | Standard pressed/inset |
+| `--shadow-inset-lcd` | inset 0 1px 3px rgba(0,0,0,0.3) | LCD/recessed screen effect |
+| `--shadow-edge` | 0 1px 0 rgba(0,0,0,0.2) | Bottom edge depth |
+| `--shadow-focus` | 0 0 0 1px var(--primary-dim) | Focus ring (primary) |
+| `--shadow-focus-success` | 0 0 0 1px var(--success) | Focus ring (success) |
+
+#### Transition Durations
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--duration-fast` | 0.1s | Micro interactions, quick feedback |
+| `--duration-base` | 0.15s | Standard transitions |
+| `--duration-moderate` | 0.2s | Slightly longer animations |
+| `--duration-slow` | 0.3s | Large movements, panels |
+
 ### Token Usage Rules
 
 **DO:**
@@ -194,6 +232,22 @@ background: var(--lcd-bg);
 /* Use size tokens */
 width: var(--icon-xl);
 max-width: var(--max-width-sidebar);
+
+/* Use shadow tokens */
+box-shadow: var(--shadow-inset-lcd);
+box-shadow: var(--shadow-focus);
+
+/* Use z-index tokens */
+z-index: var(--z-modal);
+z-index: var(--z-overlay);
+
+/* Use transition duration tokens */
+transition: opacity var(--duration-base) ease;
+transition: transform var(--duration-slow) ease;
+
+/* Use line-height tokens */
+line-height: var(--leading-normal);
+line-height: var(--leading-none);
 ```
 
 **DON'T:**
@@ -206,12 +260,23 @@ border: 1px solid #2a2a2a; /* Use var(--border-width-sm) solid var(--border) */
 /* NO hardcoded colors */
 color: #ef4444;          /* Use var(--error) */
 background: #0a1210;     /* Use var(--lcd-bg) */
+
+/* NO hardcoded shadows */
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); /* Use var(--shadow-inset-lcd) */
+
+/* NO hardcoded z-index */
+z-index: 1000;           /* Use var(--z-modal) */
+z-index: 900;            /* Use var(--z-overlay) */
+
+/* NO hardcoded durations */
+transition: opacity 0.15s ease; /* Use var(--duration-base) */
 ```
 
 **Exceptions (OK to hardcode):**
 - `font-size: 14px` on `html` element (root font size)
 - Responsive breakpoint values in `@media` queries
 - Third-party brand colors (e.g., Discogs button) with a comment explaining why
+- Component-internal z-index layering (e.g., z-index: 3 for stacking within a single component)
 
 ### Utility Classes
 Use utility classes instead of inline styles. Full list available in style.css.
