@@ -330,6 +330,8 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--duration-moderate` | 0.2s | Slightly longer animations |
 | `--duration-slow` | 0.3s | Large movements, panels |
 | `--duration-blink` | 0.6s | LED blink, activity indicators |
+| `--duration-spin` | 1s | Spin/rotation animations |
+| `--duration-pulse` | 2s | Slow pulse animations |
 
 #### Opacity
 | Token | Value | Usage |

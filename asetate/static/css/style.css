@@ -293,6 +293,8 @@
     --duration-moderate: 0.2s;  /* Slightly longer animations */
     --duration-slow: 0.3s;      /* Large movements, panels */
     --duration-blink: 0.6s;     /* LED blink, activity indicators */
+    --duration-spin: 1s;        /* Spin/rotation animations */
+    --duration-pulse: 2s;       /* Slow pulse animations */
 
     /* -----------------------------------------
        OPACITY
@@ -1006,7 +1008,7 @@ input::placeholder, textarea::placeholder {
 
 .status-indicator.status-running {
     background-color: var(--warning);
-    animation: blink 1s step-end infinite;
+    animation: blink var(--duration-spin) step-end infinite;
 }
 
 .status-indicator.status-completed {
@@ -1162,7 +1164,7 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    animation: pulse-text 2s ease-in-out infinite;
+    animation: pulse-text var(--duration-pulse) ease-in-out infinite;
 }
 
 @keyframes pulse-text {
@@ -4498,7 +4500,7 @@ body.crate-panel-open .crates-main {
 
 .panel-discogs-btn.is-loading .sync-icon,
 .btn.is-loading .sync-icon {
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-spin) linear infinite;
 }
 
 .panel-discogs-btn.has-error {
