@@ -120,7 +120,7 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--color-none` | #e0e0e0 | "No color" option in color pickers |
 | `--lcd-bg` | #0a1210 | LCD background |
 | `--lcd-text` | #4ade80 | LCD text (bright green) |
-| `--lcd-muted` | #6ab893 | LCD secondary text (readable muted green) |
+| `--lcd-muted` | #52a872 | LCD secondary text (darker but readable) |
 | `--lcd-dim` | #22543d | LCD decorative/dim text (low contrast) |
 | `--border` | #2a2a2a | Standard border color |
 | `--border-light` | #3a3a3a | Lighter border |

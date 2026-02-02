@@ -38,7 +38,7 @@
     /* LCD green tint for displays/data */
     --lcd-bg: #0a1210;
     --lcd-text: #4ade80;
-    --lcd-muted: #6ab893;            /* Readable secondary LCD text */
+    --lcd-muted: #52a872;            /* Secondary LCD text - darker but readable */
     --lcd-dim: #22543d;
 
     /* Primary accent - MPC Orange */
@@ -1704,7 +1704,7 @@ input::placeholder, textarea::placeholder {
 .release-artist {
     font-size: var(--text-caption);
     font-weight: var(--weight-bold);
-    color: var(--lcd-dim);
+    color: var(--lcd-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
