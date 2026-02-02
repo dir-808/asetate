@@ -1702,7 +1702,7 @@ input::placeholder, textarea::placeholder {
 
 .release-artist {
     font-size: var(--text-xs);
-    color: var(--lcd-dim);
+    color: var(--lcd-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4498,7 +4498,7 @@ body.crate-panel-open .crates-main {
     background: transparent;
     border: none;
     border-bottom: var(--border-width-sm) solid var(--border);
-    color: var(--lcd-text);
+    color: var(--text-secondary);
     cursor: pointer;
     text-decoration: none;
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
