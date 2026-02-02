@@ -107,7 +107,7 @@
                 <div class="icon-picker-container">
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="icon-preview">
-                            <span class="emoji-icon" id="icon-preview-emoji" style="font-size: 32px;">📁</span>
+                            <span class="emoji-icon emoji-icon--2xl" id="icon-preview-emoji">📁</span>
                         </div>
                         <input type="text"
                                id="crate-icon-search"
@@ -126,7 +126,7 @@
             <div class="form-group">
                 <label>Color</label>
                 <div class="color-picker" id="color-picker">
-                    <button type="button" class="color-option selected" data-color="" style="background: var(--border)" title="None"></button>
+                    <button type="button" class="color-option selected" data-color="" style="background: var(--color-none)" title="None"></button>
                     {% for color in crate_colors %}
                     <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}" title="{{ color.name }}"></button>
                     {% endfor %}
@@ -241,8 +241,8 @@ function renderEmojiGrid(emojiList, selectedHexcode = null) {
         btn.className = 'emoji-icon-grid-item' + (selectedHexcode === e.hexcode ? ' selected' : '');
         btn.dataset.hexcode = e.hexcode;
         btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
-        const colorStyle = color ? `color: ${color};` : '';
-        btn.innerHTML = `<span class="emoji-icon" style="font-size: 20px; ${colorStyle}">${e.emoji}</span>`;
+        const colorStyle = color ? ` style="color: ${color};"` : '';
+        btn.innerHTML = `<span class="emoji-icon emoji-icon--lg"${colorStyle}>${e.emoji}</span>`;
         btn.addEventListener('click', () => selectEmoji(e.emoji, e.hexcode));
         iconGrid.appendChild(btn);
     });
@@ -450,7 +450,7 @@ async function renderPanelForm(crate) {
             <div class="panel-form-group">
                 <label>Color</label>
                 <div class="color-picker" id="panel-color-picker">
-                    <button type="button" class="color-option ${!crate.color_hex ? 'selected' : ''}" data-color="" style="background: var(--border)"></button>
+                    <button type="button" class="color-option ${!crate.color_hex ? 'selected' : ''}" data-color="" style="background: var(--color-none)"></button>
                     {% for color in crate_colors %}
                     <button type="button" class="color-option" data-color="{{ color.id }}" style="background-color: {{ color.hex }}"></button>
                     {% endfor %}
@@ -522,8 +522,8 @@ async function renderPanelForm(crate) {
             btn.className = 'emoji-icon-grid-item' + (selectedHexcode === e.hexcode ? ' selected' : '');
             btn.dataset.hexcode = e.hexcode;
             btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
-            const colorStyle = color ? `color: ${color};` : '';
-            btn.innerHTML = `<span class="emoji-icon" style="font-size: 20px; ${colorStyle}">${e.emoji}</span>`;
+            const colorStyle = color ? ` style="color: ${color};"` : '';
+            btn.innerHTML = `<span class="emoji-icon emoji-icon--lg"${colorStyle}>${e.emoji}</span>`;
             btn.addEventListener('click', () => selectPanelEmoji(e.emoji, e.hexcode));
             panelIconGrid.appendChild(btn);
 

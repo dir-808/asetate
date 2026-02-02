@@ -140,7 +140,7 @@
                     <div class="icon-input-row">
                         <div class="icon-preview-box" id="edit-icon-preview">
                             {% set current_icon = crate.icon[6:] if crate.icon and (crate.icon.startswith('pixel:') or crate.icon.startswith('emoji:')) else 'folder' %}
-                            <span class="emoji-icon" id="edit-icon-preview-emoji" style="font-size: 32px;"></span>
+                            <span class="emoji-icon emoji-icon--2xl" id="edit-icon-preview-emoji"></span>
                         </div>
                         <input type="text"
                                id="edit-icon-search"
@@ -159,7 +159,7 @@
             <div class="form-group">
                 <label>Color</label>
                 <div class="color-picker" id="edit-color-picker">
-                    <button type="button" class="color-option {% if not crate.color %}selected{% endif %}" data-color="" style="background: #e0e0e0" title="None"></button>
+                    <button type="button" class="color-option {% if not crate.color %}selected{% endif %}" data-color="" style="background: var(--color-none)" title="None"></button>
                     {% for color in crate_colors %}
                     <button type="button" class="color-option {% if crate.color == color.id %}selected{% endif %}" data-color="{{ color.id }}" style="background-color: {{ color.hex }}" title="{{ color.name }}"></button>
                     {% endfor %}
@@ -321,8 +321,8 @@ function renderEmojiGrid(emojiList, selectedHexcode = null) {
         btn.className = 'emoji-icon-grid-item' + (selectedHexcode === e.hexcode ? ' selected' : '');
         btn.dataset.hexcode = e.hexcode;
         btn.title = `${e.name} (${e.keywords.slice(0, 3).join(', ')})`;
-        const colorStyle = color ? `color: ${color};` : '';
-        btn.innerHTML = `<span class="emoji-icon" style="font-size: 20px; ${colorStyle}">${e.emoji}</span>`;
+        const colorStyle = color ? ` style="color: ${color};"` : '';
+        btn.innerHTML = `<span class="emoji-icon emoji-icon--lg"${colorStyle}>${e.emoji}</span>`;
         btn.addEventListener('click', () => selectEmoji(e.emoji, e.hexcode));
         editIconGrid.appendChild(btn);
     });

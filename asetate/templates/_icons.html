@@ -7,8 +7,8 @@
     Usage:
         {% from "_icons.html" import emoji_icon, crate_icon %}
 
-        {{ emoji_icon('vinyl', size=24) }}
-        {{ crate_icon(crate, size=32) }}
+        {{ emoji_icon('vinyl', size='xl') }}
+        {{ crate_icon(crate, size='2xl') }}
 #}
 
 {#
@@ -50,15 +50,17 @@
 
     Parameters:
         name: Icon name (e.g., 'vinyl', 'folder', 'fire')
-        size: Font size in pixels (default 24)
+        size: Size modifier ('sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '4xl')
+              Default is 'xl' (24px). Use size class tokens instead of pixels.
         color: Optional color override (hex or CSS color)
 
     Example:
-        {{ emoji_icon('vinyl', size=32, color='#F97316') }}
+        {{ emoji_icon('vinyl', size='2xl', color='#F97316') }}
+        {{ emoji_icon('folder') }}  {# uses default 'xl' size #}
 #}
-{% macro emoji_icon(name, size=24, color=None) -%}
+{% macro emoji_icon(name, size='xl', color=None) -%}
 {%- set char = EMOJI_CHARS.get(name, '📁') -%}
-<span class="emoji-icon" style="font-size: {{ size }}px;{% if color %} color: {{ color }};{% endif %}">{{ char }}</span>
+<span class="emoji-icon emoji-icon--{{ size }}"{% if color %} style="color: {{ color }};"{% endif %}>{{ char }}</span>
 {%- endmacro %}
 
 
@@ -67,7 +69,8 @@
 
     Parameters:
         crate: Crate object with .icon and .color_hex attributes
-        size: Font size in pixels (default 24)
+        size: Size modifier ('sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '4xl')
+              Default is 'xl' (24px). Use size class tokens instead of pixels.
 
     The crate.icon can be in format:
         - "emoji:HEXCODE" (e.g., "emoji:1F4BF") - new format, hexcode converted to emoji
@@ -76,20 +79,20 @@
     Falls back to 'folder' icon if not set or invalid format.
 
     Example:
-        {{ crate_icon(crate, size=32) }}
+        {{ crate_icon(crate, size='2xl') }}
 #}
-{% macro crate_icon(crate, size=24) -%}
+{% macro crate_icon(crate, size='xl') -%}
 {%- set icon_value = crate.icon[6:] if crate.icon and (crate.icon.startswith('emoji:') or crate.icon.startswith('pixel:')) else '' -%}
 {%- if icon_value and icon_value[0:1] in '0123456789ABCDEF' -%}
 {# Hexcode format - render using HTML entity #}
-<span class="emoji-icon" data-hexcode="{{ icon_value }}" style="font-size: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}">&#x{{ icon_value.split('-')[0] }};</span>
+<span class="emoji-icon emoji-icon--{{ size }}" data-hexcode="{{ icon_value }}"{% if crate.color_hex %} style="color: {{ crate.color_hex }};"{% endif %}>&#x{{ icon_value.split('-')[0] }};</span>
 {%- elif icon_value -%}
 {# Icon name format - lookup in EMOJI_CHARS #}
 {%- set char = EMOJI_CHARS.get(icon_value, '📁') -%}
-<span class="emoji-icon" style="font-size: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}">{{ char }}</span>
+<span class="emoji-icon emoji-icon--{{ size }}"{% if crate.color_hex %} style="color: {{ crate.color_hex }};"{% endif %}>{{ char }}</span>
 {%- else -%}
 {# No icon set - use default folder #}
-<span class="emoji-icon" style="font-size: {{ size }}px;{% if crate.color_hex %} color: {{ crate.color_hex }};{% endif %}">📁</span>
+<span class="emoji-icon emoji-icon--{{ size }}"{% if crate.color_hex %} style="color: {{ crate.color_hex }};"{% endif %}>📁</span>
 {%- endif -%}
 {%- endmacro %}
 
