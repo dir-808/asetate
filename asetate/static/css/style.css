@@ -1729,11 +1729,12 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap;
 }
 
-/* Label row: label left, divider, catno right */
+/* Label row: label left, divider, catno right - pinned to bottom */
 .release-label-row {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
+    margin-top: auto;
 }
 
 .release-label {
