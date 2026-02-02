@@ -16,18 +16,15 @@
             <div class="panel-info">
                 <h2>{{ release.display_title }}</h2>
                 <p class="panel-artist">{{ release.display_artist }}</p>
+                {% if release.label or release.year %}
                 <div class="panel-meta">
-                    {% if release.label %}<span>{{ release.label }}</span>{% endif %}
-                    {% if release.year %}<span>{{ release.year }}</span>{% endif %}
+                    {% if release.label %}<span class="panel-label">{{ release.label }}</span>{% endif %}
+                    {% if release.year %}<span class="panel-year">{{ release.year }}</span>{% endif %}
                 </div>
-                {% set avg_bpm = release.get_average_bpm() %}
-                <div class="panel-stats">
-                    <span class="panel-stat" title="Total tracks"><span class="stat-icon">♫</span>{{ stats.total }}</span>
-                    <span class="panel-stat text-success" title="Playable tracks"><span class="stat-icon">▶</span>{{ stats.playable }}</span>
-                    {% if avg_bpm.value %}
-                    <span class="panel-stat avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" title="Average BPM">{{ avg_bpm.display }}<span class="stat-label">bpm</span></span>
-                    {% endif %}
-                </div>
+                {% endif %}
+                {% if release.catno %}
+                <div class="panel-catno">{{ release.catno }}</div>
+                {% endif %}
             </div>
         </div>
         <div class="panel-discogs-buttons">
