@@ -142,6 +142,22 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--border` | #2a2a2a | Standard border color |
 | `--border-light` | #3a3a3a | Lighter border |
 
+#### 3D Depth Colors (Button Edges)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary-light` | #fb923c | Primary button light edge (top) |
+| `--primary-dark` | #c2410c | Primary button dark edge (bottom) |
+| `--primary-lighter` | #fdba74 | Primary hover light edge |
+| `--primary-darker` | #9a3412 | Primary hover dark edge |
+| `--error-light` | #f87171 | Danger button light edge (top) |
+| `--error-dark` | #991b1b | Danger button dark edge (bottom) |
+| `--error-lighter` | #fca5a5 | Danger hover light edge |
+| `--error-darker` | #7f1d1d | Danger hover dark edge |
+| `--neutral-light` | #525252 | Secondary button light edge (top) |
+| `--neutral-dark` | #262626 | Secondary button dark edge (bottom) |
+| `--neutral-lighter` | #6b7280 | Secondary hover light edge |
+| `--neutral-darker` | #1f2937 | Secondary hover dark edge |
+
 #### Icon Sizes
 | Token | Value | Usage |
 |-------|-------|-------|

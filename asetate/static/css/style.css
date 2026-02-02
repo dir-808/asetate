@@ -44,12 +44,28 @@
     --primary: #f97316;
     --primary-hover: #ea580c;
     --primary-dim: #7c2d12;
+    /* Primary 3D depth (button edge lighting) */
+    --primary-light: #fb923c;       /* Light edge (top) */
+    --primary-dark: #c2410c;        /* Dark edge (bottom) */
+    --primary-lighter: #fdba74;     /* Lighter edge (hover top) */
+    --primary-darker: #9a3412;      /* Darker edge (hover bottom) */
 
     /* Status colors */
     --success: #4ade80;
     --lime: #84cc16;         /* Energy level 2 (between success and warning) */
     --warning: #fbbf24;
     --error: #ef4444;
+    /* Error 3D depth (danger button edges) */
+    --error-light: #f87171;         /* Light edge (top) */
+    --error-dark: #991b1b;          /* Dark edge (bottom) */
+    --error-lighter: #fca5a5;       /* Lighter edge (hover top) */
+    --error-darker: #7f1d1d;        /* Darker edge (hover bottom) */
+
+    /* Neutral 3D depth (secondary button edges) */
+    --neutral-light: #525252;       /* Light edge (top) */
+    --neutral-dark: #262626;        /* Dark edge (bottom) */
+    --neutral-lighter: #6b7280;     /* Lighter edge (hover top) */
+    --neutral-darker: #1f2937;      /* Darker edge (hover bottom) */
 
     /* Component-specific colors */
     --tag-default: #E07A5F;  /* Default tag color (terracotta) */
@@ -593,21 +609,21 @@ a:hover {
     color: var(--bg-primary);
     border-color: var(--primary);
     /* MPC2000 depth effect - lighter top, darker bottom */
-    border-top-color: #fb923c;
-    border-bottom-color: #c2410c;
+    border-top-color: var(--primary-light);
+    border-bottom-color: var(--primary-dark);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
-    border-top-color: #fdba74;
-    border-bottom-color: #9a3412;
+    border-top-color: var(--primary-lighter);
+    border-bottom-color: var(--primary-darker);
 }
 
 .btn-primary:active {
     /* Pressed state - invert depth */
-    border-top-color: #9a3412;
-    border-bottom-color: #fdba74;
+    border-top-color: var(--primary-darker);
+    border-bottom-color: var(--primary-lighter);
 }
 
 .btn-secondary {
@@ -615,21 +631,21 @@ a:hover {
     color: var(--text-primary);
     border-color: var(--border-light);
     /* MPC2000 depth effect */
-    border-top-color: #525252;
-    border-bottom-color: #262626;
+    border-top-color: var(--neutral-light);
+    border-bottom-color: var(--neutral-dark);
 }
 
 .btn-secondary:hover {
     border-color: var(--text-muted);
     background-color: var(--border);
-    border-top-color: #6b7280;
-    border-bottom-color: #1f2937;
+    border-top-color: var(--neutral-lighter);
+    border-bottom-color: var(--neutral-darker);
 }
 
 .btn-secondary:active {
     /* Pressed state - invert depth */
-    border-top-color: #1f2937;
-    border-bottom-color: #6b7280;
+    border-top-color: var(--neutral-darker);
+    border-bottom-color: var(--neutral-lighter);
 }
 
 .btn:disabled {
@@ -657,22 +673,22 @@ a:hover {
     color: var(--error);
     border-color: var(--error);
     /* MPC2000 depth effect with error color */
-    border-top-color: #f87171;
-    border-bottom-color: #991b1b;
+    border-top-color: var(--error-light);
+    border-bottom-color: var(--error-dark);
 }
 
 .btn-danger:hover {
     background-color: var(--error);
     color: var(--bg-primary);
     border-color: var(--error);
-    border-top-color: #fca5a5;
-    border-bottom-color: #7f1d1d;
+    border-top-color: var(--error-lighter);
+    border-bottom-color: var(--error-darker);
 }
 
 .btn-danger:active {
     /* Pressed state - invert depth */
-    border-top-color: #7f1d1d;
-    border-bottom-color: #fca5a5;
+    border-top-color: var(--error-darker);
+    border-bottom-color: var(--error-lighter);
 }
 
 /* ============================================
@@ -3477,7 +3493,7 @@ body.crate-panel-open .crates-main {
 
 .export-layout {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: var(--max-width-card) 1fr;
     gap: var(--space-lg);
     align-items: start;
 }
