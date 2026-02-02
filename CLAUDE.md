@@ -307,6 +307,16 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--weight-semibold` | 600 | Semi-bold, labels, buttons |
 | `--weight-bold` | 700 | Bold, headings, strong emphasis |
 
+#### Breakpoints
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--bp-sm` | 768px | Mobile/small screens |
+| `--bp-md` | 900px | Tablets/medium screens |
+| `--bp-lg` | 1100px | Small desktop |
+| `--bp-xl` | 1200px | Large desktop |
+
+> ⚠️ **Note**: CSS custom properties cannot be used in `@media` queries. These tokens serve as documentation and a single source of truth. When changing a breakpoint, update both the token AND the media query. Media queries include comments referencing their token (e.g., `/* --bp-md */`).
+
 #### Z-Index Scale
 | Token | Value | Usage |
 |-------|-------|-------|
