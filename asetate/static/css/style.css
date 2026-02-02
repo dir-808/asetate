@@ -1702,14 +1702,6 @@ input::placeholder, textarea::placeholder {
     color: var(--lcd-text);
 }
 
-/* Artist row: artist left, year right */
-.release-artist-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-xs);
-}
-
 .release-artist {
     font-size: var(--text-caption);
     font-weight: var(--weight-semibold);
@@ -1718,12 +1710,10 @@ input::placeholder, textarea::placeholder {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1;
-    min-width: 0;
 }
 
 .release-year {
-    font-size: var(--text-caption);
+    font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     color: var(--text-primary);
     flex-shrink: 0;
