@@ -1711,6 +1711,16 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap;
 }
 
+.release-label {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--lcd-text);
+    opacity: var(--opacity-dim);  /* Dimmer than artist */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .release-meta {
     font-size: var(--text-2xs);
     color: var(--text-muted);
