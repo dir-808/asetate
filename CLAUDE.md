@@ -29,6 +29,62 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 > ⚠️ **ALWAYS put CSS in `static/css/style.css`** - never in template `<style>` blocks. This ensures consistency, easier maintenance, and better caching.
 
+### Token-First Philosophy
+
+> 🔥 **EVERYTHING IS A TOKEN. NO EXCEPTIONS (unless explicitly documented below).**
+>
+> This is the #1 rule of this codebase. Hardcoded values break the design system.
+
+**CRITICAL RULE: Every CSS value MUST use a design token.**
+
+If you're writing a CSS property that uses a numeric value, color, or dimension - it MUST be a token.
+
+**Before writing any CSS, follow this decision tree:**
+
+1. **Does a token exist for this value?** → Use it
+2. **No token exists but I need this value?** → **Create a new token first**, then use it
+3. **This is truly a one-off documented exception?** → Hardcode ONLY with a comment explaining why (see Exceptions below)
+
+**Why "tokenize everything":**
+- **Consistency**: Change `--space-md` once, update everywhere instantly
+- **Maintainability**: No hunting through 5000+ lines of CSS for hardcoded `16px`
+- **Intent**: `--opacity-disabled` communicates purpose, `0.4` doesn't
+- **Future-proofing**: Entire UI can be adjusted from the :root section
+- **Industry standard**: Tailwind, Material Design, IBM Carbon, Shopify Polaris all do this
+
+**This is not over-engineering.** Every major design system in production follows this pattern.
+
+**When adding new features:**
+```css
+/* WRONG - hardcoded values (NEVER do this) */
+.new-component {
+    padding: 16px;
+    opacity: 0.5;
+    z-index: 100;
+    max-height: 250px;
+    transition: opacity 0.15s;
+}
+
+/* RIGHT - tokens communicate intent and enable central updates */
+.new-component {
+    padding: var(--space-md);
+    opacity: var(--opacity-dim);
+    z-index: var(--z-sticky);
+    max-height: var(--dropdown-max-height);
+    transition: opacity var(--duration-base);
+}
+
+/* ADDING A NEW TOKEN when needed */
+/* 1. First, add to :root in DESIGN TOKENS section */
+:root {
+    --my-new-height: 180px;  /* Component-specific height */
+}
+/* 2. Then use the token */
+.new-component {
+    height: var(--my-new-height);
+}
+```
+
 ### File Structure
 - **`static/css/style.css`** - Single source of truth for ALL CSS
 - Templates should have **no** `<style>` blocks (legacy ones are being migrated)
@@ -85,6 +141,22 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--lcd-dim` | #22543d | LCD muted text |
 | `--border` | #2a2a2a | Standard border color |
 | `--border-light` | #3a3a3a | Lighter border |
+
+#### 3D Depth Colors (Button Edges)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary-light` | #fb923c | Primary button light edge (top) |
+| `--primary-dark` | #c2410c | Primary button dark edge (bottom) |
+| `--primary-lighter` | #fdba74 | Primary hover light edge |
+| `--primary-darker` | #9a3412 | Primary hover dark edge |
+| `--error-light` | #f87171 | Danger button light edge (top) |
+| `--error-dark` | #991b1b | Danger button dark edge (bottom) |
+| `--error-lighter` | #fca5a5 | Danger hover light edge |
+| `--error-darker` | #7f1d1d | Danger hover dark edge |
+| `--neutral-light` | #525252 | Secondary button light edge (top) |
+| `--neutral-dark` | #262626 | Secondary button dark edge (bottom) |
+| `--neutral-lighter` | #6b7280 | Secondary hover light edge |
+| `--neutral-darker` | #1f2937 | Secondary hover dark edge |
 
 #### Icon Sizes
 | Token | Value | Usage |
@@ -160,13 +232,104 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 #### Font Sizes
 | Token | Size | Usage |
 |-------|------|-------|
-| `--text-2xs` | 0.65rem | Tiny labels |
+| `--text-4xs` | 0.5rem | Extreme tiny (rare) |
+| `--text-3xs` | 0.55rem | Micro labels, tiny tags |
+| `--text-micro` | 0.6rem | Micro UI text |
+| `--text-2xs` | 0.65rem | Tiny labels, badge text |
+| `--text-xxs` | 0.7rem | Very small UI text |
 | `--text-xs` | 0.75rem | Small text, badges |
+| `--text-caption` | 0.8rem | Captions, stats |
 | `--text-sm` | 0.85rem | Secondary text |
+| `--text-body` | 0.9rem | Small body text, inputs |
 | `--text-base` | 1rem | Body text |
+| `--text-md` | 1.1rem | Slightly larger body |
 | `--text-lg` | 1.125rem | Emphasis |
+| `--text-subhead` | 1.2rem | Subheadings |
+| `--text-heading` | 1.25rem | Small headings |
 | `--text-xl` | 1.5rem | Headings |
 | `--text-2xl` | 2rem | Page titles, large icons |
+
+#### Letter Spacing
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--tracking-tight` | 0.02em | Dense text, position labels |
+| `--tracking-normal` | 0.05em | Standard uppercase labels, buttons |
+| `--tracking-wide` | 0.08em | Nav links, small caps |
+| `--tracking-wider` | 0.1em | Section headings, emphasis |
+
+#### Line Height (Leading)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--leading-none` | 1 | Icons, single-line elements |
+| `--leading-tight` | 1.2 | Compact text, headings |
+| `--leading-snug` | 1.3 | Slightly tight text |
+| `--leading-normal` | 1.5 | Standard readable text |
+| `--leading-relaxed` | 1.6 | Body text, long-form reading |
+
+#### Z-Index Scale
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--z-base` | 0 | Base level, resets stacking |
+| `--z-raised` | 1 | Slightly raised elements |
+| `--z-above` | 5 | Above siblings (tabs, positioned) |
+| `--z-dropdown` | 10 | Dropdowns, tooltips |
+| `--z-sticky` | 100 | Sticky headers, toolbars |
+| `--z-overlay` | 900 | Overlays, side panels |
+| `--z-modal` | 1000 | Modals, dialogs (highest) |
+
+#### Shadows
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--shadow-inset-sm` | inset 0 1px 2px rgba(0,0,0,0.2) | Light inset effect |
+| `--shadow-inset` | inset 0 1px 2px rgba(0,0,0,0.3) | Standard pressed/inset |
+| `--shadow-inset-lcd` | inset 0 1px 3px rgba(0,0,0,0.3) | LCD/recessed screen effect |
+| `--shadow-edge` | 0 1px 0 rgba(0,0,0,0.2) | Bottom edge depth |
+| `--shadow-focus` | 0 0 0 1px var(--primary-dim) | Focus ring (primary) |
+| `--shadow-focus-success` | 0 0 0 1px var(--success) | Focus ring (success) |
+
+#### Transition Durations
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--duration-fast` | 0.1s | Micro interactions, quick feedback |
+| `--duration-base` | 0.15s | Standard transitions |
+| `--duration-moderate` | 0.2s | Slightly longer animations |
+| `--duration-slow` | 0.3s | Large movements, panels |
+| `--duration-blink` | 0.6s | LED blink, activity indicators |
+
+#### Opacity
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--opacity-disabled` | 0.4 | Disabled buttons, inactive controls |
+| `--opacity-dim` | 0.5 | Dimmed/inactive elements, separators |
+| `--opacity-faded` | 0.6 | Slightly faded labels, secondary info |
+| `--opacity-muted` | 0.7 | Muted text, hover states, loading |
+| `--opacity-moderate` | 0.75 | Between muted and subtle |
+| `--opacity-subtle` | 0.9 | Nearly full, subtle fade |
+
+#### Constraints (Max/Min Dimensions)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--header-offset` | 150px | Header + toolbar offset for layouts |
+| `--dropdown-min-width` | 180px | Standard dropdown min-width |
+| `--dropdown-lg-min-width` | 200px | Large dropdown min-width |
+| `--dropdown-max-height` | 250px | Standard dropdown height |
+| `--dropdown-lg-max-height` | 300px | Large dropdown height |
+| `--textarea-min-height` | 60px | Minimum textarea height |
+| `--textarea-max-height` | 100px | Maximum textarea height |
+| `--textarea-base-height` | 80px | Standard textarea height |
+| `--icon-grid-max-height` | 180px | Icon/emoji picker grid |
+| `--icon-grid-sm-max-height` | 140px | Small icon grid |
+| `--list-max-height` | 200px | Scrollable list sections |
+| `--notes-compact-max-height` | 120px | Compact notes areas |
+| `--modal-sm-max-height` | 120px | Small modal/content area |
+| `--panel-loading-height` | 200px | Panel loading placeholder |
+| `--notes-lg-height` | 250px | Large notes textarea |
+| `--export-min-height` | 400px | Export preview min height |
+| `--table-cell-max-width` | 200px | Table cell truncation |
+| `--modal-panel-max-width` | 350px | Panel notes modal width |
+| `--setting-max-width` | 500px | Toggle setting row width |
+| `--crate-name-max-width` | 120px | Crate name in cards |
+| `--energy-val-min-width` | 12px | Energy value display |
 
 ### Token Usage Rules
 
@@ -186,6 +349,31 @@ background: var(--lcd-bg);
 /* Use size tokens */
 width: var(--icon-xl);
 max-width: var(--max-width-sidebar);
+
+/* Use shadow tokens */
+box-shadow: var(--shadow-inset-lcd);
+box-shadow: var(--shadow-focus);
+
+/* Use z-index tokens */
+z-index: var(--z-modal);
+z-index: var(--z-overlay);
+
+/* Use transition duration tokens */
+transition: opacity var(--duration-base) ease;
+transition: transform var(--duration-slow) ease;
+
+/* Use line-height tokens */
+line-height: var(--leading-normal);
+line-height: var(--leading-none);
+
+/* Use opacity tokens */
+opacity: var(--opacity-disabled);
+opacity: var(--opacity-dim);
+opacity: var(--opacity-muted);
+
+/* Use constraint tokens */
+max-height: var(--dropdown-max-height);
+min-height: var(--textarea-min-height);
 ```
 
 **DON'T:**
@@ -198,12 +386,31 @@ border: 1px solid #2a2a2a; /* Use var(--border-width-sm) solid var(--border) */
 /* NO hardcoded colors */
 color: #ef4444;          /* Use var(--error) */
 background: #0a1210;     /* Use var(--lcd-bg) */
+
+/* NO hardcoded shadows */
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); /* Use var(--shadow-inset-lcd) */
+
+/* NO hardcoded z-index */
+z-index: 1000;           /* Use var(--z-modal) */
+z-index: 900;            /* Use var(--z-overlay) */
+
+/* NO hardcoded durations */
+transition: opacity 0.15s ease; /* Use var(--duration-base) */
+
+/* NO hardcoded opacity */
+opacity: 0.5;            /* Use var(--opacity-dim) */
+opacity: 0.7;            /* Use var(--opacity-muted) */
+
+/* NO hardcoded constraints */
+max-height: 250px;       /* Use var(--dropdown-max-height) */
 ```
 
 **Exceptions (OK to hardcode):**
 - `font-size: 14px` on `html` element (root font size)
 - Responsive breakpoint values in `@media` queries
 - Third-party brand colors (e.g., Discogs button) with a comment explaining why
+- Component-internal z-index layering (e.g., z-index: 3 for stacking within a single component)
+- Keyframe animation intermediate values (e.g., `opacity: 0.3` in blink animation)
 
 ### Utility Classes
 Use utility classes instead of inline styles. Full list available in style.css.

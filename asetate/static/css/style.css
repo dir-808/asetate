@@ -44,12 +44,28 @@
     --primary: #f97316;
     --primary-hover: #ea580c;
     --primary-dim: #7c2d12;
+    /* Primary 3D depth (button edge lighting) */
+    --primary-light: #fb923c;       /* Light edge (top) */
+    --primary-dark: #c2410c;        /* Dark edge (bottom) */
+    --primary-lighter: #fdba74;     /* Lighter edge (hover top) */
+    --primary-darker: #9a3412;      /* Darker edge (hover bottom) */
 
     /* Status colors */
     --success: #4ade80;
     --lime: #84cc16;         /* Energy level 2 (between success and warning) */
     --warning: #fbbf24;
     --error: #ef4444;
+    /* Error 3D depth (danger button edges) */
+    --error-light: #f87171;         /* Light edge (top) */
+    --error-dark: #991b1b;          /* Dark edge (bottom) */
+    --error-lighter: #fca5a5;       /* Lighter edge (hover top) */
+    --error-darker: #7f1d1d;        /* Darker edge (hover bottom) */
+
+    /* Neutral 3D depth (secondary button edges) */
+    --neutral-light: #525252;       /* Light edge (top) */
+    --neutral-dark: #262626;        /* Dark edge (bottom) */
+    --neutral-lighter: #6b7280;     /* Lighter edge (hover top) */
+    --neutral-darker: #1f2937;      /* Darker edge (hover bottom) */
 
     /* Component-specific colors */
     --tag-default: #E07A5F;  /* Default tag color (terracotta) */
@@ -169,14 +185,106 @@
        ----------------------------------------- */
     --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
 
-    /* Font sizes */
-    --text-2xs: 0.65rem;   /* 9px - tiny labels */
+    /* Font sizes - complete scale with no gaps */
+    --text-4xs: 0.5rem;    /* 7px - extreme tiny (rare) */
+    --text-3xs: 0.55rem;   /* 7.7px - micro labels, tiny tags */
+    --text-micro: 0.6rem;  /* 8.4px - micro UI text */
+    --text-2xs: 0.65rem;   /* 9px - tiny labels, badge text */
+    --text-xxs: 0.7rem;    /* 9.8px - very small UI text */
     --text-xs: 0.75rem;    /* 10.5px - small text, badges */
+    --text-caption: 0.8rem;/* 11.2px - captions, stats */
     --text-sm: 0.85rem;    /* 12px - secondary text */
+    --text-body: 0.9rem;   /* 12.6px - small body, inputs */
     --text-base: 1rem;     /* 14px - body text */
+    --text-md: 1.1rem;     /* 15.4px - slightly larger body */
     --text-lg: 1.125rem;   /* 16px - emphasis */
+    --text-subhead: 1.2rem;/* 16.8px - subheadings */
+    --text-heading: 1.25rem;/* 17.5px - small headings */
     --text-xl: 1.5rem;     /* 21px - headings */
     --text-2xl: 2rem;      /* 28px - page titles */
+
+    /* Letter spacing */
+    --tracking-tight: 0.02em;   /* Tight: dense text, position labels */
+    --tracking-normal: 0.05em;  /* Standard: uppercase labels, buttons */
+    --tracking-wide: 0.08em;    /* Wide: nav links, small caps */
+    --tracking-wider: 0.1em;    /* Widest: section headings, emphasis */
+
+    /* Line height (leading) */
+    --leading-none: 1;          /* Icons, single-line elements */
+    --leading-tight: 1.2;       /* Compact text, headings */
+    --leading-snug: 1.3;        /* Slightly tight */
+    --leading-normal: 1.5;      /* Standard readable text */
+    --leading-relaxed: 1.6;     /* Body text, long-form reading */
+
+    /* -----------------------------------------
+       Z-INDEX SCALE
+       Layering system for stacking contexts
+       ----------------------------------------- */
+    --z-base: 0;                /* Base level, resets stacking */
+    --z-raised: 1;              /* Slightly raised elements */
+    --z-above: 5;               /* Above siblings (tabs, positioned) */
+    --z-dropdown: 10;           /* Dropdowns, tooltips */
+    --z-sticky: 100;            /* Sticky headers, toolbars */
+    --z-overlay: 900;           /* Overlays, backdrops */
+    --z-modal: 1000;            /* Modals, dialogs (highest) */
+
+    /* -----------------------------------------
+       SHADOWS
+       Functional shadows for hardware depth
+       ----------------------------------------- */
+    --shadow-inset-sm: inset 0 1px 2px rgba(0, 0, 0, 0.2);  /* Light inset */
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.3);     /* Standard inset */
+    --shadow-inset-lcd: inset 0 1px 3px rgba(0, 0, 0, 0.3); /* LCD/recessed effect */
+    --shadow-edge: 0 1px 0 rgba(0, 0, 0, 0.2);              /* Bottom edge depth */
+    --shadow-focus: 0 0 0 1px var(--primary-dim);           /* Focus ring (primary) */
+    --shadow-focus-success: 0 0 0 1px var(--success);       /* Focus ring (success) */
+
+    /* -----------------------------------------
+       TRANSITIONS
+       Animation durations for consistent motion
+       ----------------------------------------- */
+    --duration-fast: 0.1s;      /* Micro interactions, quick feedback */
+    --duration-base: 0.15s;     /* Standard transitions */
+    --duration-moderate: 0.2s;  /* Slightly longer animations */
+    --duration-slow: 0.3s;      /* Large movements, panels */
+    --duration-blink: 0.6s;     /* LED blink, activity indicators */
+
+    /* -----------------------------------------
+       OPACITY
+       Consistent transparency levels
+       ----------------------------------------- */
+    --opacity-disabled: 0.4;    /* Disabled buttons, inactive controls */
+    --opacity-dim: 0.5;         /* Dimmed/inactive elements, separators */
+    --opacity-faded: 0.6;       /* Slightly faded labels, secondary info */
+    --opacity-muted: 0.7;       /* Muted text, hover states, loading */
+    --opacity-moderate: 0.75;   /* Between muted and subtle */
+    --opacity-subtle: 0.9;      /* Nearly full, subtle fade */
+
+    /* -----------------------------------------
+       CONSTRAINTS
+       Max/min dimensions for common patterns
+       ----------------------------------------- */
+    --header-offset: 150px;             /* Header + toolbar offset for layouts */
+    --dropdown-min-width: 180px;        /* Standard dropdown min-width */
+    --dropdown-lg-min-width: 200px;     /* Large dropdown min-width */
+    --dropdown-max-height: 250px;       /* Standard dropdown height */
+    --dropdown-lg-max-height: 300px;    /* Large dropdown height */
+    --textarea-min-height: 60px;        /* Minimum textarea height */
+    --textarea-max-height: 100px;       /* Maximum textarea height */
+    --textarea-base-height: 80px;       /* Standard textarea height */
+    --icon-grid-max-height: 180px;      /* Icon/emoji picker grid height */
+    --icon-grid-sm-max-height: 140px;   /* Small icon grid height */
+    --list-max-height: 200px;           /* Scrollable list sections */
+    --notes-compact-max-height: 120px;  /* Compact notes areas */
+    --modal-sm-max-height: 120px;       /* Small modal/content area */
+    --panel-loading-height: 200px;      /* Panel loading placeholder */
+    --notes-lg-height: 250px;           /* Large notes textarea */
+    --export-min-height: 400px;         /* Export preview min height */
+    --table-cell-max-width: 200px;      /* Table cell truncation */
+    --modal-panel-max-width: 350px;     /* Panel notes modal width */
+    --setting-max-width: 500px;         /* Toggle setting row */
+    --crate-name-max-width: var(--crate-name-max-width);      /* Crate name in cards */
+    --energy-val-min-width: var(--energy-val-min-width);       /* Energy value display */
 
     /* -----------------------------------------
        LEGACY TOKENS (deprecated, use above)
@@ -204,7 +312,7 @@ body {
     font-family: var(--font-mono);
     background-color: var(--bg-body);
     color: var(--text-primary);
-    line-height: 1.6;
+    line-height: var(--leading-relaxed);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -220,7 +328,7 @@ body {
 a {
     color: var(--primary);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color var(--duration-base) ease;
 }
 
 a:hover {
@@ -250,17 +358,17 @@ a:hover {
     padding: var(--space-md) var(--space-xl);
     background-color: var(--bg-surface);
     /* Functional depth: light top edge, dark bottom edge (like hardware panel seam) */
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: var(--border-width-sm) solid rgba(255, 255, 255, 0.05);
     border-bottom: var(--border-width-md) solid var(--border);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-edge);
 }
 
 .nav-brand a {
-    font-size: 1.1rem;
+    font-size: var(--text-md);
     font-weight: 700;
     color: var(--primary);
     text-decoration: none;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
 }
 
@@ -276,14 +384,14 @@ a:hover {
     gap: var(--space-sm);
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     padding: var(--space-sm) var(--space-md);
     border: var(--border-width-md) solid var(--border);
     background: transparent;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
     /* Prevent layout shift on state change */
     min-width: max-content;
     text-rendering: geometricPrecision;
@@ -296,7 +404,7 @@ a:hover {
     height: var(--led-size);
     background: var(--border);
     border-radius: 50%; /* LED dots are round - mimics hardware */
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .nav-links a:hover {
@@ -326,13 +434,13 @@ a:hover {
     gap: var(--space-sm);
     text-decoration: none;
     color: var(--text-secondary);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.08em;  /* Match nav-links for consistency */
+    letter-spacing: var(--tracking-wide);  /* Match nav-links for consistency */
     text-transform: uppercase;
     padding: var(--space-sm) var(--space-md);
     border: var(--border-width-md) solid var(--border);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
     /* Prevent layout shift on state change */
     min-width: max-content;
     text-rendering: geometricPrecision;
@@ -345,7 +453,7 @@ a:hover {
     height: var(--led-size);
     background: var(--border);
     border-radius: 50%;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .user-link:hover {
@@ -391,9 +499,9 @@ a:hover {
 }
 
 .dashboard-header h1 {
-    font-size: 2rem;
+    font-size: var(--text-2xl);
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     margin-bottom: var(--space-sm);
     color: var(--primary);
@@ -401,8 +509,8 @@ a:hover {
 
 .dashboard-header p {
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    letter-spacing: 0.05em;
+    font-size: var(--text-body);
+    letter-spacing: var(--tracking-normal);
 }
 
 .dashboard-stats {
@@ -425,15 +533,15 @@ a:hover {
 .stat-card::before {
     content: '';
     position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    height: 1px;
+    top: var(--space-2xs);
+    left: var(--space-2xs);
+    right: var(--space-2xs);
+    height: var(--border-width-sm);
     background: linear-gradient(90deg, var(--lcd-dim), transparent);
 }
 
 .stat-value {
-    font-size: 2rem;
+    font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--lcd-text);
     font-variant-numeric: tabular-nums;
@@ -441,9 +549,9 @@ a:hover {
 
 .stat-label {
     color: var(--lcd-dim);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .dashboard-actions {
@@ -486,14 +594,14 @@ a:hover {
     justify-content: center;
     padding: var(--space-sm) var(--space-lg);
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
     border: var(--border-width-md) solid transparent;
     cursor: pointer;
-    transition: background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease, opacity 0.1s ease;
+    transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease, opacity var(--duration-fast) ease;
 }
 
 .btn-primary {
@@ -501,21 +609,21 @@ a:hover {
     color: var(--bg-primary);
     border-color: var(--primary);
     /* MPC2000 depth effect - lighter top, darker bottom */
-    border-top-color: #fb923c;
-    border-bottom-color: #c2410c;
+    border-top-color: var(--primary-light);
+    border-bottom-color: var(--primary-dark);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
-    border-top-color: #fdba74;
-    border-bottom-color: #9a3412;
+    border-top-color: var(--primary-lighter);
+    border-bottom-color: var(--primary-darker);
 }
 
 .btn-primary:active {
     /* Pressed state - invert depth */
-    border-top-color: #9a3412;
-    border-bottom-color: #fdba74;
+    border-top-color: var(--primary-darker);
+    border-bottom-color: var(--primary-lighter);
 }
 
 .btn-secondary {
@@ -523,31 +631,31 @@ a:hover {
     color: var(--text-primary);
     border-color: var(--border-light);
     /* MPC2000 depth effect */
-    border-top-color: #525252;
-    border-bottom-color: #262626;
+    border-top-color: var(--neutral-light);
+    border-bottom-color: var(--neutral-dark);
 }
 
 .btn-secondary:hover {
     border-color: var(--text-muted);
     background-color: var(--border);
-    border-top-color: #6b7280;
-    border-bottom-color: #1f2937;
+    border-top-color: var(--neutral-lighter);
+    border-bottom-color: var(--neutral-darker);
 }
 
 .btn-secondary:active {
     /* Pressed state - invert depth */
-    border-top-color: #1f2937;
-    border-bottom-color: #6b7280;
+    border-top-color: var(--neutral-darker);
+    border-bottom-color: var(--neutral-lighter);
 }
 
 .btn:disabled {
-    opacity: 0.4;
+    opacity: var(--opacity-disabled);
     cursor: not-allowed;
 }
 
 .btn-sm {
     padding: var(--space-xs) var(--space-sm);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .btn-icon {
@@ -565,22 +673,22 @@ a:hover {
     color: var(--error);
     border-color: var(--error);
     /* MPC2000 depth effect with error color */
-    border-top-color: #f87171;
-    border-bottom-color: #991b1b;
+    border-top-color: var(--error-light);
+    border-bottom-color: var(--error-dark);
 }
 
 .btn-danger:hover {
     background-color: var(--error);
     color: var(--bg-primary);
     border-color: var(--error);
-    border-top-color: #fca5a5;
-    border-bottom-color: #7f1d1d;
+    border-top-color: var(--error-lighter);
+    border-bottom-color: var(--error-darker);
 }
 
 .btn-danger:active {
     /* Pressed state - invert depth */
-    border-top-color: #7f1d1d;
-    border-bottom-color: #fca5a5;
+    border-top-color: var(--error-darker);
+    border-bottom-color: var(--error-lighter);
 }
 
 /* ============================================
@@ -599,19 +707,19 @@ a:hover {
 
 input, select, textarea {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--text-body);
     padding: var(--space-sm) var(--space-md);
     background-color: var(--bg-input);
     border: var(--border-width-md) solid var(--border);
     color: var(--text-primary);
     width: 100%;
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-base) ease;
 }
 
 input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary-dim);
+    box-shadow: var(--shadow-focus);
 }
 
 input::placeholder, textarea::placeholder {
@@ -625,12 +733,12 @@ input::placeholder, textarea::placeholder {
 
 .form-group label {
     display: block;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     margin-bottom: var(--space-xs);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 /* ============================================
@@ -648,12 +756,12 @@ input::placeholder, textarea::placeholder {
     background: transparent;
     cursor: pointer;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
     color: var(--text-secondary);
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .toggle-btn:hover {
@@ -673,7 +781,7 @@ input::placeholder, textarea::placeholder {
     height: var(--led-size);
     background: var(--border);
     border-radius: 50%; /* LED dots are round - mimics hardware */
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .toggle-btn.active .led {
@@ -682,7 +790,7 @@ input::placeholder, textarea::placeholder {
 
 /* Pressed effect */
 .toggle-btn:active {
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset);
 }
 
 /* Toggle button with hidden checkbox - active via :has() */
@@ -715,7 +823,7 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     inset: 0;
     background-color: var(--border);
-    transition: background-color 0.15s;
+    transition: background-color var(--duration-base);
     border: var(--border-width-md) solid var(--border);
 }
 
@@ -727,7 +835,7 @@ input::placeholder, textarea::placeholder {
     left: var(--space-2xs);
     bottom: var(--space-2xs);
     background-color: var(--text-muted);
-    transition: transform 0.15s, background-color 0.15s;
+    transition: transform var(--duration-base), background-color var(--duration-base);
     /* Square slider knob - MPC style */
 }
 
@@ -770,8 +878,8 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-lg) var(--space-xl);
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     border-top: var(--border-width-md) solid var(--border);
 }
@@ -792,13 +900,13 @@ input::placeholder, textarea::placeholder {
     display: inline-flex;
     align-items: center;
     padding: var(--space-xs) var(--space-sm);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     font-weight: 600;
     background-color: var(--bg-elevated);
     border: var(--border-width-sm) solid var(--border);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
 }
 
 .tag--primary {
@@ -813,10 +921,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .page-header h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-xs);
 }
 
@@ -842,7 +950,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    font-size: 0.9rem;
+    font-size: var(--text-body);
 }
 
 .status-indicator {
@@ -888,11 +996,11 @@ input::placeholder, textarea::placeholder {
 .progress-fill {
     height: 100%;
     background-color: var(--primary);
-    transition: width 0.3s ease;
+    transition: width var(--duration-slow) ease;
 }
 
 .progress-text {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--text-secondary);
     text-align: center;
     font-variant-numeric: tabular-nums;
@@ -915,17 +1023,17 @@ input::placeholder, textarea::placeholder {
 }
 
 .sync-stat-value {
-    font-size: 1.25rem;
+    font-size: var(--text-heading);
     font-weight: 700;
     color: var(--lcd-text);
     font-variant-numeric: tabular-nums;
 }
 
 .sync-stat-label {
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--lcd-dim);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .sync-error {
@@ -933,7 +1041,7 @@ input::placeholder, textarea::placeholder {
     background-color: rgba(239, 68, 68, 0.1);
     border: var(--border-width-md) solid var(--error);
     color: var(--error);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .sync-actions {
@@ -943,9 +1051,9 @@ input::placeholder, textarea::placeholder {
 }
 
 .sync-info h2 {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-md);
 }
 
@@ -957,7 +1065,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .info-list li {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
     padding-left: var(--space-lg);
     position: relative;
@@ -977,7 +1085,7 @@ input::placeholder, textarea::placeholder {
     justify-content: space-between;
     align-items: center;
     margin-top: var(--space-xs);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .progress-percent {
@@ -995,10 +1103,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .current-release-label {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--tracking-tight);
     display: block;
     margin-bottom: var(--space-xs);
 }
@@ -1014,7 +1122,7 @@ input::placeholder, textarea::placeholder {
 
 @keyframes pulse-text {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+    50% { opacity: var(--opacity-muted); }
 }
 
 /* Live stats during sync */
@@ -1022,7 +1130,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     gap: var(--space-sm);
     margin-top: var(--space-sm);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
 }
 
@@ -1032,7 +1140,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .live-stat-sep {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
 }
 
 /* Enhanced error display */
@@ -1044,7 +1152,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .error-icon {
-    font-size: 1.2rem;
+    font-size: var(--text-subhead);
 }
 
 .error-title {
@@ -1055,7 +1163,7 @@ input::placeholder, textarea::placeholder {
 .error-message {
     margin: 0 0 var(--space-sm) 0;
     font-family: monospace;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     background: var(--bg-surface);
     padding: var(--space-sm);
     word-break: break-word;
@@ -1063,7 +1171,7 @@ input::placeholder, textarea::placeholder {
 
 .error-hint {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-secondary);
 }
 
@@ -1080,7 +1188,7 @@ input::placeholder, textarea::placeholder {
     background: currentColor;
     border-radius: 50%; /* LED indicator - round is OK per MPC2000 guidelines */
     margin-right: var(--space-xs);
-    animation: led-blink 0.6s ease-in-out infinite;
+    animation: led-blink var(--duration-blink) ease-in-out infinite;
 }
 
 .btn.is-loading .activity-led {
@@ -1088,7 +1196,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .btn.is-loading {
-    opacity: 0.9;
+    opacity: var(--opacity-subtle);
     pointer-events: none;
 }
 
@@ -1139,10 +1247,10 @@ input::placeholder, textarea::placeholder {
 
 .notification-badge {
     padding: var(--space-2xs) var(--space-sm);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--tracking-tight);
     flex-shrink: 0;
 }
 
@@ -1197,14 +1305,14 @@ input::placeholder, textarea::placeholder {
     background: var(--lcd-bg);
     color: var(--lcd-text);
     padding: var(--space-2xs) var(--space-sm);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--tracking-tight);
 }
 
 .inventory-note {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     margin-top: var(--space-md);
 }
 
@@ -1217,7 +1325,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     gap: 0;
     position: relative;
-    min-height: calc(100vh - 150px);
+    min-height: calc(100vh - var(--header-offset));
 }
 
 .collection-page {
@@ -1226,7 +1334,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
-    transition: margin-right 0.3s ease-out;
+    transition: margin-right var(--duration-slow) ease-out;
 }
 
 .collection-page.panel-open {
@@ -1242,17 +1350,17 @@ input::placeholder, textarea::placeholder {
 }
 
 .collection-title h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-xs);
 }
 
 .collection-stats {
     display: flex;
     gap: var(--space-sm);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
 }
@@ -1278,11 +1386,11 @@ input::placeholder, textarea::placeholder {
 .search-input {
     width: 100%;
     /* LCD-like inset shadow for recessed screen effect */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .search-input:focus {
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--primary-dim);
+    box-shadow: var(--shadow-inset-lcd), var(--shadow-focus);
 }
 
 .filter-buttons {
@@ -1296,15 +1404,15 @@ input::placeholder, textarea::placeholder {
     position: relative;
     padding: var(--space-sm) var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     color: var(--text-secondary);
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
     border: var(--border-width-md) solid var(--border);
     background: transparent;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
     cursor: pointer;
 }
 
@@ -1324,11 +1432,11 @@ input::placeholder, textarea::placeholder {
 .filter-btn.active::after {
     content: '';
     position: absolute;
-    bottom: 4px;
+    bottom: var(--space-xs);
     left: 50%;
     transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+    width: var(--led-size-sm);
+    height: var(--led-size-sm);
     background: var(--primary);
     border-radius: 50%; /* LED dots are round - mimics hardware */
 }
@@ -1341,15 +1449,15 @@ input::placeholder, textarea::placeholder {
 .filter-select {
     padding: var(--space-sm) var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
     border: var(--border-width-md) solid var(--border);
     background: transparent;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .filter-select:hover {
@@ -1375,12 +1483,12 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space-sm);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     background-color: var(--bg-elevated);
     border: var(--border-width-sm) solid var(--border);
     color: var(--text-secondary);
     text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition: background-color var(--duration-base), border-color var(--duration-base);
 }
 
 .crate-badge-panel:hover {
@@ -1403,7 +1511,7 @@ input::placeholder, textarea::placeholder {
     overflow: hidden;
     background-color: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-base) ease;
 }
 
 .release-card:hover {
@@ -1420,8 +1528,8 @@ input::placeholder, textarea::placeholder {
 /* Crate icons overlay on release cards - square MPC style */
 .release-crate-icons {
     position: absolute;
-    bottom: 4px;
-    right: 4px;
+    bottom: var(--space-xs);
+    right: var(--space-xs);
     display: flex;
     gap: var(--space-2xs);
 }
@@ -1434,7 +1542,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     color: var(--text-primary); /* Default color for emoji icons */
 }
 
@@ -1451,7 +1559,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.55rem;
+    font-size: var(--text-3xs);
     color: var(--text-muted);
 }
 
@@ -1460,7 +1568,7 @@ input::placeholder, textarea::placeholder {
     height: 100%;
     object-fit: cover;
     filter: grayscale(20%);
-    transition: filter 0.15s ease;
+    transition: filter var(--duration-base) ease;
 }
 
 .release-card:hover .release-cover img {
@@ -1474,7 +1582,7 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     text-transform: uppercase;
 }
 
@@ -1488,9 +1596,9 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-title {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     font-weight: 600;
-    line-height: 1.3;
+    line-height: var(--leading-snug);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -1500,7 +1608,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-artist {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--lcd-dim);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1508,7 +1616,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-meta {
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1527,13 +1635,13 @@ input::placeholder, textarea::placeholder {
 .pagination-btn {
     padding: var(--space-sm) var(--space-md);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-primary);
     text-decoration: none;
     border: var(--border-width-md) solid var(--border);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    letter-spacing: var(--tracking-normal);
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .pagination-btn:hover {
@@ -1542,7 +1650,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .pagination-info {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
 }
@@ -1555,9 +1663,9 @@ input::placeholder, textarea::placeholder {
 }
 
 .empty-state h2 {
-    font-size: 1.1rem;
+    font-size: var(--text-md);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-sm);
     color: var(--text-primary);
 }
@@ -1577,14 +1685,14 @@ input::placeholder, textarea::placeholder {
 }
 
 .back-link {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-secondary);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
 }
 
 .back-link:hover {
@@ -1626,7 +1734,7 @@ input::placeholder, textarea::placeholder {
     justify-content: center;
     color: var(--text-muted);
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 .release-info-large {
@@ -1638,29 +1746,29 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-info-large h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: var(--leading-tight);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
 }
 
 .release-artist-large {
-    font-size: 1rem;
+    font-size: var(--text-base);
     color: var(--text-secondary);
 }
 
 .release-meta-large {
     display: flex;
     gap: var(--space-md);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-muted);
 }
 
 .release-stats {
     display: flex;
     gap: var(--space-sm);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-secondary);
     margin-top: var(--space-sm);
     flex-wrap: wrap;
@@ -1701,15 +1809,15 @@ input::placeholder, textarea::placeholder {
 }
 
 .tracks-header h2 {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .save-indicator {
-    font-size: 0.75rem;
-    transition: color 0.15s ease;
+    font-size: var(--text-xs);
+    transition: color var(--duration-base) ease;
 }
 
 .save-indicator.saving { color: var(--warning); }
@@ -1723,7 +1831,7 @@ input::placeholder, textarea::placeholder {
 .tracks-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .tracks-table th {
@@ -1731,9 +1839,9 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-sm) var(--space-md);
     font-weight: 600;
     color: var(--text-muted);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     background-color: var(--lcd-bg);
     border-bottom: var(--border-width-sm) solid var(--border);
 }
@@ -1753,7 +1861,7 @@ input::placeholder, textarea::placeholder {
     border-left: var(--border-width-sm) solid var(--border);
     border-right: var(--border-width-sm) solid var(--border);
     border-bottom: var(--border-width-sm) solid var(--border);
-    transition: background-color 0.15s ease, opacity 0.15s ease;
+    transition: background-color var(--duration-base) ease, opacity var(--duration-base) ease;
 }
 
 .track-row:first-child {
@@ -1798,7 +1906,7 @@ input::placeholder, textarea::placeholder {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 1px;
+    height: var(--border-width-sm);
     background: var(--border);
 }
 
@@ -1808,11 +1916,11 @@ input::placeholder, textarea::placeholder {
 
 /* Non-playable tracks are dimmed */
 .track-row:not(.track-playable) {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
 }
 
 .track-row:not(.track-playable):hover {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .col-pos {
@@ -1829,12 +1937,12 @@ input::placeholder, textarea::placeholder {
     display: inline-block;
     margin-left: var(--space-sm);
     padding: var(--space-2xs) var(--space-xs);
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--warning);
     background-color: rgba(251, 191, 36, 0.15);
     cursor: pointer;
     text-transform: uppercase;
-    transition: background-color 0.15s;
+    transition: background-color var(--duration-base);
 }
 
 .track-notes-indicator:hover {
@@ -1866,7 +1974,7 @@ input::placeholder, textarea::placeholder {
     width: 100%;
     padding: var(--space-xs) var(--space-sm);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     background-color: transparent;
     border: var(--border-width-sm) solid transparent;
     text-align: center;
@@ -1908,7 +2016,7 @@ input::placeholder, textarea::placeholder {
     /* Square thumb - MPC style */
     background: var(--primary);
     cursor: pointer;
-    transition: transform 0.15s;
+    transition: transform var(--duration-base);
 }
 
 .track-energy-slider::-webkit-slider-thumb:hover {
@@ -1926,7 +2034,7 @@ input::placeholder, textarea::placeholder {
 
 .energy-value {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     min-width: var(--icon-base);
     text-align: center;
     color: var(--text-muted);
@@ -1969,7 +2077,7 @@ input::placeholder, textarea::placeholder {
     gap: var(--space-sm);
     padding: var(--space-xs) 0;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .column-setting input[type="checkbox"] {
@@ -1984,7 +2092,7 @@ input::placeholder, textarea::placeholder {
 /* Release notes simple - size variant for detail page */
 .release-notes-simple {
     width: var(--max-width-sidebar);
-    height: 250px;
+    height: var(--notes-lg-height);
 }
 
 /* Notes modal textareas - MPC2000 rectangular, no border-radius */
@@ -1996,7 +2104,7 @@ input::placeholder, textarea::placeholder {
     background: var(--bg-input);
     color: var(--text);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: var(--text-body);
     resize: vertical;
 }
 
@@ -2010,12 +2118,12 @@ input::placeholder, textarea::placeholder {
 .track-notes-add {
     display: inline-block;
     padding: var(--space-2xs) var(--space-xs);
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     border: var(--border-width-sm) dashed var(--border);
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity var(--duration-base);
 }
 
 .track-row:hover .track-notes-add {
@@ -2038,7 +2146,7 @@ input::placeholder, textarea::placeholder {
 .release-extra-info span {
     display: inline-block;
     padding: var(--space-2xs) var(--space-sm);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     color: var(--text-secondary);
     background: var(--bg-elevated);
     border: var(--border-width-sm) solid var(--border);
@@ -2084,10 +2192,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .crates-header h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-xs);
 }
 
@@ -2105,7 +2213,7 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-sm) var(--space-md);
     padding-left: calc(var(--space-md) + calc(var(--depth, 0) * var(--space-lg)));
     border-bottom: var(--border-width-sm) solid var(--border);
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .crate-item:last-child {
@@ -2126,7 +2234,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-icon {
-    font-size: 1rem;
+    font-size: var(--text-base);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2146,7 +2254,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .count-badge {
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
 }
@@ -2159,8 +2267,8 @@ input::placeholder, textarea::placeholder {
     color: var(--text-secondary);
     cursor: pointer;
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    font-size: var(--text-sm);
+    transition: opacity var(--duration-base) ease, background-color var(--duration-base) ease, color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .crate-item:hover .crate-action {
@@ -2189,7 +2297,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 .breadcrumbs a {
@@ -2217,10 +2325,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-info h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
     margin-bottom: var(--space-xs);
 }
 
@@ -2230,7 +2338,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-stats {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .crate-actions-header {
@@ -2245,10 +2353,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-section h2 {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     margin-bottom: var(--space-md);
 }
 
@@ -2273,7 +2381,7 @@ input::placeholder, textarea::placeholder {
     border: var(--border-width-md) solid var(--border);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s ease;
+    transition: border-color var(--duration-base) ease;
 }
 
 .sub-crate-card:hover {
@@ -2281,7 +2389,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .sub-crate-name { font-weight: 500; }
-.sub-crate-count { font-size: 0.75rem; color: var(--text-muted); }
+.sub-crate-count { font-size: var(--text-xs); color: var(--text-muted); }
 
 /* Crate releases grid - fixed max-width so items reflow but don't resize */
 .crate-releases-grid {
@@ -2330,7 +2438,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.5rem;
+    font-size: var(--text-4xs);
     color: var(--text-muted);
 }
 
@@ -2341,7 +2449,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-title-small {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -2349,7 +2457,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .release-artist-small {
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
@@ -2368,10 +2476,10 @@ input::placeholder, textarea::placeholder {
     color: var(--text-muted);
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
-    font-size: 1rem;
+    transition: opacity var(--duration-base) ease, background-color var(--duration-base) ease, color var(--duration-base) ease;
+    font-size: var(--text-base);
     font-family: var(--font-mono);
-    line-height: 1;
+    line-height: var(--leading-none);
 }
 
 .crate-release-card:hover .btn-remove,
@@ -2409,10 +2517,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-title-sm { font-weight: 500; }
-.track-artist-sm { font-size: 0.8rem; color: var(--text-secondary); }
+.track-artist-sm { font-size: var(--text-caption); color: var(--text-secondary); }
 
 .track-bpm-sm {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--primary);
     margin-left: auto;
     font-variant-numeric: tabular-nums;
@@ -2431,13 +2539,13 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space-sm);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     background-color: var(--bg-elevated);
     border: var(--border-width-sm) solid var(--border);
     /* No border-radius - MPC style */
     color: var(--text-secondary);
     text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition: background-color var(--duration-base), border-color var(--duration-base);
 }
 
 .crate-badge:hover {
@@ -2446,7 +2554,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-badge-icon {
-    font-size: 0.9rem;
+    font-size: var(--text-body);
 }
 
 .crate-badge-name {
@@ -2461,7 +2569,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-select-list {
-    max-height: 300px;
+    max-height: var(--dropdown-lg-max-height);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -2473,7 +2581,7 @@ input::placeholder, textarea::placeholder {
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-base) ease;
 }
 
 .crate-select-item:hover {
@@ -2492,7 +2600,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .crate-selector-footer a {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 /* Crates page layout - sidebar pushes content */
@@ -2504,7 +2612,7 @@ input::placeholder, textarea::placeholder {
 .crates-main {
     flex: 1;
     min-width: 0;
-    transition: padding-right 0.3s ease;
+    transition: padding-right var(--duration-slow) ease;
 }
 
 body.crate-panel-open .crates-main {
@@ -2529,7 +2637,7 @@ body.crate-panel-open .crates-main {
     background: linear-gradient(135deg, var(--crate-wood-mid) 0%, var(--crate-wood-dark) 100%);
     border: var(--border-width-md) solid var(--crate-wood-light);
     overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s;
+    transition: transform var(--duration-moderate), border-color var(--duration-moderate);
     --crate-accent: var(--primary);
 }
 
@@ -2544,9 +2652,9 @@ body.crate-panel-open .crates-main {
     position: absolute;
     top: var(--space-xs);
     left: var(--space-xs);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     color: var(--text-muted);
-    z-index: 5;
+    z-index: var(--z-above);
 }
 
 /* Crate lid - opens on hover */
@@ -2559,8 +2667,8 @@ body.crate-panel-open .crates-main {
     background: linear-gradient(180deg, var(--crate-wood-light) 0%, var(--crate-wood-mid) 100%);
     border-bottom: var(--border-width-md) solid var(--crate-wood-dark);
     transform-origin: top center;
-    transition: transform 0.3s ease;
-    z-index: 3;
+    transition: transform var(--duration-slow) ease;
+    z-index: 3; /* Component-internal layering (below badge) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2573,9 +2681,9 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-lid-label {
-    font-size: 0.55rem;
+    font-size: var(--text-3xs);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
     color: var(--crate-accent);
     font-weight: 600;
 }
@@ -2594,7 +2702,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-md);
     padding-top: var(--space-xl);
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
 }
 
 .crate-icon-container {
@@ -2609,7 +2717,7 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-emoji {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
 }
 
 .crate-box .crate-info {
@@ -2618,18 +2726,18 @@ body.crate-panel-open .crates-main {
 
 .crate-box .crate-name {
     display: block;
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px;
+    max-width: var(--crate-name-max-width);
     margin-bottom: var(--space-2xs);
 }
 
 .crate-box .crate-stats {
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
 }
 
@@ -2644,7 +2752,7 @@ body.crate-panel-open .crates-main {
         var(--crate-wood-light) 10%,
         var(--crate-wood-light) 90%,
         transparent 100%);
-    z-index: 0;
+    z-index: var(--z-base);
 }
 
 .crate-slat-1 {
@@ -2663,8 +2771,8 @@ body.crate-panel-open .crates-main {
     display: flex;
     gap: var(--space-xs);
     opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 10;
+    transition: opacity var(--duration-base);
+    z-index: var(--z-dropdown);
 }
 
 .crate-box:hover .crate-hover-actions {
@@ -2679,11 +2787,11 @@ body.crate-panel-open .crates-main {
     background: var(--bg-surface);
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .crate-action-btn:hover {
@@ -2701,9 +2809,9 @@ body.crate-panel-open .crates-main {
     height: 100vh;
     background: var(--bg-surface);
     border-left: var(--border-width-md) solid var(--border);
-    z-index: 900;
+    z-index: var(--z-overlay);
     transform: translateX(100%);
-    transition: transform 0.25s ease;
+    transition: transform var(--duration-slow) ease;
     overflow-y: auto;
 }
 
@@ -2724,9 +2832,9 @@ body.crate-panel-open .crates-main {
 
 .crate-panel-header h3 {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--text-body);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .crate-panel-content {
@@ -2752,7 +2860,7 @@ body.crate-panel-open .crates-main {
     /* No border-radius - MPC style */
     background: var(--bg-elevated);
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: var(--text-subhead);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2764,7 +2872,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-xs);
     border: var(--border-width-sm) solid var(--border);
     /* No border-radius - MPC style */
-    font-size: 1rem;
+    font-size: var(--text-base);
     text-align: center;
     background: var(--bg-input);
     color: var(--text-primary);
@@ -2783,7 +2891,7 @@ body.crate-panel-open .crates-main {
     /* No border-radius - MPC style */
     background: var(--bg-elevated);
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2827,14 +2935,14 @@ body.crate-panel-open .crates-main {
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .icon-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
     gap: var(--space-2xs);
-    max-height: 180px;
+    max-height: var(--icon-grid-max-height);
     overflow-y: auto;
     padding: var(--space-xs);
     background: var(--bg-elevated);
@@ -2842,7 +2950,7 @@ body.crate-panel-open .crates-main {
 }
 
 .icon-grid-sm {
-    max-height: 140px;
+    max-height: var(--icon-grid-sm-max-height);
 }
 
 .icon-grid-item {
@@ -2884,7 +2992,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm);
     background: var(--bg-surface);
     border: var(--border-width-sm) solid var(--border);
-    max-height: 180px;
+    max-height: var(--icon-grid-max-height);
     overflow-y: auto;
 }
 
@@ -2918,7 +3026,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm);
     background: var(--bg-surface);
     border: var(--border-width-sm) solid var(--border);
-    max-height: 180px;
+    max-height: var(--icon-grid-max-height);
     overflow-y: auto;
 }
 
@@ -2989,7 +3097,7 @@ body.crate-panel-open .crates-main {
     font-weight: 500; /* Medium weight */
     font-style: normal;
     font-size: var(--icon-xl); /* Default size (24px), override with size modifiers */
-    line-height: 1;
+    line-height: var(--leading-none);
     /* Force text/monochrome presentation */
     font-variant-emoji: text;
     /* Centering within parent */
@@ -3110,7 +3218,7 @@ body.crate-panel-open .crates-main {
 }
 
 .color-custom-icon {
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
 }
 
 .color-custom input[type="color"] {
@@ -3128,9 +3236,9 @@ body.crate-panel-open .crates-main {
 
 .panel-form-group label {
     display: block;
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     color: var(--text-muted);
     margin-bottom: var(--space-xs);
 }
@@ -3143,7 +3251,7 @@ body.crate-panel-open .crates-main {
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: var(--text-body);
 }
 
 .panel-actions {
@@ -3165,9 +3273,9 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-danger-zone h4 {
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     color: var(--error);
     margin-bottom: var(--space-sm);
 }
@@ -3194,7 +3302,7 @@ body.crate-panel-open .crates-main {
     /* No border-radius - MPC style */
     background: var(--bg-input);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: var(--text-body);
 }
 
 @media (max-width: 1200px) {
@@ -3211,7 +3319,7 @@ body.crate-panel-open .crates-main {
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 1000;
+    z-index: var(--z-modal);
 }
 
 .modal.open {
@@ -3251,20 +3359,20 @@ body.crate-panel-open .crates-main {
 }
 
 .modal-header h2 {
-    font-size: 1rem;
+    font-size: var(--text-base);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .modal-close {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     color: var(--text-muted);
     cursor: pointer;
     padding: 0;
-    line-height: 1;
+    line-height: var(--leading-none);
     font-family: var(--font-mono);
 }
 
@@ -3285,7 +3393,7 @@ body.crate-panel-open .crates-main {
     display: inline-block;
     padding: var(--space-xs) var(--space-sm);
     background-color: var(--bg-elevated);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 /* ============================================
@@ -3306,13 +3414,13 @@ body.crate-panel-open .crates-main {
     align-items: center;
     gap: var(--space-xs);
     padding: var(--space-2xs) var(--space-sm);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     font-weight: 600;
     background-color: var(--tag-color, var(--tag-default));
     color: var(--bg-primary);
     white-space: nowrap;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-normal);
 }
 
 .tag-remove {
@@ -3322,15 +3430,15 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     padding: 0;
     margin-left: var(--space-2xs);
-    font-size: 0.85rem;
-    line-height: 1;
+    font-size: var(--text-sm);
+    line-height: var(--leading-none);
     opacity: 0;
     font-family: var(--font-mono);
-    transition: opacity 0.1s;
+    transition: opacity var(--duration-fast);
 }
 
 .tag-badge:hover .tag-remove {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .tag-remove:hover {
@@ -3345,10 +3453,10 @@ body.crate-panel-open .crates-main {
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-family: var(--font-mono);
-    line-height: 1;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    line-height: var(--leading-none);
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .tag-add-btn:hover {
@@ -3363,7 +3471,7 @@ body.crate-panel-open .crates-main {
 .tag-input {
     width: var(--col-field-width);
     padding: var(--space-2xs) var(--space-xs);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     background-color: var(--bg-input);
     border: var(--border-width-sm) solid var(--primary);
     color: var(--text-primary);
@@ -3385,7 +3493,7 @@ body.crate-panel-open .crates-main {
 
 .export-layout {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: var(--max-width-card) 1fr;
     gap: var(--space-lg);
     align-items: start;
 }
@@ -3409,12 +3517,12 @@ body.crate-panel-open .crates-main {
 }
 
 .export-section h3 {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     margin-bottom: var(--space-md);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .preset-list {
@@ -3431,8 +3539,8 @@ body.crate-panel-open .crates-main {
     color: var(--text-primary);
     cursor: pointer;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    font-size: var(--text-caption);
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .preset-btn:hover {
@@ -3450,12 +3558,12 @@ body.crate-panel-open .crates-main {
 
 .filter-group > label:not(.checkbox-label) {
     display: block;
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     font-weight: 600;
     margin-bottom: var(--space-xs);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .range-inputs {
@@ -3471,7 +3579,7 @@ body.crate-panel-open .crates-main {
 
 .range-inputs span {
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 .checkbox-label {
@@ -3479,7 +3587,7 @@ body.crate-panel-open .crates-main {
     align-items: center;
     gap: var(--space-sm);
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -3496,7 +3604,7 @@ body.crate-panel-open .crates-main {
 .export-main {
     background-color: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    min-height: 400px;
+    min-height: var(--export-min-height);
     display: flex;
     flex-direction: column;
 }
@@ -3511,14 +3619,14 @@ body.crate-panel-open .crates-main {
 }
 
 .preview-header h2 {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .preview-count {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--lcd-text);
     font-variant-numeric: tabular-nums;
 }
@@ -3538,7 +3646,7 @@ body.crate-panel-open .crates-main {
 .preview-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
 }
 
 .preview-table th {
@@ -3546,9 +3654,9 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm) var(--space-md);
     font-weight: 600;
     color: var(--lcd-dim);
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     background-color: var(--bg-input);
     border-bottom: var(--border-width-sm) solid var(--border);
     white-space: nowrap;
@@ -3558,7 +3666,7 @@ body.crate-panel-open .crates-main {
     padding: var(--space-sm) var(--space-md);
     border-bottom: var(--border-width-sm) solid var(--border);
     white-space: nowrap;
-    max-width: 200px;
+    max-width: var(--table-cell-max-width);
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--lcd-text);
@@ -3571,7 +3679,7 @@ body.crate-panel-open .crates-main {
 .preview-note {
     padding: var(--space-md);
     text-align: center;
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--text-muted);
 }
 
@@ -3594,12 +3702,12 @@ body.crate-panel-open .crates-main {
     background: transparent;
     border: none;
     padding: var(--space-sm) var(--space-md);
-    font-size: 1rem;
+    font-size: var(--text-base);
     color: var(--text-secondary);
     cursor: pointer;
     border-bottom: var(--border-width-md) solid transparent;
-    margin-bottom: -2px;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    margin-bottom: calc(var(--border-width-md) * -1);
+    transition: color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .tab-btn:hover {
@@ -3631,17 +3739,17 @@ body.crate-panel-open .crates-main {
     color: var(--bg-body);
     padding: var(--space-2xs) var(--space-sm);
     /* No border-radius - MPC style */
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     font-weight: 600;
 }
 
 .cue-hint {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     margin: var(--space-xs) 0;
 }
 
 .cue-list {
-    max-height: 200px;
+    max-height: var(--list-max-height);
     overflow-y: auto;
     margin: var(--space-sm) 0;
 }
@@ -3652,7 +3760,7 @@ body.crate-panel-open .crates-main {
     align-items: center;
     padding: var(--space-xs) 0;
     border-bottom: var(--border-width-sm) solid var(--bg-surface);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 .cue-item:last-child {
@@ -3672,7 +3780,7 @@ body.crate-panel-open .crates-main {
     color: var(--text-secondary);
     cursor: pointer;
     padding: var(--space-2xs) var(--space-xs);
-    font-size: 1rem;
+    font-size: var(--text-base);
 }
 
 .cue-item-remove:hover {
@@ -3715,13 +3823,13 @@ body.crate-panel-open .crates-main {
 
 .toggle-label-left,
 .toggle-label-right {
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     color: var(--primary);
     font-weight: 500;
 }
 
 .toggle-hint {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     margin-top: var(--space-xs);
 }
 
@@ -3741,7 +3849,7 @@ body.crate-panel-open .crates-main {
 
 .flash {
     padding: var(--space-sm) var(--space-md);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     border: var(--border-width-md) solid;
 }
 
@@ -3788,10 +3896,10 @@ body.crate-panel-open .crates-main {
 }
 
 .settings-section h2 {
-    font-size: 0.9rem;
+    font-size: var(--text-body);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     padding-bottom: var(--space-sm);
     border-bottom: var(--border-width-md) solid var(--border);
 }
@@ -3817,12 +3925,12 @@ body.crate-panel-open .crates-main {
 }
 
 .account-name {
-    font-size: 1rem;
+    font-size: var(--text-base);
     font-weight: 600;
 }
 
 .account-email {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
 }
 
@@ -3860,8 +3968,8 @@ body.crate-panel-open .crates-main {
 }
 
 .save-status {
-    font-size: 0.8rem;
-    transition: color 0.15s ease;
+    font-size: var(--text-caption);
+    transition: color var(--duration-base) ease;
 }
 
 .save-status.saving { color: var(--warning); }
@@ -3878,13 +3986,13 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-md) solid #444;
     padding: var(--space-sm) var(--space-lg);
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--text-body);
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: var(--tracking-normal);
+    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .btn-discogs:hover {
@@ -3930,9 +4038,9 @@ body.crate-panel-open .crates-main {
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     /* LCD-like inset shadow for recessed screen effect */
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-inset-sm);
 }
 
 .token-form .form-control:focus,
@@ -3981,7 +4089,7 @@ body.crate-panel-open .crates-main {
 }
 
 .form-check-label .text-muted {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 /* Key notation radio options */
@@ -4036,10 +4144,10 @@ body.crate-panel-open .crates-main {
 }
 
 .auto-backup-section h3 {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-wide);
     margin-bottom: var(--space-sm);
 }
 
@@ -4066,7 +4174,7 @@ body.crate-panel-open .crates-main {
     gap: var(--space-md);
     padding: var(--space-sm) 0;
     cursor: pointer;
-    max-width: 500px;
+    max-width: var(--setting-max-width);
 }
 
 .toggle-setting-text {
@@ -4076,13 +4184,13 @@ body.crate-panel-open .crates-main {
 }
 
 .toggle-setting-text .text-muted {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
 }
 
 /* Details/summary for collapsible sections */
 .settings-section details summary {
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-muted);
 }
 
@@ -4168,7 +4276,7 @@ body.crate-panel-open .crates-main {
 
 .release-card.selected {
     border-color: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary-dim);
+    box-shadow: var(--shadow-focus);
 }
 
 /* Side Panel */
@@ -4181,8 +4289,8 @@ body.crate-panel-open .crates-main {
     background-color: var(--bg-surface);
     border-left: var(--border-width-md) solid var(--border);
     transform: translateX(100%);
-    transition: transform 0.3s ease-out;
-    z-index: 900;
+    transition: transform var(--duration-slow) ease-out;
+    z-index: var(--z-overlay);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4210,13 +4318,13 @@ body.crate-panel-open .crates-main {
 .panel-close {
     background: none;
     border: var(--border-width-sm) solid var(--border);
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     color: var(--text-muted);
     cursor: pointer;
     padding: var(--space-xs) var(--space-sm);
     font-family: var(--font-mono);
-    line-height: 1;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    line-height: var(--leading-none);
+    transition: color var(--duration-base) ease, border-color var(--duration-base) ease;
 }
 
 .panel-close:hover {
@@ -4235,7 +4343,7 @@ body.crate-panel-open .crates-main {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 200px;
+    height: var(--panel-loading-height);
     color: var(--text-muted);
 }
 
@@ -4259,8 +4367,8 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-md) solid var(--border);
     cursor: pointer;
     /* Functional shadow for recessed LCD screen effect */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    transition: border-color 0.15s ease;
+    box-shadow: var(--shadow-inset-lcd);
+    transition: border-color var(--duration-base) ease;
 }
 
 .panel-discogs-card:hover {
@@ -4297,7 +4405,7 @@ body.crate-panel-open .crates-main {
     color: var(--lcd-text);
     cursor: pointer;
     text-decoration: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .panel-discogs-btn:last-child {
@@ -4313,7 +4421,7 @@ body.crate-panel-open .crates-main {
     font-size: var(--icon-md);
     /* Centering: flex container handles alignment,
        line-height ensures vertical centering within the icon itself */
-    line-height: 1;
+    line-height: var(--leading-none);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4369,7 +4477,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-discogs-card .panel-meta {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 /* Compact stats display */
@@ -4377,7 +4485,7 @@ body.crate-panel-open .crates-main {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--text-secondary);
     margin-top: var(--space-xs);
 }
@@ -4390,22 +4498,22 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-stat .stat-icon {
-    font-size: 0.6rem;
-    opacity: 0.7;
+    font-size: var(--text-micro);
+    opacity: var(--opacity-muted);
 }
 
 .panel-stat .stat-label {
-    font-size: 0.55rem;
+    font-size: var(--text-3xs);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.6;
+    letter-spacing: var(--tracking-normal);
+    opacity: var(--opacity-faded);
     margin-left: 1px;
 }
 
 /* Notes indicator on title */
 .panel-notes-indicator {
     margin-left: var(--space-xs);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     vertical-align: middle;
 }
 
@@ -4431,7 +4539,7 @@ body.crate-panel-open .crates-main {
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     text-transform: uppercase;
 }
 
@@ -4441,16 +4549,16 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-info h2 {
-    font-size: 1rem;
+    font-size: var(--text-base);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    line-height: 1.2;
+    letter-spacing: var(--tracking-normal);
+    line-height: var(--leading-tight);
     margin-bottom: var(--space-xs);
 }
 
 .panel-artist {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
     margin-bottom: var(--space-xs);
 }
@@ -4458,7 +4566,7 @@ body.crate-panel-open .crates-main {
 .panel-meta {
     display: flex;
     gap: var(--space-sm);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
     margin-bottom: var(--space-xs);
 }
@@ -4483,15 +4591,15 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-notes h4 {
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     color: var(--text-muted);
     margin-bottom: var(--space-xs);
 }
 
 .panel-notes p {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     white-space: pre-wrap;
     margin: 0;
 }
@@ -4506,7 +4614,7 @@ body.crate-panel-open .crates-main {
     background-color: var(--lcd-bg);
     border: var(--border-width-md) solid var(--border);
     /* Functional shadow for recessed LCD screen effect */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .panel-tracks-list {
@@ -4528,7 +4636,7 @@ body.crate-panel-open .crates-main {
     border-left: var(--border-width-sm) solid var(--border);
     border-right: var(--border-width-sm) solid var(--border);
     border-bottom: var(--border-width-sm) solid var(--border);
-    transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    transition: opacity var(--duration-base) ease, background-color var(--duration-base) ease, border-color var(--duration-base) ease;
     box-sizing: border-box;
 }
 
@@ -4552,11 +4660,11 @@ body.crate-panel-open .crates-main {
 
 /* Position indicator - inline with title, bold, same size */
 .panel-track-pos {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     color: var(--lcd-dim);
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: var(--tracking-tight);
     flex-shrink: 0;
     min-width: var(--icon-xl);
 }
@@ -4569,7 +4677,7 @@ body.crate-panel-open .crates-main {
 .panel-track-title {
     flex: 1;
     min-width: 0;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 500;
     color: var(--lcd-text);
     white-space: nowrap;
@@ -4578,7 +4686,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-track-duration {
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--lcd-dim);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
@@ -4596,12 +4704,12 @@ body.crate-panel-open .crates-main {
     width: var(--input-sm-width);
     padding: var(--space-2xs) var(--space-xs);
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     text-align: center;
     background: transparent;
     border: var(--border-width-sm) solid transparent;
     color: var(--lcd-text);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 /* Editable variant - shows it's interactive */
@@ -4626,7 +4734,7 @@ body.crate-panel-open .crates-main {
 
 .panel-input--editable::placeholder {
     color: var(--lcd-dim);
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 .panel-input--editable:hover {
@@ -4681,9 +4789,9 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-energy-val {
-    font-size: 0.7rem;
+    font-size: var(--text-xxs);
     color: var(--text-muted);
-    min-width: 12px;
+    min-width: var(--energy-val-min-width);
     text-align: center;
 }
 
@@ -4698,12 +4806,12 @@ body.crate-panel-open .crates-main {
 .tag-badge-sm {
     display: inline-block;
     padding: 0 var(--space-xs);
-    font-size: 0.55rem;
+    font-size: var(--text-3xs);
     font-weight: 600;
     background-color: var(--tag-color, var(--tag-default));
     color: var(--bg-primary);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--tracking-tight);
 }
 
 /* Responsive - hide panel on small screens, use modal instead */
@@ -4724,7 +4832,7 @@ body.crate-panel-open .crates-main {
     background: transparent;
     border: var(--border-width-sm) solid var(--border);
     color: var(--primary);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .panel-expand-btn:hover {
@@ -4757,11 +4865,11 @@ body.crate-panel-open .crates-main {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 .panel-notes-btn .emoji-icon {
     font-size: var(--text-sm);
-    line-height: 1;
+    line-height: var(--leading-none);
 }
 
 .panel-notes-btn:hover {
@@ -4789,12 +4897,12 @@ body.crate-panel-open .crates-main {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .panel-tag-add-btn .emoji-icon {
     font-size: var(--text-sm);
-    line-height: 1;
+    line-height: var(--leading-none);
 }
 .panel-tag-add-btn:hover {
     border-color: var(--lcd-text);
@@ -4804,7 +4912,7 @@ body.crate-panel-open .crates-main {
 .panel-tag-input {
     width: var(--slider-width);
     padding: var(--space-2xs) var(--space-xs);
-    font-size: 0.55rem;
+    font-size: var(--text-3xs);
     background-color: rgba(74, 222, 128, 0.1);
     border: var(--border-width-sm) solid var(--lcd-text);
     color: var(--lcd-text);
@@ -4818,14 +4926,14 @@ body.crate-panel-open .crates-main {
     cursor: pointer;
     padding: 0;
     margin-left: var(--space-2xs);
-    font-size: 0.7rem;
-    line-height: 1;
+    font-size: var(--text-xxs);
+    line-height: var(--leading-none);
     opacity: 0;
-    transition: opacity 0.1s;
+    transition: opacity var(--duration-fast);
 }
 
 .tag-badge-sm:hover .tag-remove-sm {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 /* Panel header section */
@@ -4884,15 +4992,15 @@ body.crate-panel-open .crates-main {
 .panel-notes-textarea {
     flex-shrink: 0;
     width: 100%;
-    min-height: 80px;
-    max-height: 120px;
+    min-height: var(--textarea-base-height);
+    max-height: var(--notes-compact-max-height);
     padding: var(--space-md);
     border: var(--border-width-sm) solid var(--border);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
     resize: none;
     box-sizing: border-box;
 }
@@ -4914,20 +5022,20 @@ body.crate-panel-open .crates-main {
     border-top: var(--border-width-sm) solid var(--lcd-dim);  /* Subtle separator within LCD area */
     margin-top: calc(var(--border-width-md) * -1);  /* Overlap border to create seamless connection */
     color: var(--lcd-text);
-    min-height: 60px;
-    max-height: 100px;
+    min-height: var(--textarea-min-height);
+    max-height: var(--textarea-max-height);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: var(--text-caption);
     caret-color: var(--success);
     /* Functional shadow for recessed effect, matching card above */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .panel-notes-lcd:focus {
     border-color: var(--success);
     border-top-color: var(--lcd-dim);
     /* Keep subtle green glow on focus to indicate active input */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--success);
+    box-shadow: var(--shadow-inset-lcd), var(--shadow-focus-success);
 }
 
 .panel-notes-lcd::placeholder {
@@ -4939,12 +5047,12 @@ body.crate-panel-open .crates-main {
     position: absolute;
     top: 100%;
     left: 0;
-    min-width: 180px;
-    max-height: 250px;
+    min-width: var(--dropdown-min-width);
+    max-height: var(--dropdown-max-height);
     overflow-y: auto;
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    z-index: 100;
+    z-index: var(--z-sticky);
     margin-top: var(--space-2xs);
 }
 
@@ -4958,8 +5066,8 @@ body.crate-panel-open .crates-main {
     gap: var(--space-sm);
     padding: var(--space-xs) var(--space-sm);
     cursor: pointer;
-    font-size: 0.8rem;
-    transition: background-color 0.1s;
+    font-size: var(--text-caption);
+    transition: background-color var(--duration-fast);
 }
 
 .panel-crate-item:hover {
@@ -4977,7 +5085,7 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-crate-item-icon {
-    font-size: 0.9rem;
+    font-size: var(--text-body);
 }
 
 .panel-crate-item-name {
@@ -4992,9 +5100,9 @@ body.crate-panel-open .crates-main {
 
 .panel-tracks-header h3 {
     margin: 0;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     color: var(--success);
     font-weight: 600;
 }
@@ -5007,7 +5115,7 @@ body.crate-panel-open .crates-main {
     width: var(--sidebar-width);
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    z-index: var(--z-modal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5018,7 +5126,7 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-md) solid var(--border);
     padding: var(--space-md);
     width: 90%;
-    max-width: 350px;
+    max-width: var(--modal-panel-max-width);
 }
 
 .panel-notes-modal-header {
@@ -5029,10 +5137,10 @@ body.crate-panel-open .crates-main {
 }
 
 .panel-notes-modal-header h4 {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
 }
 
 /* Panel track notes textarea - MPC2000 rectangular, no border-radius */
@@ -5043,7 +5151,7 @@ body.crate-panel-open .crates-main {
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     resize: vertical;
 }
 
@@ -5097,7 +5205,7 @@ body.crate-panel-open .crates-main {
     width: var(--energy-segment-width);
     background-color: var(--border);
     /* No border-radius - MPC style rectangular segments */
-    transition: background-color 0.15s, transform 0.1s;
+    transition: background-color var(--duration-base), transform var(--duration-fast);
 }
 
 .energy-bar--sm .energy-segment {
@@ -5156,18 +5264,18 @@ body.crate-panel-open .crates-main {
     position: absolute;
     top: 100%;
     left: 0;
-    min-width: 180px;
-    max-height: 250px;
+    min-width: var(--dropdown-min-width);
+    max-height: var(--dropdown-max-height);
     overflow-y: auto;
     background: var(--bg-surface);
     border: var(--border-width-md) solid var(--border);
-    z-index: 100;
+    z-index: var(--z-sticky);
     margin-top: var(--space-2xs);
 }
 
 .crate-dropdown--lg {
-    min-width: 200px;
-    max-height: 300px;
+    min-width: var(--dropdown-lg-min-width);
+    max-height: var(--dropdown-lg-max-height);
 }
 
 .crate-dropdown-list {
@@ -5180,8 +5288,8 @@ body.crate-panel-open .crates-main {
     gap: var(--space-sm);
     padding: var(--space-xs) var(--space-sm);
     cursor: pointer;
-    font-size: 0.8rem;
-    transition: background-color 0.1s;
+    font-size: var(--text-caption);
+    transition: background-color var(--duration-fast);
 }
 
 .crate-dropdown-item:hover {
@@ -5199,7 +5307,7 @@ body.crate-panel-open .crates-main {
 }
 
 .crate-dropdown-item-icon {
-    font-size: 0.9rem;
+    font-size: var(--text-body);
 }
 
 .crate-dropdown-item-name {
@@ -5224,14 +5332,14 @@ body.crate-panel-open .crates-main {
    -------------------------------------------- */
 .notes-textarea {
     width: 100%;
-    min-height: 80px;
+    min-height: var(--textarea-base-height);
     padding: var(--space-md);
     border: var(--border-width-sm) solid var(--border);
     background: var(--bg-input);
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
     resize: none;
     box-sizing: border-box;
 }
@@ -5248,12 +5356,12 @@ body.crate-panel-open .crates-main {
 /* Large variant for full-page view */
 .notes-textarea--lg {
     width: var(--max-width-sidebar);
-    height: 250px;
+    height: var(--notes-lg-height);
 }
 
 /* Compact variant for panel */
 .notes-textarea--panel {
-    max-height: 120px;
+    max-height: var(--notes-compact-max-height);
 }
 
 /* --------------------------------------------
@@ -5262,10 +5370,10 @@ body.crate-panel-open .crates-main {
 .track-notes-btn {
     display: inline-block;
     padding: var(--space-2xs) var(--space-xs);
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     font-family: var(--font-mono);
     cursor: pointer;
-    transition: opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    transition: opacity var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease, background-color var(--duration-base) ease;
 }
 
 .track-notes-btn--empty {
@@ -5296,7 +5404,7 @@ body.crate-panel-open .crates-main {
 
 /* Panel variant - smaller */
 .track-notes-btn--sm {
-    font-size: 0.6rem;
+    font-size: var(--text-micro);
     border-style: dashed;
     background: transparent;
     border-color: var(--border);
@@ -5326,11 +5434,11 @@ body.crate-panel-open .crates-main {
 
 /* Non-playable tracks are dimmed */
 .panel-track-row.track-dimmed {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
 }
 
 .panel-track-row.track-dimmed:hover {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
 }
 
 /* Playable tracks (not dimmed) get orange left/right borders */
@@ -5367,7 +5475,7 @@ body.crate-panel-open .crates-main {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 1px;
+    height: var(--border-width-sm);
     background: var(--border);
 }
 
@@ -5548,8 +5656,10 @@ body.crate-panel-open .crates-main {
 .lowercase { text-transform: lowercase; }
 .capitalize { text-transform: capitalize; }
 
-.tracking-wide { letter-spacing: 0.05em; }
-.tracking-wider { letter-spacing: 0.1em; }
+.tracking-tight { letter-spacing: var(--tracking-tight); }
+.tracking-normal { letter-spacing: var(--tracking-normal); }
+.tracking-wide { letter-spacing: var(--tracking-wide); }
+.tracking-wider { letter-spacing: var(--tracking-wider); }
 
 .truncate {
     overflow: hidden;
@@ -5629,8 +5739,8 @@ body.crate-panel-open .crates-main {
    Opacity utilities
    ----------------------------------------- */
 .opacity-0 { opacity: 0; }
-.opacity-50 { opacity: 0.5; }
-.opacity-75 { opacity: 0.75; }
+.opacity-50 { opacity: var(--opacity-dim); }
+.opacity-75 { opacity: var(--opacity-moderate); }
 .opacity-100 { opacity: 1; }
 
 /* -----------------------------------------
@@ -5652,19 +5762,29 @@ body.crate-panel-open .crates-main {
    ----------------------------------------- */
 /* DEPRECATED: .transition uses 'all' which can cause performance issues
    Prefer specific transition utilities below */
-.transition { transition: opacity 0.15s ease, transform 0.15s ease; }
-.transition-colors { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
-.transition-opacity { transition: opacity 0.15s ease; }
-.transition-transform { transition: transform 0.15s ease; }
+.transition { transition: opacity var(--duration-base) ease, transform var(--duration-base) ease; }
+.transition-colors { transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease; }
+.transition-opacity { transition: opacity var(--duration-base) ease; }
+.transition-transform { transition: transform var(--duration-base) ease; }
 
 /* -----------------------------------------
    Z-index utilities
+   Semantic names mapping to design tokens
    ----------------------------------------- */
-.z-0 { z-index: 0; }
-.z-10 { z-index: 10; }
+.z-base { z-index: var(--z-base); }
+.z-raised { z-index: var(--z-raised); }
+.z-above { z-index: var(--z-above); }
+.z-dropdown { z-index: var(--z-dropdown); }
+.z-sticky { z-index: var(--z-sticky); }
+.z-overlay { z-index: var(--z-overlay); }
+.z-modal { z-index: var(--z-modal); }
+
+/* Legacy numeric utilities (for backwards compatibility) */
+.z-0 { z-index: var(--z-base); }
+.z-10 { z-index: var(--z-dropdown); }
 .z-20 { z-index: 20; }
 .z-50 { z-index: 50; }
-.z-100 { z-index: 100; }
+.z-100 { z-index: var(--z-sticky); }
 
 /* =============================================
    EXCEPTIONS
@@ -5673,13 +5793,13 @@ body.crate-panel-open .crates-main {
 
 /* Loading states */
 .is-loading {
-    opacity: 0.7;
+    opacity: var(--opacity-muted);
     pointer-events: none;
 }
 
 /* Disabled states */
 .is-disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-dim);
     pointer-events: none;
     cursor: not-allowed;
 }
