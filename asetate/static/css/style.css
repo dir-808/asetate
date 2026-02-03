@@ -2333,7 +2333,7 @@ input::placeholder, textarea::placeholder {
     flex-direction: column;
     flex-shrink: 0;
     width: var(--detail-left-width);
-    border-right: var(--border-width-md) solid var(--border);
+    /* No border - button/crate edges ARE the outer edges */
 }
 
 /* Crate bar - spans buttons + cover */
@@ -2360,15 +2360,14 @@ input::placeholder, textarea::placeholder {
     background: transparent;
     cursor: pointer;
     transition: background-color var(--duration-base) ease;
-    /* 3D border effect - outer edges 2px, internal separator 1px */
+    /* 3D border effect - no right border (sits flush against main) */
     border-style: solid;
     border-top-width: 2px;
     border-left-width: 2px;
-    border-right-width: 1px;   /* Internal separator - dark side */
+    border-right-width: 0;   /* No separator - sits flush against main */
     border-bottom-width: 2px;
     border-top-color: rgba(255, 255, 255, 0.2);
     border-left-color: rgba(255, 255, 255, 0.15);
-    border-right-color: rgba(0, 0, 0, 0.35);  /* Darker for separator */
     border-bottom-color: rgba(0, 0, 0, 0.3);
 }
 
@@ -2380,7 +2379,6 @@ input::placeholder, textarea::placeholder {
     /* Inverted colors for pushed-in effect */
     border-top-color: rgba(0, 0, 0, 0.3);
     border-left-color: rgba(0, 0, 0, 0.25);
-    border-right-color: rgba(255, 255, 255, 0.2);  /* Separator inverts too */
     border-bottom-color: rgba(255, 255, 255, 0.2);
     background-color: rgba(0, 0, 0, 0.1);
 }
@@ -2399,14 +2397,13 @@ input::placeholder, textarea::placeholder {
     text-decoration: none;
     cursor: pointer;
     transition: background-color var(--duration-base) ease;
-    /* 3D border effect - outer edges 2px, internal separator 1px */
+    /* 3D border effect - no left border (sits flush against dropdown) */
     border-style: solid;
     border-top-width: 2px;
-    border-left-width: 1px;   /* Internal separator - light side */
+    border-left-width: 0;   /* No separator - sits flush against dropdown */
     border-right-width: 2px;
     border-bottom-width: 2px;
     border-top-color: rgba(255, 255, 255, 0.2);
-    border-left-color: rgba(255, 255, 255, 0.25);  /* Brighter for separator */
     border-right-color: rgba(0, 0, 0, 0.25);
     border-bottom-color: rgba(0, 0, 0, 0.3);
 }
@@ -2418,7 +2415,6 @@ input::placeholder, textarea::placeholder {
 .detail-crate-main:active {
     /* Inverted colors for pushed-in effect */
     border-top-color: rgba(0, 0, 0, 0.3);
-    border-left-color: rgba(0, 0, 0, 0.2);  /* Separator inverts too */
     border-right-color: rgba(255, 255, 255, 0.15);
     border-bottom-color: rgba(255, 255, 255, 0.2);
     background-color: rgba(0, 0, 0, 0.1);
@@ -2650,13 +2646,14 @@ input::placeholder, textarea::placeholder {
     color: var(--error);
 }
 
-/* Cover art */
+/* Cover art - grey box only around cover */
 .detail-cover {
     width: var(--cover-detail);
     height: var(--cover-detail);
     flex-shrink: 0;
     overflow: hidden;
     background-color: var(--bg-elevated);
+    border: var(--border-width-md) solid var(--border);
 }
 
 .detail-cover img {
