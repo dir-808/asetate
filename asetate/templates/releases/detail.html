@@ -7,86 +7,114 @@
 <div class="release-detail" data-release-id="{{ release.id }}">
     <a href="{{ url_for('releases.list_releases') }}" class="back-link">Back to collection</a>
 
-    <header class="release-header">
-        <div class="release-cover-large">
-            {% if release.cover_art_url %}
-            <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
-            {% else %}
-            <div class="cover-placeholder-large">
-                <span>No Cover</span>
-            </div>
-            {% endif %}
-        </div>
-        <div class="release-info-large">
-            <h1>{{ release.display_title }}</h1>
-            <p class="release-artist-large">{{ release.display_artist }}</p>
-            <div class="release-meta-large">
-                {% if release.label %}<span>{{ release.label }}</span>{% endif %}
-                {% if release.year %}<span>{{ release.year }}</span>{% endif %}
-                {% if release.country %}<span>{{ release.country }}</span>{% endif %}
-            </div>
-            {% if release.format_details or release.display_genres or release.display_styles %}
-            <div class="release-extra-info">
-                {% if release.format_details %}
-                <span class="release-format" title="Format">{{ release.format_details }}</span>
-                {% endif %}
-                {% if release.display_genres %}
-                <span class="release-genre" title="Genre">{{ release.display_genres }}</span>
-                {% endif %}
-                {% if release.display_styles %}
-                <span class="release-style" title="Style">{{ release.display_styles }}</span>
-                {% endif %}
-            </div>
-            {% endif %}
-            {% set avg_bpm = release.get_average_bpm() %}
-            <div class="release-stats" id="release-stats">
-                <span id="stat-total">{{ stats.total }} tracks</span>
-                <span class="stat-divider">•</span>
-                <span class="text-success" id="stat-playable">{{ stats.playable }} playable</span>
-                <span class="stat-divider">•</span>
-                <span id="stat-bpm">{{ stats.has_bpm }} with BPM</span>
-                {% if avg_bpm.value %}
-                <span class="stat-divider avg-bpm-divider">•</span>
-                <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" id="stat-avg-bpm" title="Average BPM of playable tracks{% if avg_bpm.is_varied %} (BPM range varies significantly){% endif %}">
-                    Avg: {{ avg_bpm.display }}
-                </span>
-                {% endif %}
-            </div>
-            <div class="release-actions">
-                <div class="action-group discogs-actions">
-                    <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View</a>
-                    {% if release.discogs_edit_url %}
-                    <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Edit</a>
-                    {% endif %}
-                    <button class="btn btn-secondary btn-sm" id="btn-sync-release" title="Sync from Discogs"><span class="activity-led"></span>{{ sync_icon(size=16) }}<span class="btn-text">Sync</span></button>
-                </div>
-                <div class="action-group asetate-actions">
-                    <div class="crate-dropdown-wrapper">
-                        <button class="btn btn-primary btn-sm" id="btn-add-to-crate">Crate ▾</button>
-                        <div class="crate-dropdown" id="crate-dropdown" style="display: none;">
-                            <div class="crate-dropdown-list" id="crate-dropdown-list">
-                                <!-- Crates loaded via JS -->
-                            </div>
+    <!-- Main Release Card - LCD styled, matches sidebar aesthetic -->
+    <div class="detail-card">
+        <!-- Top Row: Crate + Buttons + Cover + Info + Notes -->
+        <div class="detail-header">
+            <!-- Left Section: Crate bar + Buttons + Cover -->
+            <div class="detail-left">
+                <!-- Crate Bar - spans buttons + cover -->
+                <div class="detail-crate" id="detail-crate">
+                    <!-- Empty state shown by default, JS will update -->
+                    <button class="detail-crate-btn detail-crate-empty" id="detail-crate-btn">
+                        <span class="detail-crate-text">+ Add to Crate</span>
+                        <span class="detail-crate-arrow">▼</span>
+                    </button>
+                    <!-- Crate dropdown -->
+                    <div class="detail-crate-dropdown" id="detail-crate-dropdown">
+                        <div class="detail-crate-search">
+                            <input type="text" id="detail-crate-search" placeholder="Search crates..." autocomplete="off">
+                        </div>
+                        <div class="detail-crate-list" id="detail-crate-list">
+                            <!-- Crates loaded via JS -->
                         </div>
                     </div>
-                    <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to print cue">Print cue</button>
+                </div>
+                <!-- Buttons + Cover row -->
+                <div class="detail-media">
+                    <!-- Discogs Buttons - vertical stack -->
+                    <div class="detail-buttons">
+                        <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener"
+                           class="detail-btn" title="View on Discogs">
+                            {{ emoji_icon('link', size='5xl') }}
+                        </a>
+                        {% if release.discogs_edit_url %}
+                        <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener"
+                           class="detail-btn" title="Edit on Discogs">
+                            {{ emoji_icon('edit', size='5xl') }}
+                        </a>
+                        {% endif %}
+                        <button class="detail-btn" id="btn-sync-release" title="Sync from Discogs">
+                            <span class="activity-led"></span>
+                            {{ sync_icon(size=32) }}
+                        </button>
+                    </div>
+                    <!-- Cover Art -->
+                    <div class="detail-cover">
+                        {% if release.cover_art_url %}
+                        <img src="{{ release.cover_art_url }}" alt="{{ release.display_title }}">
+                        {% else %}
+                        <div class="cover-placeholder-detail">
+                            <span>No Cover</span>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-            <div class="release-crates" id="release-crates">
-                <!-- Crates will be loaded via JS -->
+
+            <!-- Release Info - LCD styled -->
+            <div class="detail-info">
+                <h1>{{ release.display_title }}</h1>
+                <p class="detail-artist">{{ release.display_artist }}</p>
+                {% if release.catno %}
+                <div class="detail-catno">{{ release.catno }}</div>
+                {% endif %}
+                <div class="detail-meta">
+                    {% if release.label %}<span class="detail-label">{{ release.label }}</span>{% endif %}
+                    {% if release.year %}<span class="detail-year">{{ release.year }}</span>{% endif %}
+                </div>
+                {% if release.format_details or release.country %}
+                <div class="detail-meta detail-meta-secondary">
+                    {% if release.format_details %}<span>{{ release.format_details }}</span>{% endif %}
+                    {% if release.country %}<span>{{ release.country }}</span>{% endif %}
+                </div>
+                {% endif %}
+                {% if release.display_genres or release.display_styles %}
+                <div class="detail-meta detail-meta-secondary">
+                    {% if release.display_genres %}<span>{{ release.display_genres }}</span>{% endif %}
+                    {% if release.display_styles %}<span>{{ release.display_styles }}</span>{% endif %}
+                </div>
+                {% endif %}
+                <div class="detail-divider"></div>
+                {% set avg_bpm = release.get_average_bpm() %}
+                <div class="detail-stats" id="release-stats">
+                    <span id="stat-total">{{ stats.total }} tracks</span>
+                    <span class="stat-divider">•</span>
+                    <span class="text-success" id="stat-playable">{{ stats.playable }}▶</span>
+                    {% if avg_bpm.value %}
+                    <span class="stat-divider avg-bpm-divider">•</span>
+                    <span class="avg-bpm {% if avg_bpm.is_varied %}bpm-varied{% endif %}" id="stat-avg-bpm" title="Average BPM of playable tracks{% if avg_bpm.is_varied %} (BPM range varies significantly){% endif %}">
+                        {{ avg_bpm.display }} BPM
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Notes - LCD styled textarea -->
+            <div class="detail-notes">
+                <textarea class="detail-notes-textarea" id="release-notes-inline" placeholder="Add notes...">{{ release.notes or '' }}</textarea>
             </div>
         </div>
-        <!-- Release Notes (right side) -->
-        <textarea class="notes-textarea release-notes-simple" id="release-notes-inline" placeholder="Add notes about this release...">{{ release.notes or '' }}</textarea>
-    </header>
 
-    <section class="tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
-        <div class="tracks-header">
+        <!-- Track List Section -->
+        <div class="detail-tracks-header">
             <h2>Tracklist</h2>
             <div class="tracks-header-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-add-to-cue" title="Add tracks to print cue">Print cue</button>
                 <button class="btn btn-secondary btn-sm" id="btn-column-settings" title="Column visibility">Columns</button>
             </div>
         </div>
+        <section class="detail-tracks-section" data-visible-fields="{{ visible_fields | join(',') }}">
 
         {% if tracks %}
         <div class="tracks-table-wrapper">
@@ -194,9 +222,10 @@
         </datalist>
 
         {% else %}
-        <p class="text-muted">No tracks found for this release.</p>
+        <p class="text-muted p-md">No tracks found for this release.</p>
         {% endif %}
-    </section>
+        </section>
+    </div><!-- .detail-card -->
 </div>
 
 <!-- Track Notes Modal -->
@@ -434,22 +463,14 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
 
         // Update stats display
         const statPlayable = document.getElementById('stat-playable');
-        if (statPlayable) statPlayable.textContent = `${playableCount} playable`;
-
-        const bpmInputs = document.querySelectorAll('.track-bpm');
-        let tracksWithBpm = 0;
-        bpmInputs.forEach(input => {
-            if (input.value && !isNaN(parseInt(input.value))) tracksWithBpm++;
-        });
-        const statBpm = document.getElementById('stat-bpm');
-        if (statBpm) statBpm.textContent = `${tracksWithBpm} with BPM`;
+        if (statPlayable) statPlayable.textContent = `${playableCount}▶`;
 
         // Update average BPM
         const statAvgBpm = document.getElementById('stat-avg-bpm');
         const avgBpmDivider = document.querySelector('.avg-bpm-divider');
         if (bpmCount > 0) {
             const avgBpm = Math.round(totalBpm / bpmCount);
-            if (statAvgBpm) statAvgBpm.textContent = `Avg: ${avgBpm}`;
+            if (statAvgBpm) statAvgBpm.textContent = `${avgBpm} BPM`;
             if (avgBpmDivider) avgBpmDivider.style.display = '';
             if (statAvgBpm) statAvgBpm.style.display = '';
         } else {
@@ -477,13 +498,14 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         });
     });
 
-    // Crate dropdown management
-    const crateBtn = document.getElementById('btn-add-to-crate');
-    const crateDropdown = document.getElementById('crate-dropdown');
-    const crateDropdownList = document.getElementById('crate-dropdown-list');
-    const releaseCratesContainer = document.getElementById('release-crates');
+    // Crate dropdown management (single crate per release)
+    const crateBar = document.getElementById('detail-crate');
+    const crateBtn = document.getElementById('detail-crate-btn');
+    const crateDropdown = document.getElementById('detail-crate-dropdown');
+    const crateDropdownList = document.getElementById('detail-crate-list');
+    const crateSearchInput = document.getElementById('detail-crate-search');
     let allCrates = [];
-    let releaseCrateIds = [];
+    let currentCrateId = null;  // Single crate - null means not in any crate
 
     async function loadCrates() {
         try {
@@ -495,112 +517,171 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             const releaseData = await releaseRes.json();
 
             allCrates = cratesData.crates;
-            releaseCrateIds = releaseData.crate_ids;
+            // For single crate, take the first one (or null if empty)
+            currentCrateId = releaseData.crate_ids.length > 0 ? releaseData.crate_ids[0] : null;
 
-            updateReleaseCratesDisplay();
+            updateCrateBarDisplay();
             updateCrateDropdown();
         } catch (err) {
             console.error('Failed to load crates:', err);
         }
     }
 
-    function updateReleaseCratesDisplay() {
-        const inCrates = allCrates.filter(c => releaseCrateIds.includes(c.id));
-        if (inCrates.length > 0) {
-            releaseCratesContainer.innerHTML = inCrates.map(c => {
-                const bgStyle = c.color_hex ? `background-color: ${c.color_hex}20; border-color: ${c.color_hex}40;` : '';
-                return `<a href="/crates/${c.id}" class="crate-badge" style="${bgStyle}">
-                    ${renderCrateIcon(c)}
-                    <span class="crate-badge-name">${c.name}</span>
-                </a>`;
-            }).join('');
+    function updateCrateBarDisplay() {
+        const currentCrate = currentCrateId ? allCrates.find(c => c.id === currentCrateId) : null;
+
+        if (currentCrate) {
+            // Show assigned crate with full-color background
+            const bgColor = currentCrate.color_hex || '#3a3a3a';
+            crateBtn.className = 'detail-crate-btn detail-crate-assigned';
+            crateBtn.style.backgroundColor = bgColor;
+            crateBtn.innerHTML = `
+                ${renderCrateIcon(currentCrate, 'lg')}
+                <span class="detail-crate-name">${currentCrate.name}</span>
+                <span class="detail-crate-arrow">▼</span>
+            `;
         } else {
-            releaseCratesContainer.innerHTML = '<span class="text-muted">Not in any crate</span>';
+            // Show empty state
+            crateBtn.className = 'detail-crate-btn detail-crate-empty';
+            crateBtn.style.backgroundColor = '';
+            crateBtn.innerHTML = `
+                <span class="detail-crate-text">+ Add to Crate</span>
+                <span class="detail-crate-arrow">▼</span>
+            `;
         }
     }
 
-    function updateCrateDropdown() {
+    function updateCrateDropdown(filterText = '') {
+        const filter = filterText.toLowerCase();
+        const filteredCrates = filter
+            ? allCrates.filter(c => c.name.toLowerCase().includes(filter))
+            : allCrates;
+
         if (allCrates.length === 0) {
             crateDropdownList.innerHTML = '<p class="text-muted p-sm">No crates yet. <a href="/crates/">Create one</a></p>';
             return;
         }
 
-        crateDropdownList.innerHTML = allCrates.map(c => {
-            const isSelected = releaseCrateIds.includes(c.id);
-            return `<label class="crate-dropdown-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
-                <input type="checkbox" ${isSelected ? 'checked' : ''}>
-                ${renderCrateIcon(c, 'sm')}
-                <span class="crate-dropdown-item-name">${c.name}</span>
-            </label>`;
+        if (filteredCrates.length === 0) {
+            crateDropdownList.innerHTML = '<p class="text-muted p-sm">No matching crates</p>';
+            return;
+        }
+
+        // Add "Remove from crate" option if currently in a crate
+        let html = '';
+        if (currentCrateId && !filter) {
+            html += `<div class="detail-crate-item detail-crate-remove" data-crate-id="0">
+                <span class="detail-crate-item-icon">✕</span>
+                <span class="detail-crate-item-name">Remove from crate</span>
+            </div>`;
+        }
+
+        html += filteredCrates.map(c => {
+            const isSelected = c.id === currentCrateId;
+            return `<div class="detail-crate-item ${isSelected ? 'selected' : ''}" data-crate-id="${c.id}">
+                ${renderCrateIcon(c, 'base')}
+                <span class="detail-crate-item-name">${c.name}</span>
+            </div>`;
         }).join('');
 
-        // Add event listeners
-        crateDropdownList.querySelectorAll('.crate-dropdown-item input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', async (e) => {
-                const item = cb.closest('.crate-dropdown-item');
-                const crateId = parseInt(item.dataset.crateId);
+        crateDropdownList.innerHTML = html;
 
-                if (cb.checked) {
-                    try {
-                        const res = await fetch(`/crates/${crateId}/releases`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ release_id: parseInt(releaseId) })
-                        });
-                        if (res.ok) {
-                            releaseCrateIds.push(crateId);
-                            item.classList.add('selected');
-                        } else {
-                            cb.checked = false;
-                        }
-                    } catch (err) {
-                        cb.checked = false;
-                    }
-                } else {
-                    try {
-                        const res = await fetch(`/crates/${crateId}/releases/${releaseId}`, {
-                            method: 'DELETE'
-                        });
-                        if (res.ok) {
-                            releaseCrateIds = releaseCrateIds.filter(id => id !== crateId);
-                            item.classList.remove('selected');
-                        } else {
-                            cb.checked = true;
-                        }
-                    } catch (err) {
-                        cb.checked = true;
-                    }
-                }
-                updateReleaseCratesDisplay();
+        // Add click listeners
+        crateDropdownList.querySelectorAll('.detail-crate-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const crateId = parseInt(item.dataset.crateId);
+                await selectCrate(crateId === 0 ? null : crateId);
             });
         });
+    }
+
+    async function selectCrate(newCrateId) {
+        // If same crate, do nothing
+        if (newCrateId === currentCrateId) {
+            closeDropdown();
+            return;
+        }
+
+        try {
+            // Remove from current crate if exists
+            if (currentCrateId) {
+                await fetch(`/crates/${currentCrateId}/releases/${releaseId}`, {
+                    method: 'DELETE'
+                });
+            }
+
+            // Add to new crate if specified
+            if (newCrateId) {
+                await fetch(`/crates/${newCrateId}/releases`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ release_id: parseInt(releaseId) })
+                });
+            }
+
+            currentCrateId = newCrateId;
+            updateCrateBarDisplay();
+            closeDropdown();
+        } catch (err) {
+            console.error('Failed to update crate:', err);
+        }
+    }
+
+    function openDropdown() {
+        crateDropdown.style.display = 'block';
+        crateSearchInput.value = '';
+        crateSearchInput.focus();
+        updateCrateDropdown();
+    }
+
+    function closeDropdown() {
+        crateDropdown.style.display = 'none';
     }
 
     // Toggle dropdown
     crateBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = crateDropdown.style.display !== 'none';
-        crateDropdown.style.display = isOpen ? 'none' : 'block';
+        if (isOpen) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    });
+
+    // Search filtering
+    crateSearchInput.addEventListener('input', (e) => {
+        updateCrateDropdown(e.target.value);
+    });
+
+    // Keyboard navigation
+    crateSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeDropdown();
+        } else if (e.key === 'Enter') {
+            const firstItem = crateDropdownList.querySelector('.detail-crate-item:not(.detail-crate-remove)');
+            if (firstItem) {
+                firstItem.click();
+            }
+        }
     });
 
     // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
-        if (!crateDropdown.contains(e.target) && e.target !== crateBtn) {
-            crateDropdown.style.display = 'none';
+        if (!crateBar.contains(e.target)) {
+            closeDropdown();
         }
     });
 
     // Load crates on page load
     loadCrates();
 
-    // Sync release button
+    // Sync release button (icon only)
     const syncBtn = document.getElementById('btn-sync-release');
     if (syncBtn) {
-        const syncBtnText = syncBtn.querySelector('.btn-text');
         syncBtn.addEventListener('click', async () => {
             syncBtn.disabled = true;
             syncBtn.classList.add('is-loading');
-            syncBtnText.textContent = 'Syncing...';
 
             try {
                 const response = await fetch(`/sync/release/${releaseId}`, {
@@ -612,17 +693,17 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
                     window.location.reload();
                 } else {
                     syncBtn.classList.remove('is-loading');
-                    syncBtnText.textContent = 'Error';
+                    syncBtn.classList.add('has-error');
                     setTimeout(() => {
-                        syncBtnText.textContent = 'Sync';
+                        syncBtn.classList.remove('has-error');
                         syncBtn.disabled = false;
                     }, 2000);
                 }
             } catch (err) {
                 syncBtn.classList.remove('is-loading');
-                syncBtnText.textContent = 'Error';
+                syncBtn.classList.add('has-error');
                 setTimeout(() => {
-                    syncBtnText.textContent = 'Sync';
+                    syncBtn.classList.remove('has-error');
                     syncBtn.disabled = false;
                 }, 2000);
             }

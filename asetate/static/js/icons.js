@@ -86,7 +86,7 @@ export const DEFAULT_ICON = 'folder';
 /**
  * Valid size modifiers that map to CSS classes
  */
-const SIZE_MODIFIERS = ['sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'];
+const SIZE_MODIFIERS = ['sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl', '5xl', '4xl'];
 
 /**
  * Render an emoji icon HTML string using Noto Emoji font

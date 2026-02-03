@@ -163,6 +163,7 @@
     --icon-xl: 24px;             /* Large icon display */
     --icon-2xl: 32px;            /* Large icon buttons, emoji grid */
     --icon-3xl: 40px;            /* Icon previews */
+    --icon-5xl: 48px;            /* Release detail action buttons */
     --icon-4xl: 64px;            /* Large icons, avatars */
 
     /* Button/control sizes */
@@ -185,10 +186,16 @@
     --col-tags-min: 150px;        /* Minimum tags column width */
 
     /* Cover sizes */
-    --cover-lg: 250px;            /* Large cover (release detail) */
+    --cover-lg: 250px;            /* Large cover (release detail) - legacy */
+    --cover-detail: 200px;        /* Release detail page cover */
     --cover-md: 200px;            /* Medium cover (responsive) */
     --cover-sm: 100px;            /* Small cover (sidebar) */
     --cover-xs: 50px;             /* Mini cover (list items) */
+
+    /* Release detail page layout */
+    --detail-btn-size: 67px;      /* Discogs buttons (cover-detail / 3) */
+    --detail-crate-height: 44px;  /* Crate bar height */
+    --detail-left-width: 267px;   /* Buttons + cover width */
 
     /* Color swatch sizes */
     --swatch-size: 22px;          /* Color picker swatches */
@@ -2300,7 +2307,414 @@ input::placeholder, textarea::placeholder {
     border-left: var(--border-width-md) solid var(--warning) !important;
 }
 
-/* Responsive: stack notes below on smaller screens (--bp-lg) */
+/* ============================================
+   RELEASE DETAIL PAGE - New Layout (2024)
+   LCD-styled card with crate bar, cover, info, notes
+   ============================================ */
+
+/* Main container for the release detail card */
+.detail-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--lcd-bg);
+    border: var(--border-width-md) solid var(--border);
+    box-shadow: var(--shadow-inset-lcd);
+}
+
+/* Header row: crate + buttons + cover + info + notes */
+.detail-header {
+    display: flex;
+    border-bottom: var(--border-width-md) solid var(--border);
+}
+
+/* Left section: crate bar + buttons + cover */
+.detail-left {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: var(--detail-left-width);
+    border-right: var(--border-width-sm) solid var(--border);
+}
+
+/* Crate bar - spans buttons + cover */
+.detail-crate {
+    position: relative;
+    border-bottom: var(--border-width-sm) solid var(--border);
+}
+
+.detail-crate-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: transparent;
+    border: none;
+    color: var(--lcd-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background-color var(--duration-base) ease;
+    height: var(--detail-crate-height);
+}
+
+.detail-crate-btn:hover {
+    background-color: var(--primary-bg-muted);
+}
+
+/* Empty state styling */
+.detail-crate-empty {
+    color: var(--lcd-dim);
+    border: var(--border-width-sm) dashed var(--lcd-dim-alpha);
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+
+.detail-crate-empty:hover {
+    color: var(--lcd-text);
+    border-color: var(--lcd-text);
+}
+
+/* Assigned crate styling - full color background */
+.detail-crate-assigned {
+    box-shadow: var(--shadow-inset-lcd);
+}
+
+.detail-crate-assigned .emoji-icon {
+    filter: brightness(1.2);
+}
+
+.detail-crate-name {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.detail-crate-text {
+    flex: 1;
+    text-align: left;
+}
+
+.detail-crate-arrow {
+    opacity: 0;
+    transition: opacity var(--duration-base) ease;
+    font-size: var(--text-xs);
+}
+
+.detail-crate-btn:hover .detail-crate-arrow {
+    opacity: 1;
+}
+
+/* Crate dropdown */
+.detail-crate-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-surface);
+    border: var(--border-width-md) solid var(--border);
+    z-index: var(--z-dropdown);
+    max-height: var(--dropdown-lg-max-height);
+    overflow: hidden;
+}
+
+.detail-crate-search {
+    padding: var(--space-sm);
+    border-bottom: var(--border-width-sm) solid var(--border);
+}
+
+.detail-crate-search input {
+    width: 100%;
+    padding: var(--space-xs) var(--space-sm);
+    background-color: var(--bg-input);
+    border: var(--border-width-sm) solid var(--border);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+}
+
+.detail-crate-search input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.detail-crate-list {
+    overflow-y: auto;
+    max-height: calc(var(--dropdown-lg-max-height) - 50px);
+}
+
+.detail-crate-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    transition: background-color var(--duration-base) ease;
+}
+
+.detail-crate-item:hover {
+    background-color: var(--primary-bg-muted);
+}
+
+.detail-crate-item.selected {
+    background-color: var(--primary-bg-light);
+    border-left: var(--border-width-accent) solid var(--primary);
+}
+
+.detail-crate-item-icon {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+}
+
+.detail-crate-item-name {
+    flex: 1;
+    font-size: var(--text-sm);
+}
+
+.detail-crate-remove {
+    color: var(--error);
+    border-bottom: var(--border-width-sm) solid var(--border);
+}
+
+.detail-crate-remove:hover {
+    background-color: var(--error-bg-light);
+}
+
+/* Buttons + Cover row */
+.detail-media {
+    display: flex;
+    flex: 1;
+}
+
+/* Discogs buttons - vertical stack */
+.detail-buttons {
+    display: flex;
+    flex-direction: column;
+    width: var(--detail-btn-size);
+    border-right: var(--border-width-sm) solid var(--border);
+}
+
+.detail-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-bottom: var(--border-width-sm) solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
+}
+
+.detail-btn:last-child {
+    border-bottom: none;
+}
+
+.detail-btn:hover {
+    background-color: var(--primary-bg-muted);
+    color: var(--primary);
+}
+
+.detail-btn .emoji-icon {
+    line-height: var(--leading-none);
+}
+
+.detail-btn .sync-icon {
+    width: var(--icon-2xl);
+    height: var(--icon-2xl);
+}
+
+.detail-btn.is-loading .sync-icon {
+    animation: spin var(--duration-spin) linear infinite;
+}
+
+.detail-btn.has-error {
+    color: var(--error);
+}
+
+/* Cover art */
+.detail-cover {
+    width: var(--cover-detail);
+    height: var(--cover-detail);
+    flex-shrink: 0;
+    overflow: hidden;
+    background-color: var(--bg-elevated);
+}
+
+.detail-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-placeholder-detail {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: var(--text-caption);
+    text-transform: uppercase;
+}
+
+/* Release info - LCD styled */
+.detail-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md);
+    border-right: var(--border-width-sm) solid var(--border);
+}
+
+.detail-info h1 {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+    color: var(--lcd-text);
+    margin-bottom: var(--space-2xs);
+}
+
+.detail-artist {
+    font-size: var(--text-sm);
+    color: var(--lcd-text);
+    opacity: var(--opacity-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.detail-catno {
+    font-size: var(--text-xs);
+    color: var(--lcd-text);
+    font-weight: var(--weight-semibold);
+    margin-bottom: var(--space-xs);
+}
+
+.detail-meta {
+    display: flex;
+    gap: var(--space-sm);
+    font-size: var(--text-xs);
+    color: var(--lcd-muted);
+    flex-wrap: wrap;
+}
+
+.detail-meta-secondary {
+    margin-top: var(--space-xs);
+    font-size: var(--text-2xs);
+    color: var(--lcd-dim);
+}
+
+.detail-label {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.detail-divider {
+    height: var(--border-width-sm);
+    background-color: var(--lcd-dim-alpha);
+    margin: var(--space-sm) 0;
+}
+
+.detail-stats {
+    display: flex;
+    gap: var(--space-sm);
+    font-size: var(--text-xs);
+    color: var(--lcd-muted);
+    margin-top: auto;
+}
+
+.detail-stats .text-success {
+    color: var(--success);
+}
+
+/* Notes section - LCD styled textarea */
+.detail-notes {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md);
+}
+
+.detail-notes-textarea {
+    flex: 1;
+    width: 100%;
+    min-height: var(--textarea-min-height);
+    padding: var(--space-sm);
+    background-color: var(--lcd-bg);
+    border: var(--border-width-sm) solid var(--lcd-dim-alpha);
+    color: var(--lcd-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    resize: none;
+    box-shadow: var(--shadow-inset-sm);
+}
+
+.detail-notes-textarea::placeholder {
+    color: var(--lcd-dim);
+}
+
+.detail-notes-textarea:focus {
+    border-color: var(--success);
+    outline: none;
+}
+
+/* Track list header */
+.detail-tracks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--bg-elevated);
+    border-bottom: var(--border-width-sm) solid var(--border);
+}
+
+.detail-tracks-header h2 {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-secondary);
+}
+
+/* Track list section */
+.detail-tracks-section {
+    flex: 1;
+}
+
+/* Responsive: stack on smaller screens (--bp-lg) */
+@media (max-width: 1100px) {
+    .detail-header {
+        flex-direction: column;
+    }
+
+    .detail-left {
+        width: 100%;
+        border-right: none;
+        border-bottom: var(--border-width-sm) solid var(--border);
+    }
+
+    .detail-info {
+        border-right: none;
+        border-bottom: var(--border-width-sm) solid var(--border);
+    }
+
+    .detail-notes {
+        width: 100%;
+    }
+}
+
+/* Legacy responsive styles */
 @media (max-width: 1100px) {
     .release-header {
         grid-template-columns: auto 1fr;
@@ -3254,6 +3668,7 @@ body.crate-panel-open .crates-main {
 .emoji-icon--xl { font-size: var(--icon-xl); }      /* 24px - default */
 .emoji-icon--2xl { font-size: var(--icon-2xl); }    /* 32px */
 .emoji-icon--3xl { font-size: var(--icon-3xl); }    /* 40px */
+.emoji-icon--5xl { font-size: var(--icon-5xl); }    /* 48px */
 .emoji-icon--4xl { font-size: var(--icon-4xl); }    /* 64px */
 
 /* Emoji in crate cards */
