@@ -193,9 +193,9 @@
     --cover-xs: 50px;             /* Mini cover (list items) */
 
     /* Release detail page layout */
-    --detail-btn-size: 50px;      /* Action buttons (cover / 4 buttons) */
-    --detail-crate-height: 44px;  /* Crate bar height */
-    --detail-left-width: 250px;   /* Buttons (50px) + cover (200px) */
+    --detail-btn-size: 40px;      /* Action buttons (cover / 5 buttons) */
+    --detail-crate-height: 40px;  /* Crate bar height - matches button size */
+    --detail-left-width: 240px;   /* Buttons (40px) + cover (200px) */
 
     /* Color swatch sizes */
     --swatch-size: 22px;          /* Color picker swatches */
@@ -2391,6 +2391,11 @@ input::placeholder, textarea::placeholder {
     background-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Force emoji icon to inherit color from parent (overrides inline style) */
+.detail-crate-main .emoji-icon {
+    color: inherit !important;
+}
+
 /* Arrow icon styling - color inherited from parent */
 .detail-crate-arrow {
     font-size: var(--text-sm);
@@ -2411,10 +2416,12 @@ input::placeholder, textarea::placeholder {
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     cursor: pointer;
-    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, box-shadow var(--duration-base) ease;
     height: var(--detail-crate-height);
-    /* MPC2000 3D depth effect - more pronounced */
+    /* MPC2000 3D depth effect - all 4 edges */
     box-shadow:
+        inset 2px 0 0 rgba(255, 255, 255, 0.1),
+        inset -2px 0 0 rgba(0, 0, 0, 0.2),
         inset 0 2px 0 rgba(255, 255, 255, 0.15),
         inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
@@ -2423,8 +2430,19 @@ input::placeholder, textarea::placeholder {
     color: var(--lcd-text);
     background-color: var(--border);
     box-shadow:
+        inset 2px 0 0 rgba(255, 255, 255, 0.15),
+        inset -2px 0 0 rgba(0, 0, 0, 0.25),
         inset 0 2px 0 rgba(255, 255, 255, 0.2),
         inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.detail-crate-empty-btn:active {
+    box-shadow:
+        inset -2px 0 0 rgba(255, 255, 255, 0.1),
+        inset 2px 0 0 rgba(0, 0, 0, 0.2),
+        inset 0 -2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 2px 0 rgba(0, 0, 0, 0.3);
+    background-color: var(--bg-surface);
 }
 
 .detail-crate-text {
@@ -2432,12 +2450,23 @@ input::placeholder, textarea::placeholder {
     text-align: center;
 }
 
-/* Assigned crate styling - with 3D depth effect */
+/* Assigned crate styling - with 3D depth effect on all edges */
 .detail-crate-assigned {
-    /* MPC2000 3D depth effect - more pronounced, universal bg compatibility */
+    /* MPC2000 3D depth effect - universal bg compatibility */
     box-shadow:
+        inset 2px 0 0 rgba(255, 255, 255, 0.2),
+        inset -2px 0 0 rgba(0, 0, 0, 0.25),
         inset 0 2px 0 rgba(255, 255, 255, 0.35),
         inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Dropdown button pressed state */
+.detail-crate-dropdown-btn:active {
+    box-shadow:
+        inset -2px 0 0 rgba(255, 255, 255, 0.1),
+        inset 2px 0 0 rgba(0, 0, 0, 0.2),
+        inset 0 -2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 
 /* Crate name - color set dynamically by JS */
@@ -2549,9 +2578,11 @@ input::placeholder, textarea::placeholder {
     opacity: var(--opacity-muted);
     cursor: pointer;
     text-decoration: none;
-    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, opacity var(--duration-base) ease;
-    /* MPC2000 3D depth effect - more pronounced */
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, opacity var(--duration-base) ease, box-shadow var(--duration-base) ease;
+    /* MPC2000 3D depth effect - all 4 edges */
     box-shadow:
+        inset 2px 0 0 rgba(255, 255, 255, 0.1),
+        inset -2px 0 0 rgba(0, 0, 0, 0.2),
         inset 0 2px 0 rgba(255, 255, 255, 0.15),
         inset 0 -2px 0 rgba(0, 0, 0, 0.3);
     /* Separator between buttons */
@@ -2567,8 +2598,20 @@ input::placeholder, textarea::placeholder {
     color: var(--primary);
     opacity: 1;
     box-shadow:
+        inset 2px 0 0 rgba(255, 255, 255, 0.15),
+        inset -2px 0 0 rgba(0, 0, 0, 0.25),
         inset 0 2px 0 rgba(255, 255, 255, 0.2),
         inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Pressed/active state - inverted shadows for pushed-in effect */
+.detail-btn:active {
+    box-shadow:
+        inset -2px 0 0 rgba(255, 255, 255, 0.1),
+        inset 2px 0 0 rgba(0, 0, 0, 0.2),
+        inset 0 -2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 2px 0 rgba(0, 0, 0, 0.3);
+    background-color: var(--bg-surface);
 }
 
 .detail-btn .emoji-icon {
@@ -2576,8 +2619,8 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-btn .sync-icon {
-    width: var(--icon-lg);
-    height: var(--icon-lg);
+    width: var(--icon-md);
+    height: var(--icon-md);
 }
 
 .detail-btn.is-loading .sync-icon {

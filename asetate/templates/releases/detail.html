@@ -33,25 +33,28 @@
                 </div>
                 <!-- Buttons + Cover row -->
                 <div class="detail-media">
-                    <!-- Discogs Buttons - vertical stack -->
+                    <!-- Action Buttons - vertical stack -->
                     <div class="detail-buttons">
                         <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener"
                            class="detail-btn" title="View on Discogs">
-                            {{ emoji_icon('link', size='lg') }}
+                            {{ emoji_icon('link', size='md') }}
                         </a>
                         {% if release.discogs_edit_url %}
                         <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener"
                            class="detail-btn" title="Edit on Discogs">
-                            {{ emoji_icon('edit', size='lg') }}
+                            {{ emoji_icon('edit', size='md') }}
                         </a>
                         {% endif %}
                         <button class="detail-btn" id="btn-sync-release" title="Sync from Discogs">
                             <span class="activity-led"></span>
-                            {{ sync_icon(size=20) }}
+                            {{ sync_icon(size=18) }}
                         </button>
                         <a href="{{ url_for('export.export_page') }}" class="detail-btn" title="Print labels">
-                            {{ emoji_icon('print', size='lg') }}
+                            {{ emoji_icon('print', size='md') }}
                         </a>
+                        <button class="detail-btn" id="btn-hide-release" title="Hide from collection">
+                            {{ emoji_icon('hide', size='md') }}
+                        </button>
                     </div>
                     <!-- Cover Art -->
                     <div class="detail-cover">
@@ -564,9 +567,8 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             const bgColor = currentCrate.color_hex || '#3a3a3a';
             const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
-            // Get icon name and render with contrast color
-            const iconName = getIconName(currentCrate.icon) || 'folder';
-            const iconHtml = renderEmojiIcon(iconName, 'lg', textColor);
+            // Render crate icon (CSS will inherit color from parent)
+            const iconHtml = renderCrateIcon(currentCrate, 'md');
             crateContent.innerHTML = `
                 <div class="detail-crate-split detail-crate-assigned" style="background-color: ${bgColor}">
                     <button class="detail-crate-dropdown-btn" style="color: ${textColor}; border-right-color: ${textColor}" id="detail-crate-dropdown-btn" title="Change crate">

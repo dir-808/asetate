@@ -45,6 +45,7 @@ export const EMOJI_CHARS = {
     notes: '📝',
     tag: '🏷',
     print: '🖨',
+    hide: '🙈',
 };
 
 /** Legacy alias for backwards compatibility */
