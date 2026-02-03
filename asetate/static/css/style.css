@@ -187,15 +187,15 @@
 
     /* Cover sizes */
     --cover-lg: 250px;            /* Large cover (release detail) - legacy */
-    --cover-detail: 300px;        /* Release detail page cover */
+    --cover-detail: 200px;        /* Release detail page cover */
     --cover-md: 200px;            /* Medium cover (responsive) */
     --cover-sm: 100px;            /* Small cover (sidebar) */
     --cover-xs: 50px;             /* Mini cover (list items) */
 
     /* Release detail page layout */
-    --detail-btn-size: 75px;      /* Action buttons (cover / 4 buttons) */
+    --detail-btn-size: 50px;      /* Action buttons (cover / 4 buttons) */
     --detail-crate-height: 44px;  /* Crate bar height */
-    --detail-left-width: 375px;   /* Buttons (75px) + cover (300px) */
+    --detail-left-width: 250px;   /* Buttons (50px) + cover (200px) */
 
     /* Color swatch sizes */
     --swatch-size: 22px;          /* Color picker swatches */
@@ -2354,20 +2354,21 @@ input::placeholder, textarea::placeholder {
     flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     background: transparent;
     border: none;
-    color: var(--lcd-text);
     font-family: var(--font-mono);
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     text-decoration: none;
     cursor: pointer;
     transition: background-color var(--duration-base) ease;
+    /* Color set dynamically by JS based on background contrast */
 }
 
 .detail-crate-main:hover {
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Dropdown arrow button - opens crate picker */
@@ -2379,19 +2380,19 @@ input::placeholder, textarea::placeholder {
     padding: 0;
     background: transparent;
     border: none;
-    border-left: 1px solid rgba(0, 0, 0, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
     transition: background-color var(--duration-base) ease;
+    /* Color set dynamically by JS based on background contrast */
 }
 
 .detail-crate-dropdown-btn:hover {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Arrow icon styling */
+/* Arrow icon styling - color inherited from parent */
 .detail-crate-arrow {
-    font-size: var(--text-xs);
-    color: rgba(0, 0, 0, 0.6);
+    font-size: var(--text-sm);
     font-weight: var(--weight-bold);
 }
 
@@ -2422,31 +2423,17 @@ input::placeholder, textarea::placeholder {
     text-align: left;
 }
 
-/* Assigned crate styling - full color background with 3D depth */
+/* Assigned crate styling - clean flat appearance */
 .detail-crate-assigned {
-    /* 3D depth: light top edge, dark bottom edge */
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.25),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.35),
-        var(--shadow-edge);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+    /* No effects - clean flat color */
 }
 
-/* Darker icon for legibility + bolder appearance */
-.detail-crate-assigned .emoji-icon {
-    filter: brightness(0.5) contrast(1.2);
-}
-
-/* Crate name - darker text for legibility */
+/* Crate name - color set dynamically by JS */
 .detail-crate-name {
-    flex: 1;
-    text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: rgba(0, 0, 0, 0.75);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-    font-weight: var(--weight-bold);
+    font-weight: var(--weight-semibold);
 }
 
 /* Crate dropdown */
@@ -2547,10 +2534,11 @@ input::placeholder, textarea::placeholder {
     background: transparent;
     border: none;
     border-bottom: var(--border-width-sm) solid var(--border);
-    color: var(--text-secondary);
+    color: var(--text-muted);
+    opacity: var(--opacity-dim);
     cursor: pointer;
     text-decoration: none;
-    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, opacity var(--duration-base) ease;
 }
 
 .detail-btn:last-child {
@@ -2560,6 +2548,7 @@ input::placeholder, textarea::placeholder {
 .detail-btn:hover {
     background-color: var(--primary-bg-muted);
     color: var(--primary);
+    opacity: 1;
 }
 
 .detail-btn .emoji-icon {

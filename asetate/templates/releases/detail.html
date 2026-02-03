@@ -305,7 +305,7 @@
 
 {% block scripts %}
 <script type="module">
-import { renderCrateIcon } from '/static/js/icons.js';
+import { renderCrateIcon, renderEmojiIcon, getIconName } from '/static/js/icons.js';
 
 const releaseId = document.querySelector('.release-detail').dataset.releaseId;
 
@@ -531,20 +531,49 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         }
     }
 
+    // Calculate relative luminance of a hex color (WCAG formula)
+    function getLuminance(hexColor) {
+        // Remove # if present
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16) / 255;
+        const g = parseInt(hex.substr(2, 2), 16) / 255;
+        const b = parseInt(hex.substr(4, 2), 16) / 255;
+
+        // Apply gamma correction (linearize)
+        const rLin = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+        const gLin = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+        const bLin = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+
+        // Calculate luminance
+        return 0.2126 * rLin + 0.7152 * gLin + 0.0722 * bLin;
+    }
+
+    // Get appropriate text color based on background luminance
+    function getContrastColor(hexColor) {
+        const luminance = getLuminance(hexColor);
+        // Use white text for dark backgrounds, dark text for light backgrounds
+        // Threshold of 0.179 provides good contrast (WCAG AA standard)
+        return luminance > 0.179 ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)';
+    }
+
     function updateCrateBarDisplay() {
         const currentCrate = currentCrateId ? allCrates.find(c => c.id === currentCrateId) : null;
 
         if (currentCrate) {
             // Show split button: link to crate + dropdown arrow
             const bgColor = currentCrate.color_hex || '#3a3a3a';
+            const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
+            // Get icon name and render with contrast color
+            const iconName = getIconName(currentCrate.icon) || 'folder';
+            const iconHtml = renderEmojiIcon(iconName, 'lg', textColor);
             crateContent.innerHTML = `
                 <div class="detail-crate-split detail-crate-assigned" style="background-color: ${bgColor}">
-                    <a href="${crateUrl}" class="detail-crate-main" title="Go to ${currentCrate.name}">
-                        ${renderCrateIcon(currentCrate, 'lg')}
+                    <a href="${crateUrl}" class="detail-crate-main" style="color: ${textColor}" title="Go to ${currentCrate.name}">
+                        ${iconHtml}
                         <span class="detail-crate-name">${currentCrate.name}</span>
                     </a>
-                    <button class="detail-crate-dropdown-btn" id="detail-crate-dropdown-btn" title="Change crate">
+                    <button class="detail-crate-dropdown-btn" style="color: ${textColor}; border-left-color: ${textColor}" id="detail-crate-dropdown-btn" title="Change crate">
                         <span class="detail-crate-arrow">▼</span>
                     </button>
                 </div>
