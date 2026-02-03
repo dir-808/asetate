@@ -2342,11 +2342,31 @@ input::placeholder, textarea::placeholder {
     border-bottom: var(--border-width-sm) solid var(--border);
 }
 
-/* Split button container - holds main link + dropdown arrow */
+/* Split button container - dropdown on left, main link on right */
 .detail-crate-split {
     display: flex;
     width: 100%;
     height: var(--detail-crate-height);
+}
+
+/* Dropdown arrow button - LEFT side, same width as action buttons */
+.detail-crate-dropdown-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--detail-btn-size);
+    flex-shrink: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: background-color var(--duration-base) ease;
+    /* Color set dynamically by JS based on background contrast */
+}
+
+.detail-crate-dropdown-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Main crate link (icon + name) - links to crate page */
@@ -2371,25 +2391,6 @@ input::placeholder, textarea::placeholder {
     background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Dropdown arrow button - opens crate picker */
-.detail-crate-dropdown-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--detail-crate-height);
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    transition: background-color var(--duration-base) ease;
-    /* Color set dynamically by JS based on background contrast */
-}
-
-.detail-crate-dropdown-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
 /* Arrow icon styling - color inherited from parent */
 .detail-crate-arrow {
     font-size: var(--text-sm);
@@ -2412,18 +2413,18 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
     height: var(--detail-crate-height);
-    /* MPC2000 3D depth effect */
+    /* MPC2000 3D depth effect - more pronounced */
     box-shadow:
-        inset 0 1px 0 var(--neutral-light),
-        inset 0 -1px 0 var(--neutral-dark);
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 
 .detail-crate-empty-btn:hover {
     color: var(--lcd-text);
     background-color: var(--border);
     box-shadow:
-        inset 0 1px 0 var(--neutral-lighter),
-        inset 0 -1px 0 var(--neutral-darker);
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .detail-crate-text {
@@ -2433,10 +2434,10 @@ input::placeholder, textarea::placeholder {
 
 /* Assigned crate styling - with 3D depth effect */
 .detail-crate-assigned {
-    /* MPC2000 3D depth effect using rgba for universal compatibility with any bg color */
+    /* MPC2000 3D depth effect - more pronounced, universal bg compatibility */
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        inset 0 2px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* Crate name - color set dynamically by JS */
@@ -2549,10 +2550,10 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     text-decoration: none;
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease, opacity var(--duration-base) ease;
-    /* MPC2000 3D depth effect */
+    /* MPC2000 3D depth effect - more pronounced */
     box-shadow:
-        inset 0 1px 0 var(--neutral-light),
-        inset 0 -1px 0 var(--neutral-dark);
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
     /* Separator between buttons */
     border-bottom: var(--border-width-sm) solid var(--border);
 }
@@ -2566,8 +2567,8 @@ input::placeholder, textarea::placeholder {
     color: var(--primary);
     opacity: 1;
     box-shadow:
-        inset 0 1px 0 var(--neutral-lighter),
-        inset 0 -1px 0 var(--neutral-darker);
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .detail-btn .emoji-icon {
@@ -2575,8 +2576,8 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-btn .sync-icon {
-    width: var(--icon-2xl);
-    height: var(--icon-2xl);
+    width: var(--icon-lg);
+    height: var(--icon-lg);
 }
 
 .detail-btn.is-loading .sync-icon {
@@ -2699,7 +2700,7 @@ input::placeholder, textarea::placeholder {
     min-height: var(--textarea-min-height);
     padding: var(--space-md);
     background-color: var(--lcd-bg);
-    border: var(--border-width-md) solid var(--border);
+    border: var(--border-width-sm) solid var(--border);
     color: var(--lcd-text);
     font-family: var(--font-mono);
     font-size: var(--text-sm);

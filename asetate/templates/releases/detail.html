@@ -560,7 +560,7 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         const currentCrate = currentCrateId ? allCrates.find(c => c.id === currentCrateId) : null;
 
         if (currentCrate) {
-            // Show split button: link to crate + dropdown arrow
+            // Show split button: dropdown arrow on LEFT, link to crate on right
             const bgColor = currentCrate.color_hex || '#3a3a3a';
             const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
@@ -569,13 +569,13 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             const iconHtml = renderEmojiIcon(iconName, 'lg', textColor);
             crateContent.innerHTML = `
                 <div class="detail-crate-split detail-crate-assigned" style="background-color: ${bgColor}">
+                    <button class="detail-crate-dropdown-btn" style="color: ${textColor}; border-right-color: ${textColor}" id="detail-crate-dropdown-btn" title="Change crate">
+                        <span class="detail-crate-arrow">▼</span>
+                    </button>
                     <a href="${crateUrl}" class="detail-crate-main" style="color: ${textColor}" title="Go to ${currentCrate.name}">
                         ${iconHtml}
                         <span class="detail-crate-name">${currentCrate.name}</span>
                     </a>
-                    <button class="detail-crate-dropdown-btn" style="color: ${textColor}; border-left-color: ${textColor}" id="detail-crate-dropdown-btn" title="Change crate">
-                        <span class="detail-crate-arrow">▼</span>
-                    </button>
                 </div>
             `;
             // Attach event listener to dropdown button
