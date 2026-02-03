@@ -567,8 +567,8 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             const bgColor = currentCrate.color_hex || '#3a3a3a';
             const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
-            // Render crate icon (CSS will inherit color from parent)
-            const iconHtml = renderCrateIcon(currentCrate, 'md');
+            // Render crate icon (CSS will inherit color from parent, 'sm' matches text size)
+            const iconHtml = renderCrateIcon(currentCrate, 'sm');
             crateContent.innerHTML = `
                 <div class="detail-crate-split detail-crate-assigned" style="background-color: ${bgColor}">
                     <button class="detail-crate-dropdown-btn" style="color: ${textColor}" id="detail-crate-dropdown-btn" title="Change crate">

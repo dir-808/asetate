@@ -2317,7 +2317,10 @@ input::placeholder, textarea::placeholder {
     display: flex;
     flex-direction: column;
     background-color: var(--lcd-bg);
+    /* Only bottom and right borders - buttons provide their own left/top edges */
     border: var(--border-width-md) solid var(--border);
+    border-left: none;
+    border-top: none;
     box-shadow: var(--shadow-inset-lcd);
 }
 
@@ -2376,11 +2379,11 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-crate-dropdown-btn:active {
-    /* Inverted colors for pushed-in effect */
-    border-top-color: rgba(0, 0, 0, 0.3);
-    border-left-color: rgba(0, 0, 0, 0.25);
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-    background-color: rgba(0, 0, 0, 0.1);
+    /* Subtle pressed effect - softer inversion */
+    border-top-color: rgba(0, 0, 0, 0.15);
+    border-left-color: rgba(0, 0, 0, 0.12);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Main crate link (icon + name) - links to crate page */
@@ -2389,11 +2392,12 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-xs);
+    /* Extra right padding to center content across full width (offsets dropdown button) */
+    padding: var(--space-sm) calc(var(--detail-btn-size) + var(--space-md)) var(--space-sm) var(--space-md);
     background: transparent;
     font-family: var(--font-mono);
-    font-size: var(--text-base);
+    font-size: var(--text-sm);  /* Match empty state size */
     text-decoration: none;
     cursor: pointer;
     transition: background-color var(--duration-base) ease;
@@ -2413,11 +2417,11 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-crate-main:active {
-    /* Inverted colors for pushed-in effect */
-    border-top-color: rgba(0, 0, 0, 0.3);
-    border-right-color: rgba(255, 255, 255, 0.15);
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-    background-color: rgba(0, 0, 0, 0.1);
+    /* Subtle pressed effect - softer inversion */
+    border-top-color: rgba(0, 0, 0, 0.15);
+    border-right-color: rgba(255, 255, 255, 0.08);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Force emoji icon to inherit color from parent (overrides inline style) */
@@ -2465,11 +2469,12 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-crate-empty-btn:active {
-    border-top-color: rgba(0, 0, 0, 0.3);
-    border-left-color: rgba(0, 0, 0, 0.25);
-    border-right-color: rgba(255, 255, 255, 0.1);
-    border-bottom-color: rgba(255, 255, 255, 0.15);
-    background-color: var(--bg-surface);
+    /* Subtle pressed effect - softer inversion */
+    border-top-color: rgba(0, 0, 0, 0.15);
+    border-left-color: rgba(0, 0, 0, 0.12);
+    border-right-color: rgba(255, 255, 255, 0.05);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .detail-crate-text {
@@ -2620,13 +2625,13 @@ input::placeholder, textarea::placeholder {
     border-bottom-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Pressed/active state - inverted borders for pushed-in effect */
+/* Pressed/active state - subtle inversion for pushed-in effect */
 .detail-btn:active {
-    border-top-color: rgba(0, 0, 0, 0.3);
-    border-left-color: rgba(0, 0, 0, 0.25);
-    border-right-color: rgba(255, 255, 255, 0.1);
-    border-bottom-color: rgba(255, 255, 255, 0.15);
-    background-color: var(--bg-surface);
+    border-top-color: rgba(0, 0, 0, 0.15);
+    border-left-color: rgba(0, 0, 0, 0.12);
+    border-right-color: rgba(255, 255, 255, 0.05);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .detail-btn .emoji-icon {
