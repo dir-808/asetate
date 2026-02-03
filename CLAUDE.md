@@ -25,6 +25,43 @@ A local-first DJ library manager for vinyl collectors. Syncs with Discogs, adds 
 
 ---
 
+## Local Development (VS Code)
+
+The user runs the app locally using VS Code. When giving instructions, always provide VS Code-friendly guidance (GUI-based, not terminal commands).
+
+### Running the App
+
+1. Open the project folder in VS Code
+2. Press **F5** (or click the green play button in "Run and Debug" sidebar)
+3. App runs at `http://localhost:5001`
+4. Press **Shift+F5** to stop
+
+### Switching Branches
+
+When the user wants to preview changes from a different branch:
+
+1. Click the **branch name** in the bottom-left corner of VS Code
+2. Select the branch from the dropdown (e.g., `claude/feature-name`)
+3. If the branch doesn't appear, tell them to: **Ctrl+Shift+P** → "Git: Fetch" → then try again
+4. After switching, press **F5** to run and test
+
+### Workflow for Previewing Changes
+
+When making changes for the user to review:
+
+1. Push changes to a feature branch (e.g., `claude/feature-name-xyz`)
+2. Tell the user to switch to that branch in VS Code (instructions above)
+3. They can test locally before deciding to merge
+4. If approved, create a PR or merge to main
+
+### Important Notes
+
+- **Port 5001**: The app runs on port 5001 (not 5000) to avoid macOS AirPlay conflict
+- **User is not comfortable with terminal**: Always provide GUI-based instructions
+- **.env file required**: The app needs a `.env` file with Discogs credentials to work
+
+---
+
 ## CSS Architecture
 
 > ⚠️ **ALWAYS put CSS in `static/css/style.css`** - never in template `<style>` blocks. This ensures consistency, easier maintenance, and better caching.
