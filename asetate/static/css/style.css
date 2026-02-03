@@ -187,15 +187,15 @@
 
     /* Cover sizes */
     --cover-lg: 250px;            /* Large cover (release detail) - legacy */
-    --cover-detail: 200px;        /* Release detail page cover */
+    --cover-detail: 400px;        /* Release detail page cover */
     --cover-md: 200px;            /* Medium cover (responsive) */
     --cover-sm: 100px;            /* Small cover (sidebar) */
     --cover-xs: 50px;             /* Mini cover (list items) */
 
     /* Release detail page layout */
-    --detail-btn-size: 67px;      /* Discogs buttons (cover-detail / 3) */
+    --detail-btn-size: 100px;     /* Action buttons (cover / 4 buttons) */
     --detail-crate-height: 44px;  /* Crate bar height */
-    --detail-left-width: 267px;   /* Buttons + cover width */
+    --detail-left-width: 500px;   /* Buttons (100px) + cover (400px) */
 
     /* Color swatch sizes */
     --swatch-size: 22px;          /* Color picker swatches */
@@ -2373,13 +2373,19 @@ input::placeholder, textarea::placeholder {
     background-color: var(--primary-bg-muted);
 }
 
-/* Assigned crate styling - full color background */
+/* Assigned crate styling - full color background with 3D depth */
 .detail-crate-assigned {
-    box-shadow: var(--shadow-inset-lcd);
+    /* 3D depth: light top edge, dark bottom edge */
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+        var(--shadow-edge);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.3);
 }
 
+/* Make icon and text darker for legibility on colored backgrounds */
 .detail-crate-assigned .emoji-icon {
-    filter: brightness(1.2);
+    filter: brightness(0.7);
 }
 
 .detail-crate-name {
@@ -2388,8 +2394,10 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: inherit;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    /* Darker text for legibility on colored backgrounds */
+    color: rgba(0, 0, 0, 0.7);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+    font-weight: var(--weight-semibold);
 }
 
 .detail-crate-text {
@@ -2640,7 +2648,7 @@ input::placeholder, textarea::placeholder {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    padding: var(--space-md);
+    /* No padding - textarea fills full space */
 }
 
 .detail-notes-textarea {

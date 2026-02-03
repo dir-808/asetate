@@ -36,18 +36,21 @@
                     <div class="detail-buttons">
                         <a href="{{ release.discogs_uri }}" target="_blank" rel="noopener"
                            class="detail-btn" title="View on Discogs">
-                            {{ emoji_icon('link', size='5xl') }}
+                            {{ emoji_icon('link', size='3xl') }}
                         </a>
                         {% if release.discogs_edit_url %}
                         <a href="{{ release.discogs_edit_url }}" target="_blank" rel="noopener"
                            class="detail-btn" title="Edit on Discogs">
-                            {{ emoji_icon('edit', size='5xl') }}
+                            {{ emoji_icon('edit', size='3xl') }}
                         </a>
                         {% endif %}
                         <button class="detail-btn" id="btn-sync-release" title="Sync from Discogs">
                             <span class="activity-led"></span>
-                            {{ sync_icon(size=32) }}
+                            {{ sync_icon(size=40) }}
                         </button>
+                        <a href="{{ url_for('export.export_page') }}" class="detail-btn" title="Print labels">
+                            {{ emoji_icon('print', size='3xl') }}
+                        </a>
                     </div>
                     <!-- Cover Art -->
                     <div class="detail-cover">
@@ -121,6 +124,7 @@
             <table class="tracks-table">
                 <thead>
                     <tr>
+                        <th class="col-playable">Playable</th>
                         <th class="col-pos {% if 'position' not in visible_fields %}hidden{% endif %}">Side</th>
                         <th class="col-title">Title</th>
                         <th class="col-duration {% if 'duration' not in visible_fields %}hidden{% endif %}">Length</th>
@@ -128,13 +132,23 @@
                         <th class="col-key {% if 'key' not in visible_fields %}hidden{% endif %}">Key</th>
                         <th class="col-energy {% if 'energy' not in visible_fields %}hidden{% endif %}">Energy</th>
                         <th class="col-tags {% if 'tags' not in visible_fields %}hidden{% endif %}">Tags</th>
-                        <th class="col-playable">Playable</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for track in tracks %}
                     <tr class="track-row {% if track.is_playable %}track-playable{% endif %}"
                         data-track-id="{{ track.id }}">
+                        <td class="col-playable">
+                            <label class="toggle">
+                                <input
+                                    type="checkbox"
+                                    class="track-playable"
+                                    {% if track.is_playable %}checked{% endif %}
+                                    data-field="is_playable"
+                                >
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
                         <td class="col-pos {% if 'position' not in visible_fields %}hidden{% endif %}">{{ track.display_position }}</td>
                         <td class="col-title">
                             <span class="track-title">{{ track.title }}</span>
@@ -187,17 +201,6 @@
                                 {% endfor %}
                                 <button class="tag-add-btn" title="Add tag">+</button>
                             </div>
-                        </td>
-                        <td class="col-playable">
-                            <label class="toggle">
-                                <input
-                                    type="checkbox"
-                                    class="track-playable"
-                                    {% if track.is_playable %}checked{% endif %}
-                                    data-field="is_playable"
-                                >
-                                <span class="toggle-slider"></span>
-                            </label>
                         </td>
                     </tr>
                     {% endfor %}
