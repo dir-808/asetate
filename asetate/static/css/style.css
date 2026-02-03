@@ -2400,10 +2400,11 @@ input::placeholder, textarea::placeholder {
 .detail-crate-empty-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
     width: 100%;
     padding: var(--space-sm) var(--space-md);
-    background-color: var(--bg-surface);
+    background-color: var(--bg-elevated);
     border: none;
     color: var(--lcd-dim);
     font-family: var(--font-mono);
@@ -2411,21 +2412,31 @@ input::placeholder, textarea::placeholder {
     cursor: pointer;
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
     height: var(--detail-crate-height);
+    /* MPC2000 3D depth effect */
+    box-shadow:
+        inset 0 1px 0 var(--neutral-light),
+        inset 0 -1px 0 var(--neutral-dark);
 }
 
 .detail-crate-empty-btn:hover {
     color: var(--lcd-text);
-    background-color: var(--primary-bg-muted);
+    background-color: var(--border);
+    box-shadow:
+        inset 0 1px 0 var(--neutral-lighter),
+        inset 0 -1px 0 var(--neutral-darker);
 }
 
 .detail-crate-text {
     flex: 1;
-    text-align: left;
+    text-align: center;
 }
 
-/* Assigned crate styling - clean flat appearance */
+/* Assigned crate styling - with 3D depth effect */
 .detail-crate-assigned {
-    /* No effects - clean flat color */
+    /* MPC2000 3D depth effect using rgba for universal compatibility with any bg color */
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Crate name - color set dynamically by JS */
@@ -2523,7 +2534,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     flex-direction: column;
     width: var(--detail-btn-size);
-    border-right: var(--border-width-sm) solid var(--border);
+    border-right: var(--border-width-md) solid var(--border);
 }
 
 .detail-btn {
@@ -2531,14 +2542,19 @@ input::placeholder, textarea::placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background-color: var(--bg-elevated);
     border: none;
-    border-bottom: var(--border-width-sm) solid var(--border);
     color: var(--text-muted);
-    opacity: var(--opacity-dim);
+    opacity: var(--opacity-muted);
     cursor: pointer;
     text-decoration: none;
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease, opacity var(--duration-base) ease;
+    /* MPC2000 3D depth effect */
+    box-shadow:
+        inset 0 1px 0 var(--neutral-light),
+        inset 0 -1px 0 var(--neutral-dark);
+    /* Separator between buttons */
+    border-bottom: var(--border-width-sm) solid var(--border);
 }
 
 .detail-btn:last-child {
@@ -2546,9 +2562,12 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-btn:hover {
-    background-color: var(--primary-bg-muted);
+    background-color: var(--border);
     color: var(--primary);
     opacity: 1;
+    box-shadow:
+        inset 0 1px 0 var(--neutral-lighter),
+        inset 0 -1px 0 var(--neutral-darker);
 }
 
 .detail-btn .emoji-icon {
