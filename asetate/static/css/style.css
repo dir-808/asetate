@@ -2333,7 +2333,7 @@ input::placeholder, textarea::placeholder {
     flex-direction: column;
     flex-shrink: 0;
     width: var(--detail-left-width);
-    border-right: var(--border-width-sm) solid var(--border);
+    border-right: var(--border-width-md) solid var(--border);
 }
 
 /* Crate bar - spans buttons + cover */
@@ -2365,15 +2365,12 @@ input::placeholder, textarea::placeholder {
 /* Empty state styling */
 .detail-crate-empty {
     color: var(--lcd-dim);
-    border: var(--border-width-sm) dashed var(--lcd-dim-alpha);
-    border-left: none;
-    border-right: none;
-    border-top: none;
+    background-color: var(--bg-surface);
 }
 
 .detail-crate-empty:hover {
     color: var(--lcd-text);
-    border-color: var(--lcd-text);
+    background-color: var(--primary-bg-muted);
 }
 
 /* Assigned crate styling - full color background */
@@ -2587,7 +2584,7 @@ input::placeholder, textarea::placeholder {
 .detail-artist {
     font-size: var(--text-sm);
     color: var(--lcd-text);
-    opacity: var(--opacity-muted);
+    opacity: var(--opacity-faded);
     margin-bottom: var(--space-sm);
 }
 
@@ -2602,7 +2599,7 @@ input::placeholder, textarea::placeholder {
     display: flex;
     gap: var(--space-sm);
     font-size: var(--text-xs);
-    color: var(--lcd-muted);
+    color: var(--text-secondary);
     flex-wrap: wrap;
 }
 
@@ -2650,14 +2647,16 @@ input::placeholder, textarea::placeholder {
     flex: 1;
     width: 100%;
     min-height: var(--textarea-min-height);
-    padding: var(--space-sm);
+    padding: var(--space-md);
     background-color: var(--lcd-bg);
-    border: var(--border-width-sm) solid var(--lcd-dim-alpha);
+    border: var(--border-width-md) solid var(--border);
     color: var(--lcd-text);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
+    line-height: var(--leading-normal);
     resize: none;
-    box-shadow: var(--shadow-inset-sm);
+    caret-color: var(--success);
+    box-shadow: var(--shadow-inset-lcd);
 }
 
 .detail-notes-textarea::placeholder {
@@ -2667,6 +2666,7 @@ input::placeholder, textarea::placeholder {
 .detail-notes-textarea:focus {
     border-color: var(--success);
     outline: none;
+    box-shadow: var(--shadow-inset-lcd), var(--shadow-focus-success);
 }
 
 /* Track list header */
