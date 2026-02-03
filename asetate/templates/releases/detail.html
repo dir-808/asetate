@@ -15,11 +15,12 @@
             <div class="detail-left">
                 <!-- Crate Bar - spans buttons + cover -->
                 <div class="detail-crate" id="detail-crate">
-                    <!-- Empty state shown by default, JS will update -->
-                    <button class="detail-crate-btn detail-crate-empty" id="detail-crate-btn">
-                        <span class="detail-crate-text">+ Add to Crate</span>
-                        <span class="detail-crate-arrow">▼</span>
-                    </button>
+                    <!-- Empty state shown by default, JS will update to split button when crate assigned -->
+                    <div id="detail-crate-content">
+                        <button class="detail-crate-empty-btn" id="detail-crate-empty-btn">
+                            <span class="detail-crate-text">+ Add to Crate</span>
+                        </button>
+                    </div>
                     <!-- Crate dropdown -->
                     <div class="detail-crate-dropdown" id="detail-crate-dropdown">
                         <div class="detail-crate-search">
@@ -503,7 +504,7 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
 
     // Crate dropdown management (single crate per release)
     const crateBar = document.getElementById('detail-crate');
-    const crateBtn = document.getElementById('detail-crate-btn');
+    const crateContent = document.getElementById('detail-crate-content');
     const crateDropdown = document.getElementById('detail-crate-dropdown');
     const crateDropdownList = document.getElementById('detail-crate-list');
     const crateSearchInput = document.getElementById('detail-crate-search');
@@ -534,23 +535,46 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         const currentCrate = currentCrateId ? allCrates.find(c => c.id === currentCrateId) : null;
 
         if (currentCrate) {
-            // Show assigned crate with full-color background
+            // Show split button: link to crate + dropdown arrow
             const bgColor = currentCrate.color_hex || '#3a3a3a';
-            crateBtn.className = 'detail-crate-btn detail-crate-assigned';
-            crateBtn.style.backgroundColor = bgColor;
-            crateBtn.innerHTML = `
-                ${renderCrateIcon(currentCrate, 'lg')}
-                <span class="detail-crate-name">${currentCrate.name}</span>
-                <span class="detail-crate-arrow">▼</span>
+            const crateUrl = `/crates/${currentCrate.id}`;
+            crateContent.innerHTML = `
+                <div class="detail-crate-split detail-crate-assigned" style="background-color: ${bgColor}">
+                    <a href="${crateUrl}" class="detail-crate-main" title="Go to ${currentCrate.name}">
+                        ${renderCrateIcon(currentCrate, 'lg')}
+                        <span class="detail-crate-name">${currentCrate.name}</span>
+                    </a>
+                    <button class="detail-crate-dropdown-btn" id="detail-crate-dropdown-btn" title="Change crate">
+                        <span class="detail-crate-arrow">▼</span>
+                    </button>
+                </div>
             `;
+            // Attach event listener to dropdown button
+            document.getElementById('detail-crate-dropdown-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleDropdown();
+            });
         } else {
-            // Show empty state
-            crateBtn.className = 'detail-crate-btn detail-crate-empty';
-            crateBtn.style.backgroundColor = '';
-            crateBtn.innerHTML = `
-                <span class="detail-crate-text">+ Add to Crate</span>
-                <span class="detail-crate-arrow">▼</span>
+            // Show empty state - single button to open dropdown
+            crateContent.innerHTML = `
+                <button class="detail-crate-empty-btn" id="detail-crate-empty-btn">
+                    <span class="detail-crate-text">+ Add to Crate</span>
+                </button>
             `;
+            // Attach event listener to empty button
+            document.getElementById('detail-crate-empty-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleDropdown();
+            });
+        }
+    }
+
+    function toggleDropdown() {
+        const isOpen = crateDropdown.style.display !== 'none';
+        if (isOpen) {
+            closeDropdown();
+        } else {
+            openDropdown();
         }
     }
 
@@ -640,17 +664,6 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
     function closeDropdown() {
         crateDropdown.style.display = 'none';
     }
-
-    // Toggle dropdown
-    crateBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = crateDropdown.style.display !== 'none';
-        if (isOpen) {
-            closeDropdown();
-        } else {
-            openDropdown();
-        }
-    });
 
     // Search filtering
     crateSearchInput.addEventListener('input', (e) => {
