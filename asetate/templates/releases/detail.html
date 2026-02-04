@@ -650,7 +650,8 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
     }
 
     function toggleDropdown() {
-        const isOpen = crateDropdown.style.display !== 'none';
+        // Check for 'block' not '!== none' because initial state is '' (CSS controlled)
+        const isOpen = crateDropdown.style.display === 'block';
         if (isOpen) {
             closeDropdown();
         } else {
