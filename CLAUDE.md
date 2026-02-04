@@ -237,6 +237,18 @@ This framework uses alpha values with CSS calc() to create consistent 3D depth e
 }
 ```
 
+**Choosing the right hover background:**
+
+The press effect (`--btn-press-bg`) applies a consistent alpha darkening, but the *perceived* intensity depends on the hover state's starting point. Use this guide:
+
+| Hover Token | When to Use |
+|-------------|-------------|
+| `--btn-hover-bg` | **Default choice.** Buttons that may have colored OR neutral backgrounds (e.g., crate buttons that change color when assigned). Keeps press effect feeling consistent across all states. |
+| `--btn-hover-bg-strong` | Dropdown triggers or buttons that need more prominent hover feedback. |
+| Solid color (e.g., `--border`) | **Avoid for 3D buttons.** Makes grey buttons feel heavier on press compared to colored buttons. Only use for non-3D components. |
+
+**Why this matters:** A button starting from a dark solid hover (like `--border` #2a2a2a) will feel much darker when pressed than a button starting from a subtle overlay. Using alpha-based hover backgrounds ensures the press effect feels uniform regardless of the button's base color.
+
 #### Discogs Brand Colors
 | Token | Value | Usage |
 |-------|-------|-------|
