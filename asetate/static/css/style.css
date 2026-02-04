@@ -2015,13 +2015,14 @@ input::placeholder, textarea::placeholder {
     width: 100%;
     border-collapse: collapse;
     font-size: var(--text-sm);
+    background-color: var(--bg-primary);
 }
 
 .tracks-table th {
     text-align: left;
     padding: var(--space-sm) var(--space-md);
     font-weight: var(--weight-semibold);
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-size: var(--text-xxs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
@@ -2108,8 +2109,14 @@ input::placeholder, textarea::placeholder {
 
 .col-pos {
     width: var(--col-pos-width);
-    color: var(--primary);
+    color: var(--playable-muted);
     font-weight: var(--weight-semibold);
+    transition: color var(--duration-base) ease;
+}
+
+/* Playable tracks get accent color for Side column */
+.track-row.track-playable .col-pos {
+    color: var(--playable-accent);
 }
 
 .col-title { min-width: var(--col-title-min); }
@@ -2838,6 +2845,9 @@ input::placeholder, textarea::placeholder {
     --playable-bg-faint: var(--primary-bg-faint);
     --playable-bg-subtle: var(--primary-bg-subtle);
     --playable-border: var(--primary-border-alpha);
+    /* Accent color for Side column and toggle - always readable (lighter for dark crates) */
+    --playable-accent: var(--primary);
+    --playable-muted: var(--text-muted);
 }
 
 /* Press effect on wrapper when button is active - darkens all edges */
@@ -2866,7 +2876,7 @@ input::placeholder, textarea::placeholder {
     font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-normal);
-    color: var(--lcd-muted);
+    color: var(--text-muted);
     background-color: transparent;
     cursor: pointer;
     padding: var(--space-xs) var(--space-sm);
@@ -2881,7 +2891,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-columns-btn:hover {
-    color: var(--lcd-text);
+    color: var(--text-secondary);
     background-color: var(--btn-hover-bg);
     border-top-color: var(--btn-3d-light-top-hover);
     border-left-color: var(--btn-3d-light-left-hover);

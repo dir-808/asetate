@@ -601,6 +601,45 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
+    // Calculate accent color for Side column based on luminance
+    // Dark crates get lighter accents for readability
+    function getAccentColor(hexColor) {
+        const luminance = getLuminance(hexColor);
+
+        // For dark colors (low luminance), lighten significantly
+        // For medium colors, lighten moderately
+        // For light colors, use as-is or slightly darken for contrast
+        if (luminance < 0.15) {
+            // Very dark - lighten by 50%
+            return lightenColor(hexColor, 0.5);
+        } else if (luminance < 0.3) {
+            // Dark - lighten by 35%
+            return lightenColor(hexColor, 0.35);
+        } else if (luminance < 0.5) {
+            // Medium - lighten by 20%
+            return lightenColor(hexColor, 0.2);
+        } else {
+            // Light - use directly
+            return hexColor;
+        }
+    }
+
+    // Calculate muted color for non-playable Side column
+    // Should be visually quieter than the accent
+    function getMutedColor(hexColor) {
+        const luminance = getLuminance(hexColor);
+
+        // Return a grayed-out version at reduced opacity
+        // Use text-muted level opacity (about 0.5-0.6)
+        if (luminance < 0.3) {
+            // Dark colors: use a lighter grey
+            return hexToRgba(hexColor, 0.4);
+        } else {
+            // Light colors: use the color at reduced opacity
+            return hexToRgba(hexColor, 0.5);
+        }
+    }
+
     // Set playable highlight colors on wrapper (or reset to defaults)
     function updatePlayableColors(wrapper, crateColor) {
         if (!wrapper) return;
@@ -612,6 +651,10 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, 0.03));
             wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, 0.06));
             wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, 0.4));
+
+            // Side column colors - accent brighter for dark crates
+            wrapper.style.setProperty('--playable-accent', getAccentColor(crateColor));
+            wrapper.style.setProperty('--playable-muted', getMutedColor(crateColor));
         } else {
             // Reset to CSS defaults (primary/orange)
             wrapper.style.removeProperty('--playable-color');
@@ -619,6 +662,8 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             wrapper.style.removeProperty('--playable-bg-faint');
             wrapper.style.removeProperty('--playable-bg-subtle');
             wrapper.style.removeProperty('--playable-border');
+            wrapper.style.removeProperty('--playable-accent');
+            wrapper.style.removeProperty('--playable-muted');
         }
     }
 

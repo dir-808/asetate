@@ -822,6 +822,16 @@ The playable track border system creates colored "boxes" around playable tracks.
 
 **Both must behave identically.** When updating one, update both.
 
+**Tracklist Grey Theme (Release Detail Page):**
+The tracklist area uses a grey color scheme (not LCD green) to visually separate it from the release info card:
+
+| Element | Token | Notes |
+|---------|-------|-------|
+| Table background | `--bg-primary` | Grey background for entire tracklist |
+| Header background | `--bg-surface` | Slightly elevated surface for thead |
+| Header text | `--text-secondary` | Brighter grey for column labels |
+| Columns button | `--text-muted` / `--text-secondary` | Normal / hover states |
+
 **Dynamic Crate Colors (Release Detail Page):**
 On the release detail page, playable highlighting uses the assigned crate's color instead of orange. Custom properties on `.detail-tracks-wrapper` control this:
 
@@ -832,6 +842,22 @@ On the release detail page, playable highlighting uses the assigned crate's colo
 | `--playable-bg-faint` | `--primary-bg-faint` | Very faint track background (3% alpha) |
 | `--playable-bg-subtle` | `--primary-bg-subtle` | Hover background (6% alpha) |
 | `--playable-border` | `--primary-border-alpha` | Border color (40% alpha) |
+| `--playable-accent` | `--primary` | Side column color for playable tracks |
+| `--playable-muted` | `--text-muted` | Side column color for non-playable tracks |
+
+**Luminance-based accent colors:**
+The Side column uses the crate color, but dark crates need a brighter accent for readability. JavaScript calculates this based on WCAG luminance:
+
+```javascript
+// getAccentColor() lightens dark colors for readability
+// - Very dark (luminance < 0.15): lighten by 50%
+// - Dark (luminance < 0.3): lighten by 35%
+// - Medium (luminance < 0.5): lighten by 20%
+// - Light: use color directly
+
+// getMutedColor() returns a grayed-out version for non-playable tracks
+// Uses reduced opacity (0.4-0.5) based on luminance
+```
 
 JavaScript updates these when a crate is assigned:
 ```javascript
@@ -841,6 +867,8 @@ wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, 0.5));
 wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, 0.03));
 wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, 0.06));
 wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, 0.4));
+wrapper.style.setProperty('--playable-accent', getAccentColor(crateColor));
+wrapper.style.setProperty('--playable-muted', getMutedColor(crateColor));
 
 // When no crate - reset to defaults
 wrapper.style.removeProperty('--playable-color');
