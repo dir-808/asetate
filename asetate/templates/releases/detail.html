@@ -556,10 +556,23 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         return luminance > 0.179 ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)';
     }
 
-    // Read 3D button alpha tokens from CSS custom properties
+    // Read all color calculation tokens from CSS custom properties
     const rootStyles = getComputedStyle(document.documentElement);
+
+    // 3D button tokens
     const btn3dHighlight = parseFloat(rootStyles.getPropertyValue('--btn-3d-highlight')) || 0.15;
     const btn3dShadow = parseFloat(rootStyles.getPropertyValue('--btn-3d-shadow')) || 0.25;
+
+    // Playable highlight tokens
+    const playableAlphaFaint = parseFloat(rootStyles.getPropertyValue('--playable-alpha-faint')) || 0.03;
+    const playableAlphaSubtle = parseFloat(rootStyles.getPropertyValue('--playable-alpha-subtle')) || 0.06;
+    const playableAlphaBorder = parseFloat(rootStyles.getPropertyValue('--playable-alpha-border')) || 0.4;
+    const playableDimAmount = parseFloat(rootStyles.getPropertyValue('--playable-dim-amount')) || 0.5;
+
+    // Accent color tokens
+    const accentBoostStrong = parseFloat(rootStyles.getPropertyValue('--accent-boost-strong')) || 0.25;
+    const accentBoostLight = parseFloat(rootStyles.getPropertyValue('--accent-boost-light')) || 0.15;
+    const accentMutedAlpha = parseFloat(rootStyles.getPropertyValue('--accent-muted-alpha')) || 0.35;
 
     // Blend color with white (for 3D light edges)
     // Uses --btn-3d-highlight token
@@ -604,21 +617,19 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
 
     // Calculate accent color for Side column based on luminance
     // Dark crates get slightly more vibrant/saturated accents for readability
+    // Uses --accent-boost-strong and --accent-boost-light tokens
     function getAccentColor(hexColor) {
         const luminance = getLuminance(hexColor);
-        const hex = hexColor.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
 
         // For dark colors, boost brightness slightly to ensure visibility
         // For light colors, use as-is
+        // Luminance thresholds are WCAG constants, not design tokens
         if (luminance < 0.15) {
-            // Very dark - boost by 25%
-            return lightenColor(hexColor, 0.25);
+            // Very dark - use --accent-boost-strong
+            return lightenColor(hexColor, accentBoostStrong);
         } else if (luminance < 0.3) {
-            // Dark - boost by 15%
-            return lightenColor(hexColor, 0.15);
+            // Dark - use --accent-boost-light
+            return lightenColor(hexColor, accentBoostLight);
         } else {
             // Medium/light - use directly
             return hexColor;
@@ -626,23 +637,22 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
     }
 
     // Calculate muted color for non-playable Side column
-    // Should be visually quieter than the accent
+    // Uses --accent-muted-alpha token
     function getMutedColor(hexColor) {
-        // Return a desaturated, dimmed version using opacity
-        return hexToRgba(hexColor, 0.35);
+        return hexToRgba(hexColor, accentMutedAlpha);
     }
 
     // Set playable highlight colors on wrapper (or reset to defaults)
+    // Uses tokens: --playable-alpha-faint, --playable-alpha-subtle, --playable-alpha-border, --playable-dim-amount
     function updatePlayableColors(wrapper, crateColor) {
         if (!wrapper) return;
 
         if (crateColor) {
-            // Match intensity of primary tokens: faint=0.03, subtle=0.06, border=0.4, dim=50% darker
             wrapper.style.setProperty('--playable-color', crateColor);
-            wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, 0.5));
-            wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, 0.03));
-            wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, 0.06));
-            wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, 0.4));
+            wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, playableDimAmount));
+            wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, playableAlphaFaint));
+            wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, playableAlphaSubtle));
+            wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, playableAlphaBorder));
 
             // Side column colors - accent brighter for dark crates
             wrapper.style.setProperty('--playable-accent', getAccentColor(crateColor));

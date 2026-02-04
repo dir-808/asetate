@@ -249,6 +249,25 @@ The press effect (`--btn-press-bg`) applies a consistent alpha darkening, but th
 
 **Why this matters:** A button starting from a dark solid hover (like `--border` #2a2a2a) will feel much darker when pressed than a button starting from a subtle overlay. Using alpha-based hover backgrounds ensures the press effect feels uniform regardless of the button's base color.
 
+#### Dynamic Playable Color Tokens (JS-read)
+
+These tokens are read by JavaScript to generate crate-colored variants of playable highlighting. They match the alpha values used in the `--primary-bg-*` tokens.
+
+**Playable Highlight Alphas (for JS hexToRgba):**
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--playable-alpha-faint` | 0.03 | Very subtle track background |
+| `--playable-alpha-subtle` | 0.06 | Hover/selected background |
+| `--playable-alpha-border` | 0.4 | Side border visibility |
+| `--playable-dim-amount` | 0.5 | How much to darken for dim state |
+
+**Accent Color Boost (WCAG readability):**
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--accent-boost-strong` | 0.25 | Lightening for very dark colors (luminance < 0.15) |
+| `--accent-boost-light` | 0.15 | Lightening for dark colors (luminance < 0.3) |
+| `--accent-muted-alpha` | 0.35 | Opacity for non-playable muted state |
+
 #### Discogs Brand Colors
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -846,26 +865,26 @@ On the release detail page, playable highlighting uses the assigned crate's colo
 | `--playable-muted` | `--text-muted` | Side column color for non-playable tracks |
 
 **Luminance-based accent colors:**
-The Side column and playable toggle use the crate color, with a subtle brightness boost for dark crates. JavaScript calculates this based on WCAG luminance:
+The Side column and playable toggle use the crate color, with a subtle brightness boost for dark crates. JavaScript reads values from CSS tokens (see "Dynamic Playable Color Tokens" section above):
 
 ```javascript
 // getAccentColor() subtly boosts dark colors for visibility
-// - Very dark (luminance < 0.15): lighten by 25%
-// - Dark (luminance < 0.3): lighten by 15%
-// - Medium/Light: use color directly
+// Uses --accent-boost-strong for very dark (luminance < 0.15)
+// Uses --accent-boost-light for dark (luminance < 0.3)
+// Medium/Light: use color directly
 
 // getMutedColor() returns a dimmed version for non-playable tracks
-// Uses 35% opacity of the crate color
+// Uses --accent-muted-alpha for opacity
 ```
 
-JavaScript updates these when a crate is assigned:
+JavaScript updates these when a crate is assigned (all values from CSS tokens):
 ```javascript
-// When crate selected
+// When crate selected - uses playableAlphaFaint, playableAlphaSubtle, etc.
 wrapper.style.setProperty('--playable-color', crateColor);
-wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, 0.5));
-wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, 0.03));
-wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, 0.06));
-wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, 0.4));
+wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, playableDimAmount));
+wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, playableAlphaFaint));
+wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, playableAlphaSubtle));
+wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, playableAlphaBorder));
 wrapper.style.setProperty('--playable-accent', getAccentColor(crateColor));
 wrapper.style.setProperty('--playable-muted', getMutedColor(crateColor));
 

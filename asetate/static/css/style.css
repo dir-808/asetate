@@ -165,6 +165,22 @@
     --btn-hover-bg-strong: rgb(255 255 255 / var(--btn-3d-bg-hover-strong));
 
     /* -----------------------------------------
+       DYNAMIC PLAYABLE COLOR TOKENS
+       Used by JavaScript to generate crate-colored variants
+       These match the alpha values in --primary-bg-* tokens
+       ----------------------------------------- */
+    /* Playable highlight alpha values (for JS hexToRgba) */
+    --playable-alpha-faint: 0.03;    /* Very subtle track background */
+    --playable-alpha-subtle: 0.06;   /* Hover/selected background */
+    --playable-alpha-border: 0.4;    /* Side border visibility */
+    --playable-dim-amount: 0.5;      /* How much to darken for dim state */
+
+    /* Accent color boost for dark crates (WCAG readability) */
+    --accent-boost-strong: 0.25;     /* Lightening for very dark colors (luminance < 0.15) */
+    --accent-boost-light: 0.15;      /* Lightening for dark colors (luminance < 0.3) */
+    --accent-muted-alpha: 0.35;      /* Opacity for non-playable muted state */
+
+    /* -----------------------------------------
        SPACING - Based on 8pt grid
        Use these tokens, never hardcode values
        ----------------------------------------- */
