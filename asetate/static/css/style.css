@@ -125,6 +125,25 @@
     --lcd-dim-alpha: rgba(34, 84, 61, 0.5);         /* LCD dim at 50% opacity */
 
     /* -----------------------------------------
+       3D BUTTON BORDER EFFECT
+       MPC-style beveled edges for depth
+       Light edges (top/left), dark edges (bottom/right)
+       ----------------------------------------- */
+    /* Normal state borders */
+    --btn-3d-light-top: rgba(255, 255, 255, 0.15);     /* Top edge highlight */
+    --btn-3d-light-left: rgba(255, 255, 255, 0.1);    /* Left edge highlight */
+    --btn-3d-dark-right: rgba(0, 0, 0, 0.25);         /* Right edge shadow */
+    --btn-3d-dark-bottom: rgba(0, 0, 0, 0.3);         /* Bottom edge shadow */
+    /* Hover state borders (slightly more pronounced) */
+    --btn-3d-light-top-hover: rgba(255, 255, 255, 0.2);   /* Hover top edge */
+    --btn-3d-light-left-hover: rgba(255, 255, 255, 0.15); /* Hover left edge */
+    --btn-3d-dark-right-hover: rgba(0, 0, 0, 0.3);        /* Hover right edge */
+    --btn-3d-dark-bottom-hover: rgba(0, 0, 0, 0.4);       /* Hover bottom edge */
+    /* Hover backgrounds */
+    --btn-hover-bg: rgba(255, 255, 255, 0.1);         /* Subtle hover background */
+    --btn-hover-bg-strong: rgba(255, 255, 255, 0.15); /* Stronger hover background */
+
+    /* -----------------------------------------
        3D BUTTON PRESS EFFECT
        Subtle border inversion for pressed/active state
        Use these on :active pseudo-class
@@ -2374,17 +2393,17 @@ input::placeholder, textarea::placeholder {
     transition: background-color var(--duration-base) ease;
     /* 3D border effect - no right border (sits flush against main) */
     border-style: solid;
-    border-top-width: 2px;
-    border-left-width: 2px;
+    border-top-width: var(--border-width-md);
+    border-left-width: var(--border-width-md);
     border-right-width: 0;   /* No separator - sits flush against main */
-    border-bottom-width: 2px;
-    border-top-color: rgba(255, 255, 255, 0.2);
-    border-left-color: rgba(255, 255, 255, 0.15);
-    border-bottom-color: rgba(0, 0, 0, 0.3);
+    border-bottom-width: var(--border-width-md);
+    border-top-color: var(--btn-3d-light-top-hover);
+    border-left-color: var(--btn-3d-light-top);
+    border-bottom-color: var(--btn-3d-dark-bottom);
 }
 
 .detail-crate-dropdown-btn:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: var(--btn-hover-bg-strong);
 }
 
 .detail-crate-dropdown-btn:active {
@@ -2412,17 +2431,17 @@ input::placeholder, textarea::placeholder {
     transition: background-color var(--duration-base) ease;
     /* 3D border effect - no left border (sits flush against dropdown) */
     border-style: solid;
-    border-top-width: 2px;
+    border-top-width: var(--border-width-md);
     border-left-width: 0;   /* No separator - sits flush against dropdown */
-    border-right-width: 2px;
-    border-bottom-width: 2px;
-    border-top-color: rgba(255, 255, 255, 0.2);
-    border-right-color: rgba(0, 0, 0, 0.25);
-    border-bottom-color: rgba(0, 0, 0, 0.3);
+    border-right-width: var(--border-width-md);
+    border-bottom-width: var(--border-width-md);
+    border-top-color: var(--btn-3d-light-top-hover);
+    border-right-color: var(--btn-3d-dark-right);
+    border-bottom-color: var(--btn-3d-dark-bottom);
 }
 
 .detail-crate-main:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--btn-hover-bg);
 }
 
 .detail-crate-main:active {
@@ -2461,20 +2480,20 @@ input::placeholder, textarea::placeholder {
     height: var(--detail-crate-height);
     /* MPC2000 3D depth effect using borders (no corner overlap) */
     border-style: solid;
-    border-width: 2px;
-    border-top-color: rgba(255, 255, 255, 0.15);
-    border-left-color: rgba(255, 255, 255, 0.1);
-    border-right-color: rgba(0, 0, 0, 0.25);
-    border-bottom-color: rgba(0, 0, 0, 0.3);
+    border-width: var(--border-width-md);
+    border-top-color: var(--btn-3d-light-top);
+    border-left-color: var(--btn-3d-light-left);
+    border-right-color: var(--btn-3d-dark-right);
+    border-bottom-color: var(--btn-3d-dark-bottom);
 }
 
 .detail-crate-empty-btn:hover {
     color: var(--lcd-text);
     background-color: var(--border);
-    border-top-color: rgba(255, 255, 255, 0.2);
-    border-left-color: rgba(255, 255, 255, 0.15);
-    border-right-color: rgba(0, 0, 0, 0.3);
-    border-bottom-color: rgba(0, 0, 0, 0.4);
+    border-top-color: var(--btn-3d-light-top-hover);
+    border-left-color: var(--btn-3d-light-left-hover);
+    border-right-color: var(--btn-3d-dark-right-hover);
+    border-bottom-color: var(--btn-3d-dark-bottom-hover);
 }
 
 .detail-crate-empty-btn:active {
@@ -2495,15 +2514,6 @@ input::placeholder, textarea::placeholder {
 .detail-crate-assigned {
     /* Color-specific styling handled by inline styles for background */
     /* 3D depth effect is provided by border colors on .detail-crate-dropdown-btn and .detail-crate-main */
-}
-
-/* Dropdown button pressed state */
-.detail-crate-dropdown-btn:active {
-    box-shadow:
-        inset -2px 0 0 rgba(255, 255, 255, 0.1),
-        inset 2px 0 0 rgba(0, 0, 0, 0.2),
-        inset 0 -2px 0 rgba(255, 255, 255, 0.1),
-        inset 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 
 /* Crate name - color set dynamically by JS */
@@ -2616,20 +2626,20 @@ input::placeholder, textarea::placeholder {
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
     /* MPC2000 3D depth effect using borders (no corner overlap) */
     border-style: solid;
-    border-width: 2px;
-    border-top-color: rgba(255, 255, 255, 0.15);
-    border-left-color: rgba(255, 255, 255, 0.1);
-    border-right-color: rgba(0, 0, 0, 0.25);
-    border-bottom-color: rgba(0, 0, 0, 0.3);
+    border-width: var(--border-width-md);
+    border-top-color: var(--btn-3d-light-top);
+    border-left-color: var(--btn-3d-light-left);
+    border-right-color: var(--btn-3d-dark-right);
+    border-bottom-color: var(--btn-3d-dark-bottom);
 }
 
 .detail-btn:hover {
     background-color: var(--border);
     color: var(--lcd-text);
-    border-top-color: rgba(255, 255, 255, 0.2);
-    border-left-color: rgba(255, 255, 255, 0.15);
-    border-right-color: rgba(0, 0, 0, 0.3);
-    border-bottom-color: rgba(0, 0, 0, 0.4);
+    border-top-color: var(--btn-3d-light-top-hover);
+    border-left-color: var(--btn-3d-light-left-hover);
+    border-right-color: var(--btn-3d-dark-right-hover);
+    border-bottom-color: var(--btn-3d-dark-bottom-hover);
 }
 
 /* Pressed/active state - subtle inversion using tokens */

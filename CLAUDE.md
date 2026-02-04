@@ -178,6 +178,39 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--neutral-lighter` | #6b7280 | Secondary hover light edge |
 | `--neutral-darker` | #1f2937 | Secondary hover dark edge |
 
+#### 3D Button Border Effect (MPC-style beveled edges)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--btn-3d-light-top` | rgba(255,255,255,0.15) | Top edge highlight |
+| `--btn-3d-light-left` | rgba(255,255,255,0.1) | Left edge highlight |
+| `--btn-3d-dark-right` | rgba(0,0,0,0.25) | Right edge shadow |
+| `--btn-3d-dark-bottom` | rgba(0,0,0,0.3) | Bottom edge shadow |
+| `--btn-3d-light-top-hover` | rgba(255,255,255,0.2) | Hover top edge |
+| `--btn-3d-light-left-hover` | rgba(255,255,255,0.15) | Hover left edge |
+| `--btn-3d-dark-right-hover` | rgba(0,0,0,0.3) | Hover right edge |
+| `--btn-3d-dark-bottom-hover` | rgba(0,0,0,0.4) | Hover bottom edge |
+| `--btn-hover-bg` | rgba(255,255,255,0.1) | Subtle hover background |
+| `--btn-hover-bg-strong` | rgba(255,255,255,0.15) | Stronger hover background |
+
+**Usage pattern for 3D buttons:**
+```css
+.my-button {
+    border-style: solid;
+    border-width: var(--border-width-md);
+    border-top-color: var(--btn-3d-light-top);
+    border-left-color: var(--btn-3d-light-left);
+    border-right-color: var(--btn-3d-dark-right);
+    border-bottom-color: var(--btn-3d-dark-bottom);
+}
+
+.my-button:hover {
+    border-top-color: var(--btn-3d-light-top-hover);
+    border-left-color: var(--btn-3d-light-left-hover);
+    border-right-color: var(--btn-3d-dark-right-hover);
+    border-bottom-color: var(--btn-3d-dark-bottom-hover);
+}
+```
+
 #### 3D Button Press Effect (Active State)
 | Token | Value | Usage |
 |-------|-------|-------|
