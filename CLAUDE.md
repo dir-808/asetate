@@ -865,10 +865,14 @@ On the release detail page, playable highlighting uses the assigned crate's colo
 | `--playable-muted` | `--text-muted` | Side column color for non-playable tracks |
 
 **Luminance-based accent colors:**
-The Side column and playable toggle use the crate color, with a subtle brightness boost for dark crates. JavaScript reads values from CSS tokens (see "Dynamic Playable Color Tokens" section above):
+The Side column, playable toggle, and track inputs use the crate color when playable. Dark crates get HSL-based brightness boost (preserves saturation, unlike lightenColor which blends toward white). JavaScript reads values from CSS tokens (see "Dynamic Playable Color Tokens" section above):
 
 ```javascript
-// getAccentColor() subtly boosts dark colors for visibility
+// boostColor(hexColor, amount) - HSL-based brightness boost
+// Increases lightness while preserving saturation for vibrant results
+// Used instead of lightenColor() which desaturates by blending toward white
+
+// getAccentColor() uses boostColor for dark crates
 // Uses --accent-boost-strong for very dark (luminance < 0.15)
 // Uses --accent-boost-light for dark (luminance < 0.3)
 // Medium/Light: use color directly

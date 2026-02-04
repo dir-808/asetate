@@ -2116,12 +2116,12 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-row:not(.track-playable):hover {
-    opacity: var(--opacity-muted);
+    opacity: var(--opacity-faded);
 }
 
+/* Side column - inherits grey from dimmed row, accent color when playable */
 .col-pos {
     width: var(--col-pos-width);
-    color: var(--playable-muted);
     font-weight: var(--weight-semibold);
     transition: color var(--duration-base) ease;
 }
@@ -2190,6 +2190,15 @@ input::placeholder, textarea::placeholder {
 .track-input:focus {
     background-color: var(--bg-input);
     border-color: var(--primary);
+}
+
+/* Playable track inputs use accent color */
+.track-row.track-playable .track-input {
+    color: var(--playable-accent);
+}
+
+.track-row.track-playable .track-input:focus {
+    border-color: var(--playable-accent);
 }
 
 /* Energy slider styling */
