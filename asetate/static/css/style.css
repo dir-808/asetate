@@ -2333,10 +2333,10 @@ input::placeholder, textarea::placeholder {
     box-shadow: var(--shadow-inset-lcd);
 }
 
-/* Header row: crate + buttons + cover + info + notes */
+/* Header row: buttons + cover + crate + info + notes */
 .detail-header {
     display: flex;
-    border-bottom: var(--border-width-md) solid var(--border);
+    /* No border-bottom - child elements (info, notes) provide their own bottom borders */
 }
 
 /* Left section: buttons + cover + crate bar */
@@ -2610,11 +2610,10 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     justify-content: center;
     background-color: var(--bg-elevated);
-    color: var(--text-muted);
-    opacity: var(--opacity-muted);
+    color: var(--lcd-dim);
     cursor: pointer;
     text-decoration: none;
-    transition: background-color var(--duration-base) ease, color var(--duration-base) ease, opacity var(--duration-base) ease;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
     /* MPC2000 3D depth effect using borders (no corner overlap) */
     border-style: solid;
     border-width: 2px;
@@ -2626,8 +2625,7 @@ input::placeholder, textarea::placeholder {
 
 .detail-btn:hover {
     background-color: var(--border);
-    color: var(--primary);
-    opacity: 1;
+    color: var(--lcd-text);
     border-top-color: rgba(255, 255, 255, 0.2);
     border-left-color: rgba(255, 255, 255, 0.15);
     border-right-color: rgba(0, 0, 0, 0.3);
@@ -2776,7 +2774,9 @@ input::placeholder, textarea::placeholder {
     min-height: var(--textarea-min-height);
     padding: var(--space-md);
     background-color: var(--lcd-bg);
-    border: var(--border-width-sm) solid var(--border);
+    border: var(--border-width-md) solid var(--border);
+    /* Negative margin to overlap with info section border on left */
+    margin-left: calc(-1 * var(--border-width-md));
     color: var(--lcd-text);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
@@ -2838,6 +2838,10 @@ input::placeholder, textarea::placeholder {
 
     .detail-notes {
         width: 100%;
+    }
+
+    .detail-notes-textarea {
+        margin-left: 0;
     }
 }
 
