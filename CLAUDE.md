@@ -178,19 +178,36 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--neutral-lighter` | #6b7280 | Secondary hover light edge |
 | `--neutral-darker` | #1f2937 | Secondary hover dark edge |
 
-#### 3D Button Border Effect (MPC-style beveled edges)
+#### 3D Button Framework (Formula-based MPC-style beveled edges)
+
+This framework uses alpha values with CSS calc() to create consistent 3D depth effects on ANY background color. Light source is top-left, so top/left edges get white overlay (highlight) and bottom/right edges get black overlay (shadow).
+
+**Base Alpha Values (adjust these to tune all buttons at once):**
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--btn-3d-light-top` | rgba(255,255,255,0.15) | Top edge highlight |
-| `--btn-3d-light-left` | rgba(255,255,255,0.1) | Left edge highlight |
-| `--btn-3d-dark-right` | rgba(0,0,0,0.25) | Right edge shadow |
-| `--btn-3d-dark-bottom` | rgba(0,0,0,0.3) | Bottom edge shadow |
-| `--btn-3d-light-top-hover` | rgba(255,255,255,0.2) | Hover top edge |
-| `--btn-3d-light-left-hover` | rgba(255,255,255,0.15) | Hover left edge |
-| `--btn-3d-dark-right-hover` | rgba(0,0,0,0.3) | Hover right edge |
-| `--btn-3d-dark-bottom-hover` | rgba(0,0,0,0.4) | Hover bottom edge |
-| `--btn-hover-bg` | rgba(255,255,255,0.1) | Subtle hover background |
-| `--btn-hover-bg-strong` | rgba(255,255,255,0.15) | Stronger hover background |
+| `--btn-3d-highlight` | 0.15 | White overlay intensity for light edges |
+| `--btn-3d-shadow` | 0.25 | Black overlay intensity for dark edges |
+| `--btn-3d-boost` | 0.08 | Additional depth on hover |
+| `--btn-3d-press-alpha` | 0.25 | Press effect intensity |
+| `--btn-3d-bg-hover` | 0.1 | Background lightening on hover |
+| `--btn-3d-bg-hover-strong` | 0.15 | Stronger hover for dropdowns |
+
+**Derived Edge Tokens (use these in components):**
+| Token | Derived From | Usage |
+|-------|--------------|-------|
+| `--btn-3d-light-top` | highlight alpha | Top edge (normal) |
+| `--btn-3d-light-left` | highlight alpha | Left edge (normal) |
+| `--btn-3d-dark-bottom` | shadow alpha | Bottom edge (normal) |
+| `--btn-3d-dark-right` | shadow alpha | Right edge (normal) |
+| `--btn-3d-light-top-hover` | highlight + boost | Top edge (hover) |
+| `--btn-3d-light-left-hover` | highlight + boost | Left edge (hover) |
+| `--btn-3d-dark-bottom-hover` | shadow + boost | Bottom edge (hover) |
+| `--btn-3d-dark-right-hover` | shadow + boost | Right edge (hover) |
+| `--btn-press-shadow` | press alpha | Pressed top/left edges |
+| `--btn-press-highlight` | press * 0.4 | Pressed bottom/right edges |
+| `--btn-press-bg` | press * 0.2 | Pressed background |
+| `--btn-hover-bg` | bg-hover alpha | Subtle hover background |
+| `--btn-hover-bg-strong` | bg-hover-strong alpha | Stronger hover background |
 
 **Usage pattern for 3D buttons:**
 ```css
@@ -204,22 +221,13 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 }
 
 .my-button:hover {
+    background-color: var(--btn-hover-bg);
     border-top-color: var(--btn-3d-light-top-hover);
     border-left-color: var(--btn-3d-light-left-hover);
     border-right-color: var(--btn-3d-dark-right-hover);
     border-bottom-color: var(--btn-3d-dark-bottom-hover);
 }
-```
 
-#### 3D Button Press Effect (Active State)
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--btn-press-shadow` | rgba(0,0,0,0.08) | Top/left edges when pressed |
-| `--btn-press-highlight` | rgba(255,255,255,0.04) | Bottom/right edges when pressed |
-| `--btn-press-bg` | rgba(0,0,0,0.03) | Subtle background darkening |
-
-**Usage pattern for `:active` state:**
-```css
 .my-button:active {
     border-top-color: var(--btn-press-shadow);
     border-left-color: var(--btn-press-shadow);
