@@ -125,6 +125,15 @@
     --lcd-dim-alpha: rgba(34, 84, 61, 0.5);         /* LCD dim at 50% opacity */
 
     /* -----------------------------------------
+       3D BUTTON PRESS EFFECT
+       Subtle border inversion for pressed/active state
+       Use these on :active pseudo-class
+       ----------------------------------------- */
+    --btn-press-shadow: rgba(0, 0, 0, 0.08);        /* Top/left edges when pressed */
+    --btn-press-highlight: rgba(255, 255, 255, 0.04); /* Bottom/right edges when pressed */
+    --btn-press-bg: rgba(0, 0, 0, 0.03);            /* Subtle background darkening */
+
+    /* -----------------------------------------
        SPACING - Based on 8pt grid
        Use these tokens, never hardcode values
        ----------------------------------------- */
@@ -2330,7 +2339,7 @@ input::placeholder, textarea::placeholder {
     border-bottom: var(--border-width-md) solid var(--border);
 }
 
-/* Left section: crate bar + buttons + cover */
+/* Left section: buttons + cover + crate bar */
 .detail-left {
     display: flex;
     flex-direction: column;
@@ -2339,7 +2348,7 @@ input::placeholder, textarea::placeholder {
     /* No border - button/crate edges ARE the outer edges */
 }
 
-/* Crate bar - spans buttons + cover */
+/* Crate bar - below buttons + cover */
 .detail-crate {
     position: relative;
     /* No outer border - button edges ARE the borders */
@@ -2379,11 +2388,11 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-crate-dropdown-btn:active {
-    /* Subtle pressed effect - softer inversion */
-    border-top-color: rgba(0, 0, 0, 0.15);
-    border-left-color: rgba(0, 0, 0, 0.12);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    background-color: rgba(0, 0, 0, 0.05);
+    /* Subtle pressed effect using tokens */
+    border-top-color: var(--btn-press-shadow);
+    border-left-color: var(--btn-press-shadow);
+    border-bottom-color: var(--btn-press-highlight);
+    background-color: var(--btn-press-bg);
 }
 
 /* Main crate link (icon + name) - links to crate page */
@@ -2417,11 +2426,11 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-crate-main:active {
-    /* Subtle pressed effect - softer inversion */
-    border-top-color: rgba(0, 0, 0, 0.15);
-    border-right-color: rgba(255, 255, 255, 0.08);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    background-color: rgba(0, 0, 0, 0.05);
+    /* Subtle pressed effect using tokens */
+    border-top-color: var(--btn-press-shadow);
+    border-right-color: var(--btn-press-highlight);
+    border-bottom-color: var(--btn-press-highlight);
+    background-color: var(--btn-press-bg);
 }
 
 /* Force emoji icon to inherit color from parent (overrides inline style) */
@@ -2469,12 +2478,12 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-crate-empty-btn:active {
-    /* Subtle pressed effect - softer inversion */
-    border-top-color: rgba(0, 0, 0, 0.15);
-    border-left-color: rgba(0, 0, 0, 0.12);
-    border-right-color: rgba(255, 255, 255, 0.05);
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    background-color: rgba(0, 0, 0, 0.05);
+    /* Subtle pressed effect using tokens */
+    border-top-color: var(--btn-press-shadow);
+    border-left-color: var(--btn-press-shadow);
+    border-right-color: var(--btn-press-highlight);
+    border-bottom-color: var(--btn-press-highlight);
+    background-color: var(--btn-press-bg);
 }
 
 .detail-crate-text {
@@ -2625,13 +2634,13 @@ input::placeholder, textarea::placeholder {
     border-bottom-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Pressed/active state - subtle inversion for pushed-in effect */
+/* Pressed/active state - subtle inversion using tokens */
 .detail-btn:active {
-    border-top-color: rgba(0, 0, 0, 0.15);
-    border-left-color: rgba(0, 0, 0, 0.12);
-    border-right-color: rgba(255, 255, 255, 0.05);
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    background-color: rgba(0, 0, 0, 0.05);
+    border-top-color: var(--btn-press-shadow);
+    border-left-color: var(--btn-press-shadow);
+    border-right-color: var(--btn-press-highlight);
+    border-bottom-color: var(--btn-press-highlight);
+    background-color: var(--btn-press-bg);
 }
 
 .detail-btn .emoji-icon {
@@ -2639,8 +2648,8 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-btn .sync-icon {
-    width: var(--icon-md);
-    height: var(--icon-md);
+    width: var(--icon-sm);
+    height: var(--icon-sm);
 }
 
 .detail-btn.is-loading .sync-icon {
@@ -2679,13 +2688,16 @@ input::placeholder, textarea::placeholder {
 }
 
 /* Release info - LCD styled */
+/* Release info - grey box that overlaps with cover border */
 .detail-info {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
     padding: var(--space-md);
-    border-right: var(--border-width-sm) solid var(--border);
+    border: var(--border-width-md) solid var(--border);
+    /* Negative margin to overlap with cover's right border */
+    margin-left: calc(-1 * var(--border-width-md));
 }
 
 .detail-info h1 {
@@ -2820,8 +2832,8 @@ input::placeholder, textarea::placeholder {
     }
 
     .detail-info {
-        border-right: none;
-        border-bottom: var(--border-width-sm) solid var(--border);
+        margin-left: 0;
+        border-bottom: var(--border-width-md) solid var(--border);
     }
 
     .detail-notes {

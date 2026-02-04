@@ -178,6 +178,24 @@ When adding new styles, find the appropriate CUBE layer and section within it.
 | `--neutral-lighter` | #6b7280 | Secondary hover light edge |
 | `--neutral-darker` | #1f2937 | Secondary hover dark edge |
 
+#### 3D Button Press Effect (Active State)
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--btn-press-shadow` | rgba(0,0,0,0.08) | Top/left edges when pressed |
+| `--btn-press-highlight` | rgba(255,255,255,0.04) | Bottom/right edges when pressed |
+| `--btn-press-bg` | rgba(0,0,0,0.03) | Subtle background darkening |
+
+**Usage pattern for `:active` state:**
+```css
+.my-button:active {
+    border-top-color: var(--btn-press-shadow);
+    border-left-color: var(--btn-press-shadow);
+    border-right-color: var(--btn-press-highlight);
+    border-bottom-color: var(--btn-press-highlight);
+    background-color: var(--btn-press-bg);
+}
+```
+
 #### Discogs Brand Colors
 | Token | Value | Usage |
 |-------|-------|-------|
