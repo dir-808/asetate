@@ -555,9 +555,14 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         return luminance > 0.179 ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)';
     }
 
+    // Read 3D button alpha tokens from CSS custom properties
+    const rootStyles = getComputedStyle(document.documentElement);
+    const btn3dHighlight = parseFloat(rootStyles.getPropertyValue('--btn-3d-highlight')) || 0.15;
+    const btn3dShadow = parseFloat(rootStyles.getPropertyValue('--btn-3d-shadow')) || 0.25;
+
     // Blend color with white (for 3D light edges)
-    // Amount matches --btn-3d-highlight token (0.15)
-    function lightenColor(hexColor, amount = 0.15) {
+    // Uses --btn-3d-highlight token
+    function lightenColor(hexColor, amount = btn3dHighlight) {
         const hex = hexColor.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
@@ -572,8 +577,8 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
     }
 
     // Blend color with black (for 3D dark edges)
-    // Amount matches --btn-3d-shadow token (0.25)
-    function darkenColor(hexColor, amount = 0.25) {
+    // Uses --btn-3d-shadow token
+    function darkenColor(hexColor, amount = btn3dShadow) {
         const hex = hexColor.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
@@ -596,10 +601,11 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             const bgColor = currentCrate.color_hex || '#3a3a3a';
             if (tracksWrapper) {
                 // Apply 3D borders: light on top/left, dark on bottom/right
-                tracksWrapper.style.borderTopColor = lightenColor(bgColor, 0.15);
-                tracksWrapper.style.borderLeftColor = lightenColor(bgColor, 0.15);
-                tracksWrapper.style.borderRightColor = darkenColor(bgColor, 0.25);
-                tracksWrapper.style.borderBottomColor = darkenColor(bgColor, 0.25);
+                // Uses --btn-3d-highlight and --btn-3d-shadow tokens
+                tracksWrapper.style.borderTopColor = lightenColor(bgColor);
+                tracksWrapper.style.borderLeftColor = lightenColor(bgColor);
+                tracksWrapper.style.borderRightColor = darkenColor(bgColor);
+                tracksWrapper.style.borderBottomColor = darkenColor(bgColor);
             }
             const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
