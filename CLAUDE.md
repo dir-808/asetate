@@ -852,17 +852,18 @@ The tracklist area uses a grey color scheme (not LCD green) to visually separate
 | Columns button | `--text-muted` / `--text-secondary` | Normal / hover states |
 
 **Dynamic Crate Colors (Release Detail Page):**
-On the release detail page, playable highlighting uses the assigned crate's color instead of orange. Custom properties on `.detail-tracks-wrapper` control this:
+On the release detail page, playable highlighting uses the assigned crate's color. When no crate is selected, defaults are grey (matching title text). Custom properties on `.detail-tracks-wrapper` control this:
 
-| Property | Default | Description |
+| Property | Default (no crate) | Description |
 |----------|---------|-------------|
-| `--playable-color` | `--primary` | Solid color for toggle |
-| `--playable-dim` | `--primary-dim` | Dimmed background for checked toggle |
-| `--playable-bg-faint` | `--primary-bg-faint` | Very faint track background (3% alpha) |
-| `--playable-bg-subtle` | `--primary-bg-subtle` | Hover background (6% alpha) |
-| `--playable-border` | `--primary-border-alpha` | Border color (40% alpha) |
-| `--playable-accent` | `--primary` | Side column color for playable tracks |
-| `--playable-muted` | `--text-muted` | Side column color for non-playable tracks |
+| `--playable-color` | `--text-primary` | Solid color for toggle |
+| `--playable-dim` | `--border` | Dimmed background for checked toggle |
+| `--playable-bg-faint` | `--bg-elevated` | Very faint track background |
+| `--playable-bg-subtle` | `--bg-surface` | Hover background |
+| `--playable-accent` | `--text-primary` | Side column, toggle, input colors for playable tracks |
+| `--playable-muted` | `--text-muted` | Color for non-playable tracks |
+
+**Note:** Playable highlighting uses only shaded background (no colored borders) for a cleaner look. Non-playable tracks use `--opacity-disabled` (0.4) to make playable tracks stand out more.
 
 **Luminance-based accent colors:**
 The Side column, playable toggle, and track inputs use the crate color when playable. Dark crates get HSL-based brightness boost (preserves saturation, unlike lightenColor which blends toward white). JavaScript reads values from CSS tokens (see "Dynamic Playable Color Tokens" section above):
@@ -888,44 +889,13 @@ wrapper.style.setProperty('--playable-color', crateColor);
 wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, playableDimAmount));
 wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, playableAlphaFaint));
 wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, playableAlphaSubtle));
-wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, playableAlphaBorder));
 wrapper.style.setProperty('--playable-accent', getAccentColor(crateColor));
 wrapper.style.setProperty('--playable-muted', getMutedColor(crateColor));
 
-// When no crate - reset to defaults
+// When no crate - reset to defaults (grey)
 wrapper.style.removeProperty('--playable-color');
 // ... etc
 ```
-
-```css
-/* Base: all tracks have left/right/bottom borders (grey), first-child also has top */
-/* Playable: change left/right to crate color, add subtle background */
-/* Top edge: change BOTTOM border of preceding non-playable to crate color */
-/* Bottom edge: change bottom of last playable in group to crate color */
-/* Adjacent playable tracks: use ::after pseudo-element for inset gray separator */
-```
-
-**Adjacent playable tracks fix:**
-Gray separator between adjacent playable tracks uses a pseudo-element positioned inside the border box, so it doesn't overlap the colored side borders:
-
-```css
-.track-row.track-playable:has(+ .track-row.track-playable) {
-    position: relative;
-    border-bottom-color: transparent;
-}
-
-.track-row.track-playable:has(+ .track-row.track-playable)::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--border);
-}
-```
-
-Key rule: **Only change border colors, never add/remove borders.** Use `:has()` selector to style elements based on what follows them.
 
 #### Cards & Panels
 - Cards: 2px border, grid layout for covers + info

@@ -2068,55 +2068,22 @@ input::placeholder, textarea::placeholder {
     background-color: var(--bg-elevated);
 }
 
-/* Playable tracks get colored left/right borders (crate color or orange default) */
+/* Playable tracks get shaded background (no colored borders - cleaner look) */
 .track-row.track-playable {
     background-color: var(--playable-bg-faint);
-    border-left-color: var(--playable-border);
-    border-right-color: var(--playable-border);
-}
-
-/* First playable track gets colored top border */
-.track-row.track-playable:first-child {
-    border-top-color: var(--playable-border);
-}
-
-/* Non-playable followed by playable: make its bottom border colored (this IS the top edge of the playable section) */
-.track-row:not(.track-playable):has(+ .track-row.track-playable) {
-    border-bottom-color: var(--playable-border);
-}
-
-/* Last playable in a group (not followed by another playable) gets colored bottom border */
-.track-row.track-playable:not(:has(+ .track-row.track-playable)) {
-    border-bottom-color: var(--playable-border);
-}
-
-/* Adjacent playable tracks: inset gray separator that doesn't overlap colored side borders */
-.track-row.track-playable:has(+ .track-row.track-playable) {
-    position: relative;
-    border-bottom-color: transparent;
-}
-
-.track-row.track-playable:has(+ .track-row.track-playable)::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: var(--border-width-sm);
-    background: var(--border);
 }
 
 .track-row.track-playable:hover {
     background-color: var(--playable-bg-subtle);
 }
 
-/* Non-playable tracks are dimmed */
+/* Non-playable tracks are dimmed (more than --opacity-dim to make playable stand out) */
 .track-row:not(.track-playable) {
-    opacity: var(--opacity-dim);
+    opacity: var(--opacity-disabled);
 }
 
 .track-row:not(.track-playable):hover {
-    opacity: var(--opacity-faded);
+    opacity: var(--opacity-dim);
 }
 
 /* Side column - inherits grey from dimmed row, accent color when playable */
@@ -2189,16 +2156,12 @@ input::placeholder, textarea::placeholder {
 
 .track-input:focus {
     background-color: var(--bg-input);
-    border-color: var(--primary);
+    border-color: var(--playable-accent);
 }
 
 /* Playable track inputs use accent color */
 .track-row.track-playable .track-input {
     color: var(--playable-accent);
-}
-
-.track-row.track-playable .track-input:focus {
-    border-color: var(--playable-accent);
 }
 
 /* Energy slider styling */
@@ -2862,14 +2825,14 @@ input::placeholder, textarea::placeholder {
     margin-bottom: calc(-1 * var(--border-width-md));
     transition: border-color var(--duration-base) ease;
 
-    /* Playable highlight colors - default to primary (orange), JS overrides with crate color */
-    --playable-color: var(--primary);
-    --playable-dim: var(--primary-dim);
-    --playable-bg-faint: var(--primary-bg-faint);
-    --playable-bg-subtle: var(--primary-bg-subtle);
-    --playable-border: var(--primary-border-alpha);
-    /* Accent color for Side column and toggle - always readable (lighter for dark crates) */
-    --playable-accent: var(--primary);
+    /* Playable highlight colors - default to grey (no crate), JS overrides with crate color */
+    --playable-color: var(--text-primary);
+    --playable-dim: var(--border);
+    --playable-bg-faint: var(--bg-elevated);
+    --playable-bg-subtle: var(--bg-surface);
+    --playable-border: var(--border);
+    /* Accent color for Side column and toggle - defaults to grey, JS overrides with crate color */
+    --playable-accent: var(--text-primary);
     --playable-muted: var(--text-muted);
 }
 
