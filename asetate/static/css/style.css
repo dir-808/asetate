@@ -2819,17 +2819,26 @@ input::placeholder, textarea::placeholder {
     box-shadow: var(--shadow-inset-lcd), var(--shadow-focus-success);
 }
 
-/* Track list wrapper - border takes crate color */
+/* Track list wrapper - 3D border takes crate color */
 .detail-tracks-wrapper {
-    border: var(--border-width-md) solid var(--border);
+    border-style: solid;
+    border-width: var(--border-width-md);
+    /* Default 3D borders (grey) - JS overrides with crate color */
+    border-top-color: var(--btn-3d-light-top);
+    border-left-color: var(--btn-3d-light-left);
+    border-right-color: var(--btn-3d-dark-right);
+    border-bottom-color: var(--btn-3d-dark-bottom);
     /* Overlap with notes section above */
     margin-top: calc(-1 * var(--border-width-md));
     transition: border-color var(--duration-base) ease;
 }
 
-/* Press effect on wrapper when button is active - darkens the border area */
+/* Press effect on wrapper when button is active - darkens all edges */
 .detail-tracks-wrapper.is-pressed {
-    box-shadow: inset 0 0 0 var(--border-width-md) var(--btn-press-shadow);
+    border-top-color: var(--btn-press-shadow) !important;
+    border-left-color: var(--btn-press-shadow) !important;
+    border-right-color: var(--btn-press-highlight) !important;
+    border-bottom-color: var(--btn-press-highlight) !important;
 }
 
 /* Track list section */

@@ -555,15 +555,51 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         return luminance > 0.179 ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)';
     }
 
+    // Blend color with white (for 3D light edges)
+    // Amount matches --btn-3d-highlight token (0.15)
+    function lightenColor(hexColor, amount = 0.15) {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+
+        // Blend toward white (255)
+        const newR = Math.round(r + (255 - r) * amount);
+        const newG = Math.round(g + (255 - g) * amount);
+        const newB = Math.round(b + (255 - b) * amount);
+
+        return `rgb(${newR}, ${newG}, ${newB})`;
+    }
+
+    // Blend color with black (for 3D dark edges)
+    // Amount matches --btn-3d-shadow token (0.25)
+    function darkenColor(hexColor, amount = 0.25) {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+
+        // Blend toward black (0)
+        const newR = Math.round(r * (1 - amount));
+        const newG = Math.round(g * (1 - amount));
+        const newB = Math.round(b * (1 - amount));
+
+        return `rgb(${newR}, ${newG}, ${newB})`;
+    }
+
     function updateCrateBarDisplay() {
         const currentCrate = currentCrateId ? allCrates.find(c => c.id === currentCrateId) : null;
         const tracksWrapper = document.getElementById('detail-tracks-wrapper');
 
         if (currentCrate) {
-            // Update tracklist border to match crate color
+            // Update tracklist border with 3D effect matching crate color
             const bgColor = currentCrate.color_hex || '#3a3a3a';
             if (tracksWrapper) {
-                tracksWrapper.style.borderColor = bgColor;
+                // Apply 3D borders: light on top/left, dark on bottom/right
+                tracksWrapper.style.borderTopColor = lightenColor(bgColor, 0.15);
+                tracksWrapper.style.borderLeftColor = lightenColor(bgColor, 0.15);
+                tracksWrapper.style.borderRightColor = darkenColor(bgColor, 0.25);
+                tracksWrapper.style.borderBottomColor = darkenColor(bgColor, 0.25);
             }
             const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
@@ -586,9 +622,12 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
                 toggleDropdown();
             });
         } else {
-            // Reset tracklist border to default
+            // Reset tracklist border to default (CSS handles 3D via tokens)
             if (tracksWrapper) {
-                tracksWrapper.style.borderColor = '';
+                tracksWrapper.style.borderTopColor = '';
+                tracksWrapper.style.borderLeftColor = '';
+                tracksWrapper.style.borderRightColor = '';
+                tracksWrapper.style.borderBottomColor = '';
             }
             // Show empty state - single button to open dropdown
             crateContent.innerHTML = `
