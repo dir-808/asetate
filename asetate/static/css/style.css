@@ -2819,27 +2819,64 @@ input::placeholder, textarea::placeholder {
     box-shadow: var(--shadow-inset-lcd), var(--shadow-focus-success);
 }
 
-/* Track list header */
-.detail-tracks-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-sm) var(--space-md);
-    background-color: var(--bg-elevated);
-    border-bottom: var(--border-width-sm) solid var(--border);
+/* Track list wrapper - border takes crate color */
+.detail-tracks-wrapper {
+    border: var(--border-width-md) solid var(--border);
+    /* Overlap with notes section above */
+    margin-top: calc(-1 * var(--border-width-md));
+    transition: border-color var(--duration-base) ease;
 }
 
-.detail-tracks-header h2 {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    color: var(--text-secondary);
+/* Press effect on wrapper when button is active - darkens the border area */
+.detail-tracks-wrapper.is-pressed {
+    box-shadow: inset 0 0 0 var(--border-width-md) var(--btn-press-shadow);
 }
 
 /* Track list section */
 .detail-tracks-section {
     flex: 1;
+}
+
+/* Columns button in header - blends with thead */
+.col-settings {
+    width: auto;
+    text-align: right;
+    padding-right: var(--space-sm) !important;
+}
+
+.detail-columns-btn {
+    font-family: var(--font-mono);
+    font-size: var(--text-xxs);
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-normal);
+    color: var(--lcd-muted);
+    background-color: transparent;
+    cursor: pointer;
+    padding: var(--space-xs) var(--space-sm);
+    /* 3D effect but no bottom border so it blends with header */
+    border-style: solid;
+    border-width: var(--border-width-md);
+    border-top-color: var(--btn-3d-light-top);
+    border-left-color: var(--btn-3d-light-left);
+    border-right-color: var(--btn-3d-dark-right);
+    border-bottom-color: transparent;
+    transition: color var(--duration-base) ease, background-color var(--duration-base) ease;
+}
+
+.detail-columns-btn:hover {
+    color: var(--lcd-text);
+    background-color: var(--btn-hover-bg);
+    border-top-color: var(--btn-3d-light-top-hover);
+    border-left-color: var(--btn-3d-light-left-hover);
+    border-right-color: var(--btn-3d-dark-right-hover);
+}
+
+.detail-columns-btn:active {
+    border-top-color: var(--btn-press-shadow);
+    border-left-color: var(--btn-press-shadow);
+    border-right-color: var(--btn-press-highlight);
+    background-color: var(--btn-press-bg);
 }
 
 /* Responsive: stack on smaller screens (--bp-lg) */
