@@ -2025,7 +2025,7 @@ input::placeholder, textarea::placeholder {
     font-size: var(--text-xxs);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
-    background-color: var(--lcd-bg);
+    background-color: var(--bg-surface);
     border-bottom: var(--border-width-sm) solid var(--border);
 }
 
@@ -2055,29 +2055,29 @@ input::placeholder, textarea::placeholder {
     background-color: var(--bg-elevated);
 }
 
-/* Playable tracks get orange left/right borders, grey top/bottom for consistent separation */
+/* Playable tracks get colored left/right borders (crate color or orange default) */
 .track-row.track-playable {
-    background-color: var(--primary-bg-faint);
-    border-left-color: var(--primary-border-alpha);
-    border-right-color: var(--primary-border-alpha);
+    background-color: var(--playable-bg-faint);
+    border-left-color: var(--playable-border);
+    border-right-color: var(--playable-border);
 }
 
-/* First playable track gets orange top border */
+/* First playable track gets colored top border */
 .track-row.track-playable:first-child {
-    border-top-color: var(--primary-border-alpha);
+    border-top-color: var(--playable-border);
 }
 
-/* Non-playable followed by playable: make its bottom border orange (this IS the top edge of the playable section) */
+/* Non-playable followed by playable: make its bottom border colored (this IS the top edge of the playable section) */
 .track-row:not(.track-playable):has(+ .track-row.track-playable) {
-    border-bottom-color: var(--primary-border-alpha);
+    border-bottom-color: var(--playable-border);
 }
 
-/* Last playable in a group (not followed by another playable) gets orange bottom border */
+/* Last playable in a group (not followed by another playable) gets colored bottom border */
 .track-row.track-playable:not(:has(+ .track-row.track-playable)) {
-    border-bottom-color: var(--primary-border-alpha);
+    border-bottom-color: var(--playable-border);
 }
 
-/* Adjacent playable tracks: inset gray separator that doesn't overlap orange side borders */
+/* Adjacent playable tracks: inset gray separator that doesn't overlap colored side borders */
 .track-row.track-playable:has(+ .track-row.track-playable) {
     position: relative;
     border-bottom-color: transparent;
@@ -2094,7 +2094,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .track-row.track-playable:hover {
-    background-color: var(--primary-bg-subtle);
+    background-color: var(--playable-bg-subtle);
 }
 
 /* Non-playable tracks are dimmed */
@@ -2831,6 +2831,13 @@ input::placeholder, textarea::placeholder {
     /* Overlap with notes section above */
     margin-top: calc(-1 * var(--border-width-md));
     transition: border-color var(--duration-base) ease;
+
+    /* Playable highlight colors - default to primary (orange), JS overrides with crate color */
+    --playable-color: var(--primary);
+    --playable-dim: var(--primary-dim);
+    --playable-bg-faint: var(--primary-bg-faint);
+    --playable-bg-subtle: var(--primary-bg-subtle);
+    --playable-border: var(--primary-border-alpha);
 }
 
 /* Press effect on wrapper when button is active - darkens all edges */
@@ -2886,6 +2893,16 @@ input::placeholder, textarea::placeholder {
     border-left-color: var(--btn-press-shadow);
     border-right-color: var(--btn-press-highlight);
     background-color: var(--btn-press-bg);
+}
+
+/* Playable toggle in tracklist - uses crate color (inherits from wrapper) */
+.detail-tracks-wrapper .toggle input:checked + .toggle-slider {
+    background-color: var(--playable-dim);
+    border-color: var(--playable-color);
+}
+
+.detail-tracks-wrapper .toggle input:checked + .toggle-slider::before {
+    background-color: var(--playable-color);
 }
 
 /* Responsive: stack on smaller screens (--bp-lg) */

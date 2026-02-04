@@ -816,22 +816,47 @@ Key points:
 - 2px borders only for major containers (cards, panels, modals)
 
 #### Track Highlighting (Playable Sections)
-The playable track border system creates orange "boxes" around playable tracks. This pattern is shared between:
+The playable track border system creates colored "boxes" around playable tracks. This pattern is shared between:
 - **`.panel-track-row`** (sidebar) - the **blueprint**, uses `.track-dimmed` on non-playable
 - **`.track-row`** (full release page) - uses `.track-playable` on playable
 
 **Both must behave identically.** When updating one, update both.
 
+**Dynamic Crate Colors (Release Detail Page):**
+On the release detail page, playable highlighting uses the assigned crate's color instead of orange. Custom properties on `.detail-tracks-wrapper` control this:
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `--playable-color` | `--primary` | Solid color for toggle |
+| `--playable-dim` | `--primary-dim` | Dimmed background for checked toggle |
+| `--playable-bg-faint` | `--primary-bg-faint` | Very faint track background (3% alpha) |
+| `--playable-bg-subtle` | `--primary-bg-subtle` | Hover background (6% alpha) |
+| `--playable-border` | `--primary-border-alpha` | Border color (40% alpha) |
+
+JavaScript updates these when a crate is assigned:
+```javascript
+// When crate selected
+wrapper.style.setProperty('--playable-color', crateColor);
+wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, 0.5));
+wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, 0.03));
+wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, 0.06));
+wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, 0.4));
+
+// When no crate - reset to defaults
+wrapper.style.removeProperty('--playable-color');
+// ... etc
+```
+
 ```css
 /* Base: all tracks have left/right/bottom borders (grey), first-child also has top */
-/* Playable: change left/right to orange, add subtle background */
-/* Orange top edge: change BOTTOM border of preceding non-playable to orange */
-/* Orange bottom edge: change bottom of last playable in group to orange */
+/* Playable: change left/right to crate color, add subtle background */
+/* Top edge: change BOTTOM border of preceding non-playable to crate color */
+/* Bottom edge: change bottom of last playable in group to crate color */
 /* Adjacent playable tracks: use ::after pseudo-element for inset gray separator */
 ```
 
 **Adjacent playable tracks fix:**
-Gray separator between adjacent playable tracks uses a pseudo-element positioned inside the border box, so it doesn't overlap the orange side borders:
+Gray separator between adjacent playable tracks uses a pseudo-element positioned inside the border box, so it doesn't overlap the colored side borders:
 
 ```css
 .track-row.track-playable:has(+ .track-row.track-playable) {

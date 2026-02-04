@@ -592,6 +592,36 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
         return `rgb(${newR}, ${newG}, ${newB})`;
     }
 
+    // Create rgba string from hex color with specified alpha
+    function hexToRgba(hexColor, alpha) {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    // Set playable highlight colors on wrapper (or reset to defaults)
+    function updatePlayableColors(wrapper, crateColor) {
+        if (!wrapper) return;
+
+        if (crateColor) {
+            // Match intensity of primary tokens: faint=0.03, subtle=0.06, border=0.4, dim=50% darker
+            wrapper.style.setProperty('--playable-color', crateColor);
+            wrapper.style.setProperty('--playable-dim', darkenColor(crateColor, 0.5));
+            wrapper.style.setProperty('--playable-bg-faint', hexToRgba(crateColor, 0.03));
+            wrapper.style.setProperty('--playable-bg-subtle', hexToRgba(crateColor, 0.06));
+            wrapper.style.setProperty('--playable-border', hexToRgba(crateColor, 0.4));
+        } else {
+            // Reset to CSS defaults (primary/orange)
+            wrapper.style.removeProperty('--playable-color');
+            wrapper.style.removeProperty('--playable-dim');
+            wrapper.style.removeProperty('--playable-bg-faint');
+            wrapper.style.removeProperty('--playable-bg-subtle');
+            wrapper.style.removeProperty('--playable-border');
+        }
+    }
+
     function updateCrateBarDisplay() {
         const currentCrate = currentCrateId ? allCrates.find(c => c.id === currentCrateId) : null;
         const tracksWrapper = document.getElementById('detail-tracks-wrapper');
@@ -606,6 +636,9 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
                 tracksWrapper.style.borderLeftColor = lightenColor(bgColor);
                 tracksWrapper.style.borderRightColor = darkenColor(bgColor);
                 tracksWrapper.style.borderBottomColor = darkenColor(bgColor);
+
+                // Update playable highlight colors to match crate
+                updatePlayableColors(tracksWrapper, bgColor);
             }
             const textColor = getContrastColor(bgColor);
             const crateUrl = `/crates/${currentCrate.id}`;
@@ -634,6 +667,9 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
                 tracksWrapper.style.borderLeftColor = '';
                 tracksWrapper.style.borderRightColor = '';
                 tracksWrapper.style.borderBottomColor = '';
+
+                // Reset playable highlight colors to default (primary/orange)
+                updatePlayableColors(tracksWrapper, null);
             }
             // Show empty state - single button to open dropdown
             crateContent.innerHTML = `
