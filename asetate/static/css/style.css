@@ -2646,7 +2646,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .detail-btn:hover {
-    background-color: var(--border);
+    background-color: var(--btn-hover-bg);
     color: var(--lcd-text);
     border-top-color: var(--btn-3d-light-top-hover);
     border-left-color: var(--btn-3d-light-left-hover);
