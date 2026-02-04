@@ -2032,12 +2032,8 @@ input::placeholder, textarea::placeholder {
 
 .tracks-table td {
     padding: var(--space-sm) var(--space-md);
-    border-bottom: var(--border-width-sm) solid var(--border);
+    /* No border on td - track-row handles borders to avoid double lines */
     vertical-align: middle;
-}
-
-.tracks-table tbody tr:last-child td {
-    border-bottom: none;
 }
 
 /* Track rows - no border collapse to maintain consistent line thickness */
@@ -2639,7 +2635,7 @@ input::placeholder, textarea::placeholder {
     align-items: center;
     justify-content: center;
     background-color: var(--bg-elevated);
-    color: var(--lcd-muted);
+    color: var(--text-muted);
     cursor: pointer;
     text-decoration: none;
     transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
@@ -2654,7 +2650,7 @@ input::placeholder, textarea::placeholder {
 
 .detail-btn:hover {
     background-color: var(--btn-hover-bg);
-    color: var(--lcd-text);
+    color: var(--primary);
     border-top-color: var(--btn-3d-light-top-hover);
     border-left-color: var(--btn-3d-light-left-hover);
     border-right-color: var(--btn-3d-dark-right-hover);
@@ -2835,8 +2831,10 @@ input::placeholder, textarea::placeholder {
     border-left-color: var(--btn-3d-light-left);
     border-right-color: var(--btn-3d-dark-right);
     border-bottom-color: var(--btn-3d-dark-bottom);
-    /* Overlap with notes section above */
+    /* Overlap with header section above and card's right/bottom borders */
     margin-top: calc(-1 * var(--border-width-md));
+    margin-right: calc(-1 * var(--border-width-md));
+    margin-bottom: calc(-1 * var(--border-width-md));
     transition: border-color var(--duration-base) ease;
 
     /* Playable highlight colors - default to primary (orange), JS overrides with crate color */
@@ -2905,14 +2903,14 @@ input::placeholder, textarea::placeholder {
     background-color: var(--btn-press-bg);
 }
 
-/* Playable toggle in tracklist - uses crate color (inherits from wrapper) */
+/* Playable toggle in tracklist - uses accent color (brighter for dark crates) */
 .detail-tracks-wrapper .toggle input:checked + .toggle-slider {
     background-color: var(--playable-dim);
-    border-color: var(--playable-color);
+    border-color: var(--playable-accent);
 }
 
 .detail-tracks-wrapper .toggle input:checked + .toggle-slider::before {
-    background-color: var(--playable-color);
+    background-color: var(--playable-accent);
 }
 
 /* Responsive: stack on smaller screens (--bp-lg) */

@@ -201,6 +201,7 @@
                                 <button class="tag-add-btn" title="Add tag">+</button>
                             </div>
                         </td>
+                        <td class="col-settings"></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -602,24 +603,24 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
     }
 
     // Calculate accent color for Side column based on luminance
-    // Dark crates get lighter accents for readability
+    // Dark crates get slightly more vibrant/saturated accents for readability
     function getAccentColor(hexColor) {
         const luminance = getLuminance(hexColor);
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
 
-        // For dark colors (low luminance), lighten significantly
-        // For medium colors, lighten moderately
-        // For light colors, use as-is or slightly darken for contrast
+        // For dark colors, boost brightness slightly to ensure visibility
+        // For light colors, use as-is
         if (luminance < 0.15) {
-            // Very dark - lighten by 50%
-            return lightenColor(hexColor, 0.5);
+            // Very dark - boost by 25%
+            return lightenColor(hexColor, 0.25);
         } else if (luminance < 0.3) {
-            // Dark - lighten by 35%
-            return lightenColor(hexColor, 0.35);
-        } else if (luminance < 0.5) {
-            // Medium - lighten by 20%
-            return lightenColor(hexColor, 0.2);
+            // Dark - boost by 15%
+            return lightenColor(hexColor, 0.15);
         } else {
-            // Light - use directly
+            // Medium/light - use directly
             return hexColor;
         }
     }
@@ -627,17 +628,8 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
     // Calculate muted color for non-playable Side column
     // Should be visually quieter than the accent
     function getMutedColor(hexColor) {
-        const luminance = getLuminance(hexColor);
-
-        // Return a grayed-out version at reduced opacity
-        // Use text-muted level opacity (about 0.5-0.6)
-        if (luminance < 0.3) {
-            // Dark colors: use a lighter grey
-            return hexToRgba(hexColor, 0.4);
-        } else {
-            // Light colors: use the color at reduced opacity
-            return hexToRgba(hexColor, 0.5);
-        }
+        // Return a desaturated, dimmed version using opacity
+        return hexToRgba(hexColor, 0.35);
     }
 
     // Set playable highlight colors on wrapper (or reset to defaults)

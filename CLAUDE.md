@@ -846,17 +846,16 @@ On the release detail page, playable highlighting uses the assigned crate's colo
 | `--playable-muted` | `--text-muted` | Side column color for non-playable tracks |
 
 **Luminance-based accent colors:**
-The Side column uses the crate color, but dark crates need a brighter accent for readability. JavaScript calculates this based on WCAG luminance:
+The Side column and playable toggle use the crate color, with a subtle brightness boost for dark crates. JavaScript calculates this based on WCAG luminance:
 
 ```javascript
-// getAccentColor() lightens dark colors for readability
-// - Very dark (luminance < 0.15): lighten by 50%
-// - Dark (luminance < 0.3): lighten by 35%
-// - Medium (luminance < 0.5): lighten by 20%
-// - Light: use color directly
+// getAccentColor() subtly boosts dark colors for visibility
+// - Very dark (luminance < 0.15): lighten by 25%
+// - Dark (luminance < 0.3): lighten by 15%
+// - Medium/Light: use color directly
 
-// getMutedColor() returns a grayed-out version for non-playable tracks
-// Uses reduced opacity (0.4-0.5) based on luminance
+// getMutedColor() returns a dimmed version for non-playable tracks
+// Uses 35% opacity of the crate color
 ```
 
 JavaScript updates these when a crate is assigned:
