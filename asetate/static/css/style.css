@@ -120,8 +120,8 @@
     --overlay-medium: rgba(0, 0, 0, 0.5);           /* Medium overlay */
     --overlay-heavy: rgba(0, 0, 0, 0.7);            /* Heavy overlay */
     --overlay-strong: rgba(0, 0, 0, 0.8);           /* Strong overlay */
-    /* Grey playable background (for no-crate state) */
-    --grey-bg-playable: rgba(255, 255, 255, 0.06);  /* Subtle white tint for playable */
+    /* Grey playable background (for no-crate state) - darker tint */
+    --grey-bg-playable: rgba(0, 0, 0, 0.15);  /* Dark overlay for playable tracks */
 
     /* LCD dim border alpha */
     --lcd-dim-alpha: rgba(34, 84, 61, 0.5);         /* LCD dim at 50% opacity */
@@ -2032,12 +2032,12 @@ input::placeholder, textarea::placeholder {
 .tracks-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;  /* Prevent column width recalculation when dropdown opens */
     font-size: var(--text-sm);
     background-color: var(--bg-primary);
 }
 
 .tracks-table th {
-    text-align: left;
     padding: var(--space-sm) var(--space-md);
     font-weight: var(--weight-semibold);
     color: var(--text-secondary);
@@ -2046,6 +2046,7 @@ input::placeholder, textarea::placeholder {
     letter-spacing: var(--tracking-wider);
     background-color: var(--bg-surface);
     border-bottom: var(--border-width-sm) solid var(--border);
+    /* text-align inherited from column classes (.col-bpm, .col-pos, etc.) */
 }
 
 .tracks-table td {
@@ -2101,7 +2102,10 @@ input::placeholder, textarea::placeholder {
     color: var(--playable-accent);
 }
 
-.col-title { min-width: var(--col-title-min); }
+.col-title {
+    min-width: var(--col-title-min);
+    text-align: left;
+}
 
 .track-title { font-weight: var(--weight-medium); }
 
