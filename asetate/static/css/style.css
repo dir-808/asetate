@@ -2026,7 +2026,8 @@ input::placeholder, textarea::placeholder {
 .save-indicator.error { color: var(--error); }
 
 .tracks-table-wrapper {
-    overflow-x: auto;
+    /* Use visible instead of auto to prevent scrollbar from appearing when dropdowns open */
+    overflow: visible;
 }
 
 .tracks-table {
@@ -6235,10 +6236,16 @@ body.crate-panel-open .crates-main {
 }
 
 .key-dropdown {
+    /* Position left-aligned to avoid transform-related layout shifts */
     min-width: calc(var(--col-field-width) - var(--space-sm));
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     max-height: var(--dropdown-lg-max-height);
+}
+
+/* Ensure table cells with dropdowns don't clip or affect layout */
+td.col-key {
+    position: relative;
+    overflow: visible;
 }
 
 .key-dropdown .dropdown-list {
