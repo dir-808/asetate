@@ -120,6 +120,8 @@
     --overlay-medium: rgba(0, 0, 0, 0.5);           /* Medium overlay */
     --overlay-heavy: rgba(0, 0, 0, 0.7);            /* Heavy overlay */
     --overlay-strong: rgba(0, 0, 0, 0.8);           /* Strong overlay */
+    /* Grey playable background (for no-crate state) */
+    --grey-bg-playable: rgba(255, 255, 255, 0.06);  /* Subtle white tint for playable */
 
     /* LCD dim border alpha */
     --lcd-dim-alpha: rgba(34, 84, 61, 0.5);         /* LCD dim at 50% opacity */
@@ -2090,6 +2092,7 @@ input::placeholder, textarea::placeholder {
 .col-pos {
     width: var(--col-pos-width);
     font-weight: var(--weight-semibold);
+    text-align: center;
     transition: color var(--duration-base) ease;
 }
 
@@ -2120,12 +2123,14 @@ input::placeholder, textarea::placeholder {
 
 .col-duration {
     width: var(--col-duration-width);
+    text-align: center;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
 }
 
 .col-bpm, .col-key, .col-energy {
     width: var(--col-field-width);
+    text-align: center;
 }
 
 .col-playable {
@@ -2707,10 +2712,16 @@ input::placeholder, textarea::placeholder {
     min-width: 0;
     display: flex;
     flex-direction: column;
+    gap: var(--space-sm);
     padding: var(--space-md);
     border: var(--border-width-md) solid var(--border);
     /* Negative margin to overlap with cover's right border */
     margin-left: calc(-1 * var(--border-width-md));
+}
+
+/* Header section: title + artist */
+.detail-info-header {
+    margin-bottom: var(--space-2xs);
 }
 
 .detail-info h1 {
@@ -2725,41 +2736,97 @@ input::placeholder, textarea::placeholder {
     font-size: var(--text-sm);
     color: var(--lcd-text);
     opacity: var(--opacity-faded);
-    margin-bottom: var(--space-sm);
 }
 
-.detail-catno {
-    font-size: var(--text-xs);
-    color: var(--lcd-text);
-    font-weight: var(--weight-semibold);
-    margin-bottom: var(--space-xs);
+/* Metadata grid - 2 columns of labeled fields */
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs) var(--space-md);
 }
 
-.detail-meta {
+.detail-field {
     display: flex;
-    gap: var(--space-sm);
-    font-size: var(--text-xs);
-    color: var(--text-secondary);
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--space-2xs);
 }
 
-.detail-meta-secondary {
-    margin-top: var(--space-xs);
+.detail-field-wide {
+    grid-column: span 2;
+}
+
+.detail-field-label {
     font-size: var(--text-2xs);
     color: var(--lcd-dim);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
 }
 
-.detail-label {
-    max-width: 200px;
+.detail-field-value {
+    font-size: var(--text-xs);
+    color: var(--lcd-text);
+}
+
+.detail-field-truncate {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+/* Genres & Styles */
+.detail-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-sm);
+    font-size: var(--text-2xs);
+    color: var(--lcd-dim);
+}
+
+.detail-genre-label {
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-normal);
+}
+
+.detail-genre-value {
+    color: var(--lcd-muted);
+}
+
+/* Condition & Price section */
+.detail-condition {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-xs) 0;
+    border-top: var(--border-width-sm) solid var(--lcd-dim-alpha);
+}
+
+.detail-condition-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+}
+
+.detail-condition-label {
+    font-size: var(--text-2xs);
+    color: var(--lcd-dim);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+}
+
+.detail-condition-value {
+    font-size: var(--text-xs);
+    color: var(--lcd-text);
+}
+
+.detail-price {
+    color: var(--success);
+    font-weight: var(--weight-semibold);
+}
+
+/* Divider and stats */
 .detail-divider {
     height: var(--border-width-sm);
     background-color: var(--lcd-dim-alpha);
-    margin: var(--space-sm) 0;
+    margin-top: auto;
 }
 
 .detail-stats {
@@ -2767,7 +2834,6 @@ input::placeholder, textarea::placeholder {
     gap: var(--space-sm);
     font-size: var(--text-xs);
     color: var(--lcd-muted);
-    margin-top: auto;
 }
 
 .detail-stats .text-success {
@@ -2831,8 +2897,8 @@ input::placeholder, textarea::placeholder {
     /* Playable highlight colors - default to grey (no crate), JS overrides with crate color */
     --playable-color: var(--text-primary);
     --playable-dim: var(--border);
-    --playable-bg-faint: var(--bg-elevated);
-    --playable-bg-subtle: var(--bg-surface);
+    --playable-bg-faint: var(--grey-bg-playable);
+    --playable-bg-subtle: var(--grey-bg-playable); /* Same as faint - no hover change */
     --playable-border: var(--border);
     /* Accent color for Side column and toggle - defaults to grey, JS overrides with crate color */
     --playable-accent: var(--text-primary);
@@ -4168,7 +4234,10 @@ body.crate-panel-open .crates-main {
    TAGS
    ============================================ */
 
-.col-tags { min-width: var(--col-tags-min); }
+.col-tags {
+    min-width: var(--col-tags-min);
+    text-align: center;
+}
 
 .track-tags {
     display: flex;

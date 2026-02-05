@@ -71,27 +71,85 @@
 
             <!-- Release Info - LCD styled -->
             <div class="detail-info">
-                <h1>{{ release.display_title }}</h1>
-                <p class="detail-artist">{{ release.display_artist }}</p>
-                {% if release.catno %}
-                <div class="detail-catno">{{ release.catno }}</div>
-                {% endif %}
-                <div class="detail-meta">
-                    {% if release.label %}<span class="detail-label">{{ release.label }}</span>{% endif %}
-                    {% if release.year %}<span class="detail-year">{{ release.year }}</span>{% endif %}
+                <!-- Header: Title + Artist -->
+                <div class="detail-info-header">
+                    <h1>{{ release.display_title }}</h1>
+                    <p class="detail-artist">{{ release.display_artist }}</p>
                 </div>
-                {% if release.format_details or release.country %}
-                <div class="detail-meta detail-meta-secondary">
-                    {% if release.format_details %}<span>{{ release.format_details }}</span>{% endif %}
-                    {% if release.country %}<span>{{ release.country }}</span>{% endif %}
+
+                <!-- Metadata Grid -->
+                <div class="detail-info-grid">
+                    {% if release.catno %}
+                    <div class="detail-field">
+                        <span class="detail-field-label">Cat#</span>
+                        <span class="detail-field-value">{{ release.catno }}</span>
+                    </div>
+                    {% endif %}
+                    {% if release.label %}
+                    <div class="detail-field">
+                        <span class="detail-field-label">Label</span>
+                        <span class="detail-field-value detail-field-truncate">{{ release.label }}</span>
+                    </div>
+                    {% endif %}
+                    {% if release.year %}
+                    <div class="detail-field">
+                        <span class="detail-field-label">Year</span>
+                        <span class="detail-field-value">{{ release.year }}</span>
+                    </div>
+                    {% endif %}
+                    {% if release.country %}
+                    <div class="detail-field">
+                        <span class="detail-field-label">Country</span>
+                        <span class="detail-field-value">{{ release.country }}</span>
+                    </div>
+                    {% endif %}
+                    {% if release.format_details %}
+                    <div class="detail-field detail-field-wide">
+                        <span class="detail-field-label">Format</span>
+                        <span class="detail-field-value">{{ release.format_details }}</span>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
+
+                <!-- Genres & Styles -->
                 {% if release.display_genres or release.display_styles %}
-                <div class="detail-meta detail-meta-secondary">
-                    {% if release.display_genres %}<span>{{ release.display_genres }}</span>{% endif %}
-                    {% if release.display_styles %}<span>{{ release.display_styles }}</span>{% endif %}
+                <div class="detail-genres">
+                    {% if release.display_genres %}
+                    <span class="detail-genre-label">Genre:</span>
+                    <span class="detail-genre-value">{{ release.display_genres }}</span>
+                    {% endif %}
+                    {% if release.display_styles %}
+                    <span class="detail-genre-label">Style:</span>
+                    <span class="detail-genre-value">{{ release.display_styles }}</span>
+                    {% endif %}
                 </div>
                 {% endif %}
+
+                <!-- Condition & Price (from inventory) -->
+                {% if release.condition or release.price %}
+                <div class="detail-condition">
+                    {% if release.condition %}
+                    <div class="detail-condition-item">
+                        <span class="detail-condition-label">Media</span>
+                        <span class="detail-condition-value">{{ release.condition }}</span>
+                    </div>
+                    {% endif %}
+                    {% if release.sleeve_condition %}
+                    <div class="detail-condition-item">
+                        <span class="detail-condition-label">Sleeve</span>
+                        <span class="detail-condition-value">{{ release.sleeve_condition }}</span>
+                    </div>
+                    {% endif %}
+                    {% if release.price %}
+                    <div class="detail-condition-item">
+                        <span class="detail-condition-label">Price</span>
+                        <span class="detail-condition-value detail-price">{{ release.price }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Stats Footer -->
                 <div class="detail-divider"></div>
                 {% set avg_bpm = release.get_average_bpm() %}
                 <div class="detail-stats" id="release-stats">

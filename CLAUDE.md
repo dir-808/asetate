@@ -299,6 +299,7 @@ These tokens are read by JavaScript to generate crate-colored variants of playab
 | `--overlay-heavy` | rgba(0,0,0,0.7) | Heavy overlay |
 | `--overlay-strong` | rgba(0,0,0,0.8) | Strong overlay |
 | `--lcd-dim-alpha` | rgba(34,84,61,0.5) | LCD dim at 50% |
+| `--grey-bg-playable` | rgba(255,255,255,0.06) | Playable track bg (no crate) |
 
 #### Spacing (8pt grid)
 | Token | Value | Usage |
@@ -858,12 +859,12 @@ On the release detail page, playable highlighting uses the assigned crate's colo
 |----------|---------|-------------|
 | `--playable-color` | `--text-primary` | Solid color for toggle |
 | `--playable-dim` | `--border` | Dimmed background for checked toggle |
-| `--playable-bg-faint` | `--bg-elevated` | Very faint track background |
-| `--playable-bg-subtle` | `--bg-surface` | Hover background |
+| `--playable-bg-faint` | `--grey-bg-playable` | Track background (subtle white tint) |
+| `--playable-bg-subtle` | `--grey-bg-playable` | Same as faint (no hover change) |
 | `--playable-accent` | `--text-primary` | Side column, toggle, input colors for playable tracks |
 | `--playable-muted` | `--text-muted` | Color for non-playable tracks |
 
-**Note:** Playable highlighting uses only shaded background (no colored borders) for a cleaner look. Non-playable tracks use `--opacity-disabled` (0.4) to make playable tracks stand out more.
+**Note:** Playable highlighting uses only shaded background (no colored borders) for a cleaner look. Non-playable tracks use `--opacity-disabled` (0.4) to make playable tracks stand out more. Playable tracks have no hover effect when no crate is selected (same background for normal and hover states).
 
 **Luminance-based accent colors:**
 The Side column, playable toggle, and track inputs use the crate color when playable. Dark crates get HSL-based brightness boost (preserves saturation, unlike lightenColor which blends toward white). JavaScript reads values from CSS tokens (see "Dynamic Playable Color Tokens" section above):
