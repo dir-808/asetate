@@ -299,7 +299,7 @@ These tokens are read by JavaScript to generate crate-colored variants of playab
 | `--overlay-heavy` | rgba(0,0,0,0.7) | Heavy overlay |
 | `--overlay-strong` | rgba(0,0,0,0.8) | Strong overlay |
 | `--lcd-dim-alpha` | rgba(34,84,61,0.5) | LCD dim at 50% |
-| `--grey-bg-playable` | rgba(255,255,255,0.06) | Playable track bg (no crate) |
+| `--grey-bg-playable` | rgba(0,0,0,0.15) | Playable track bg (no crate) - dark overlay |
 
 #### Spacing (8pt grid)
 | Token | Value | Usage |
@@ -859,7 +859,7 @@ On the release detail page, playable highlighting uses the assigned crate's colo
 |----------|---------|-------------|
 | `--playable-color` | `--text-primary` | Solid color for toggle |
 | `--playable-dim` | `--border` | Dimmed background for checked toggle |
-| `--playable-bg-faint` | `--grey-bg-playable` | Track background (subtle white tint) |
+| `--playable-bg-faint` | `--grey-bg-playable` | Track background (dark overlay) |
 | `--playable-bg-subtle` | `--grey-bg-playable` | Same as faint (no hover change) |
 | `--playable-accent` | `--text-primary` | Side column, toggle, input colors for playable tracks |
 | `--playable-muted` | `--text-muted` | Color for non-playable tracks |
