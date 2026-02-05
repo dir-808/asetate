@@ -902,6 +902,77 @@ wrapper.style.removeProperty('--playable-color');
 - Info sections use LCD-style background (`--lcd-bg`)
 - Info sections should `flex: 1` to fill remaining space (no gaps)
 
+#### Dropdown Components (Tokenized Pattern)
+
+All dropdowns in Asetate use a consistent pattern with tokenized styles. Use the base `.dropdown` classes for any new dropdown (crates, keys, tags, etc.).
+
+**Base Classes:**
+| Class | Purpose |
+|-------|---------|
+| `.dropdown-wrapper` | Container for trigger + dropdown (position: relative) |
+| `.dropdown` | The dropdown panel (position: absolute, hidden by default) |
+| `.dropdown.active` | Shows the dropdown |
+| `.dropdown-trigger` | Button that opens the dropdown |
+| `.dropdown-trigger.active` | Trigger in active/open state |
+| `.dropdown-list` | Container for dropdown items |
+| `.dropdown-item` | Individual selectable item |
+| `.dropdown-item.selected` | Currently selected item |
+| `.dropdown-caret` | Small arrow indicator (▼) |
+
+**HTML Structure:**
+```html
+<div class="dropdown-wrapper">
+    <button type="button" class="dropdown-trigger">
+        <span class="value-display">Current Value</span>
+        <span class="dropdown-caret">▼</span>
+    </button>
+    <div class="dropdown">
+        <div class="dropdown-list">
+            <div class="dropdown-item" data-value="option1">Option 1</div>
+            <div class="dropdown-item" data-value="option2">Option 2</div>
+        </div>
+    </div>
+</div>
+```
+
+**JavaScript Pattern:**
+```javascript
+// Toggle dropdown
+trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dropdown = wrapper.querySelector('.dropdown');
+    dropdown.classList.toggle('active');
+    trigger.classList.toggle('active');
+});
+
+// Handle selection
+item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const value = item.dataset.value;
+    // Update display and close
+    closeDropdown();
+    // Save value
+});
+
+// Close on outside click
+document.addEventListener('click', closeAllDropdowns);
+```
+
+**Variants:**
+- `.key-dropdown` - Compact 2-column grid for Camelot keys
+- `.crate-dropdown` - Full-width with search and multi-select
+- `.detail-crate-dropdown` - Release page crate picker with search
+
+**Tokens Used:**
+| Token | Usage |
+|-------|-------|
+| `--dropdown-min-width` | Minimum dropdown width (180px) |
+| `--dropdown-max-height` | Maximum height before scroll (250px) |
+| `--dropdown-lg-max-height` | Larger dropdowns (300px) |
+| `--z-dropdown` | Z-index for dropdown layer (10) |
+| `--bg-surface` | Dropdown background |
+| `--bg-elevated` | Hover state background |
+
 #### Emoji Icons (Noto Emoji Font)
 
 > ⚠️ **ALWAYS render icons via centralized files** - never hardcode emoji characters directly in templates or JS. This ensures all icons update from a single source.

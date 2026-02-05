@@ -172,14 +172,21 @@
                             >
                         </td>
                         <td class="col-key {% if 'key' not in visible_fields %}hidden{% endif %}">
-                            <input
-                                type="text"
-                                class="track-input track-key"
-                                value="{{ track.camelot or track.musical_key or '' }}"
-                                placeholder="—"
-                                data-field="camelot"
-                                list="camelot-keys"
-                            >
+                            <div class="dropdown-wrapper key-dropdown-wrapper">
+                                <button type="button" class="dropdown-trigger track-key-trigger" data-field="camelot" data-track-id="{{ track.id }}">
+                                    <span class="key-value">{{ track.camelot or track.musical_key or '—' }}</span>
+                                    <span class="dropdown-caret">▼</span>
+                                </button>
+                                <div class="dropdown key-dropdown">
+                                    <div class="dropdown-list">
+                                        <div class="dropdown-item" data-value="">—</div>
+                                        {% for num in range(1, 13) %}
+                                        <div class="dropdown-item" data-value="{{ num }}A">{{ num }}A</div>
+                                        <div class="dropdown-item" data-value="{{ num }}B">{{ num }}B</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                         <td class="col-energy {% if 'energy' not in visible_fields %}hidden{% endif %}">
                             <div class="energy-bar" data-field="energy" data-value="{{ track.energy or 3 }}">
@@ -208,21 +215,6 @@
             </table>
         </div>
 
-        <!-- Camelot key datalist for autocomplete -->
-        <datalist id="camelot-keys">
-            <option value="1A"><option value="1B">
-            <option value="2A"><option value="2B">
-            <option value="3A"><option value="3B">
-            <option value="4A"><option value="4B">
-            <option value="5A"><option value="5B">
-            <option value="6A"><option value="6B">
-            <option value="7A"><option value="7B">
-            <option value="8A"><option value="8B">
-            <option value="9A"><option value="9B">
-            <option value="10A"><option value="10B">
-            <option value="11A"><option value="11B">
-            <option value="12A"><option value="12B">
-        </datalist>
 
         {% else %}
         <p class="text-muted p-md">No tracks found for this release.</p>
@@ -379,6 +371,78 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
                 clearTimeout(debounceTimers[e.target.closest('tr').dataset.trackId + e.target.dataset.field]);
                 handleInputChange(e);
             });
+        }
+    });
+
+    // Key dropdown handling
+    let activeKeyDropdown = null;
+
+    function closeAllKeyDropdowns() {
+        document.querySelectorAll('.key-dropdown-wrapper').forEach(wrapper => {
+            wrapper.querySelector('.dropdown').classList.remove('active');
+            wrapper.querySelector('.dropdown-trigger').classList.remove('active');
+        });
+        activeKeyDropdown = null;
+    }
+
+    // Toggle dropdown on trigger click
+    document.querySelectorAll('.track-key-trigger').forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wrapper = trigger.closest('.key-dropdown-wrapper');
+            const dropdown = wrapper.querySelector('.dropdown');
+            const isActive = dropdown.classList.contains('active');
+
+            closeAllKeyDropdowns();
+
+            if (!isActive) {
+                dropdown.classList.add('active');
+                trigger.classList.add('active');
+                activeKeyDropdown = wrapper;
+
+                // Mark current value as selected
+                const currentValue = trigger.querySelector('.key-value').textContent.trim();
+                dropdown.querySelectorAll('.dropdown-item').forEach(item => {
+                    const itemValue = item.dataset.value || '—';
+                    item.classList.toggle('selected', itemValue === currentValue || (itemValue === '' && currentValue === '—'));
+                });
+            }
+        });
+    });
+
+    // Handle key selection
+    document.querySelectorAll('.key-dropdown .dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wrapper = item.closest('.key-dropdown-wrapper');
+            const trigger = wrapper.querySelector('.dropdown-trigger');
+            const row = wrapper.closest('tr');
+            const trackId = row.dataset.trackId;
+            const value = item.dataset.value;
+            const displayValue = value || '—';
+
+            // Update display
+            trigger.querySelector('.key-value').textContent = displayValue;
+
+            // Close dropdown
+            closeAllKeyDropdowns();
+
+            // Save to server
+            updateTrack(trackId, 'camelot', value || null);
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (activeKeyDropdown && !activeKeyDropdown.contains(e.target)) {
+            closeAllKeyDropdowns();
+        }
+    });
+
+    // Close dropdown on escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && activeKeyDropdown) {
+            closeAllKeyDropdowns();
         }
     });
 

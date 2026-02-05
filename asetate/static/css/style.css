@@ -2157,6 +2157,7 @@ input::placeholder, textarea::placeholder {
 .track-input:focus {
     background-color: var(--bg-input);
     border-color: var(--playable-accent);
+    box-shadow: none; /* Override global input focus shadow */
 }
 
 /* Playable track inputs use accent color */
@@ -2788,7 +2789,9 @@ input::placeholder, textarea::placeholder {
     min-height: var(--textarea-min-height);
     padding: var(--space-md);
     background-color: var(--lcd-bg);
+    /* Border on top, left, bottom only - right edge is provided by .detail-card */
     border: var(--border-width-md) solid var(--border);
+    border-right: none;
     /* Negative margin to overlap with info section border on left */
     margin-left: calc(-1 * var(--border-width-md));
     color: var(--lcd-text);
@@ -4225,8 +4228,8 @@ body.crate-panel-open .crates-main {
 }
 
 .tag-add-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--playable-accent);
+    color: var(--playable-accent);
 }
 
 .tag-input-wrapper {
@@ -4238,12 +4241,13 @@ body.crate-panel-open .crates-main {
     padding: var(--space-2xs) var(--space-xs);
     font-size: var(--text-xxs);
     background-color: var(--bg-input);
-    border: var(--border-width-sm) solid var(--primary);
+    border: var(--border-width-sm) solid var(--playable-accent);
     color: var(--text-primary);
 }
 
 .tag-input:focus {
     outline: none;
+    box-shadow: none; /* Override global input focus shadow */
 }
 
 /* ============================================
@@ -6032,6 +6036,153 @@ body.crate-panel-open .crates-main {
 .action-group.discogs-group {
     padding-right: var(--space-sm);
     border-right: var(--border-width-sm) solid var(--border);
+}
+
+/* ============================================
+   DROPDOWN COMPONENTS (Base Pattern)
+   ============================================
+   Tokenized dropdown pattern for consistent dropdowns across the app.
+   Use these base classes for any dropdown: crates, keys, tags, etc.
+*/
+
+/* Base dropdown container - positioned absolutely below trigger */
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: var(--dropdown-min-width);
+    max-height: var(--dropdown-max-height);
+    overflow-y: auto;
+    background-color: var(--bg-surface);
+    border: var(--border-width-md) solid var(--border);
+    z-index: var(--z-dropdown);
+    margin-top: var(--space-2xs);
+}
+
+.dropdown.active {
+    display: block;
+}
+
+/* Dropdown wrapper - contains trigger and dropdown */
+.dropdown-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+}
+
+/* Dropdown list container */
+.dropdown-list {
+    padding: var(--space-xs) 0;
+}
+
+/* Individual dropdown item */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text-primary);
+    transition: background-color var(--duration-fast) ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-elevated);
+}
+
+.dropdown-item.selected {
+    background-color: var(--primary-bg-muted);
+    color: var(--primary);
+}
+
+/* Dropdown trigger button - styled like other inputs */
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background-color: transparent;
+    border: var(--border-width-sm) solid transparent;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: center;
+    min-width: var(--input-sm-width);
+    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease;
+}
+
+.dropdown-trigger:hover {
+    background-color: var(--bg-input);
+    border-color: var(--border);
+}
+
+.dropdown-trigger:focus,
+.dropdown-trigger.active {
+    background-color: var(--bg-input);
+    border-color: var(--playable-accent);
+    outline: none;
+}
+
+/* Dropdown caret indicator */
+.dropdown-caret {
+    font-size: var(--text-2xs);
+    opacity: var(--opacity-dim);
+    transition: transform var(--duration-fast) ease;
+}
+
+.dropdown-trigger.active .dropdown-caret {
+    transform: rotate(180deg);
+}
+
+/* Key-specific dropdown (compact, centered under trigger) */
+.key-dropdown-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.key-dropdown-wrapper .dropdown-trigger {
+    min-width: var(--input-sm-width);
+    font-size: var(--text-caption);
+    padding: var(--space-xs) var(--space-2xs);
+    gap: var(--space-2xs);
+}
+
+.key-dropdown-wrapper .dropdown-trigger .key-value {
+    min-width: 24px;
+}
+
+.key-dropdown-wrapper .dropdown-caret {
+    font-size: var(--text-3xs);
+}
+
+.key-dropdown {
+    min-width: calc(var(--col-field-width) - var(--space-sm));
+    left: 50%;
+    transform: translateX(-50%);
+    max-height: var(--dropdown-lg-max-height);
+}
+
+.key-dropdown .dropdown-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    padding: var(--space-2xs);
+}
+
+.key-dropdown .dropdown-item {
+    justify-content: center;
+    padding: var(--space-2xs) var(--space-xs);
+    font-size: var(--text-xs);
+}
+
+.key-dropdown .dropdown-item:first-child {
+    grid-column: span 2;
 }
 
 /* --------------------------------------------
