@@ -974,6 +974,56 @@ document.addEventListener('click', closeAllDropdowns);
 | `--bg-surface` | Dropdown background |
 | `--bg-elevated` | Hover state background |
 
+**Overlay Behavior (IMPORTANT):**
+Dropdowns must overlay content, not push it or cause scrollbars. To achieve this:
+
+1. **Parent containers need `overflow: visible`** - Any container that holds dropdowns must allow content to extend beyond its bounds. This includes table wrappers, cells, and section containers.
+2. **Dropdowns use `position: absolute`** - Positioned relative to their `.dropdown-wrapper` parent, which has `position: relative`.
+3. **High enough z-index** - Use `--z-dropdown` (10) to ensure dropdown appears above other content.
+
+**Flip Behavior (Auto-placement):**
+When a dropdown would extend beyond the viewport bottom, it should "flip" to open upward instead. This is handled by:
+
+1. **CSS class `.dropdown--flip`** - Positions dropdown above the trigger instead of below
+2. **JavaScript detection** - Check if there's enough space below; if not, add the flip class
+
+```css
+/* Flipped dropdown - opens upward when near bottom of viewport */
+.dropdown--flip {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: var(--space-2xs);
+}
+```
+
+```javascript
+// Check if dropdown should flip upward (not enough space below)
+function shouldFlipDropdown(trigger, dropdown) {
+    const triggerRect = trigger.getBoundingClientRect();
+    const dropdownHeight = dropdown.scrollHeight || 300;
+    const viewportHeight = window.innerHeight;
+    const spaceBelow = viewportHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+
+    // Flip if not enough space below but enough space above
+    return spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+}
+
+// Usage when opening dropdown:
+dropdown.classList.remove('dropdown--flip');
+dropdown.classList.add('active');
+if (shouldFlipDropdown(trigger, dropdown)) {
+    dropdown.classList.add('dropdown--flip');
+}
+```
+
+**Dropdowns Inside Tables:**
+Dropdowns inside table cells require extra care:
+- Table and wrapper need `overflow: visible`
+- Table cells containing dropdowns need `position: relative` and `overflow: visible`
+- Use `table-layout: fixed` to prevent column width recalculation when dropdown opens
+
 #### Emoji Icons (Noto Emoji Font)
 
 > ⚠️ **ALWAYS render icons via centralized files** - never hardcode emoji characters directly in templates or JS. This ensures all icons update from a single source.

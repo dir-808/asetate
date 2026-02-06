@@ -437,10 +437,23 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
 
     function closeAllKeyDropdowns() {
         document.querySelectorAll('.key-dropdown-wrapper').forEach(wrapper => {
-            wrapper.querySelector('.dropdown').classList.remove('active');
+            const dropdown = wrapper.querySelector('.dropdown');
+            dropdown.classList.remove('active', 'dropdown--flip');
             wrapper.querySelector('.dropdown-trigger').classList.remove('active');
         });
         activeKeyDropdown = null;
+    }
+
+    // Check if dropdown should flip upward (not enough space below)
+    function shouldFlipDropdown(trigger, dropdown) {
+        const triggerRect = trigger.getBoundingClientRect();
+        const dropdownHeight = dropdown.scrollHeight || 300; // Estimate if not visible
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+
+        // Flip if not enough space below but enough space above
+        return spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
     }
 
     // Toggle dropdown on trigger click
@@ -454,7 +467,15 @@ const releaseId = document.querySelector('.release-detail').dataset.releaseId;
             closeAllKeyDropdowns();
 
             if (!isActive) {
+                // Check if dropdown should flip upward
+                dropdown.classList.remove('dropdown--flip');
                 dropdown.classList.add('active');
+
+                // After making visible, check if we need to flip
+                if (shouldFlipDropdown(trigger, dropdown)) {
+                    dropdown.classList.add('dropdown--flip');
+                }
+
                 trigger.classList.add('active');
                 activeKeyDropdown = wrapper;
 

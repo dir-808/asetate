@@ -2036,6 +2036,7 @@ input::placeholder, textarea::placeholder {
     table-layout: fixed;  /* Prevent column width recalculation when dropdown opens */
     font-size: var(--text-sm);
     background-color: var(--bg-primary);
+    overflow: visible;  /* Allow dropdowns to extend beyond table bounds */
 }
 
 .tracks-table th {
@@ -6132,6 +6133,14 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-md) solid var(--border);
     z-index: var(--z-dropdown);
     margin-top: var(--space-2xs);
+}
+
+/* Flipped dropdown - opens upward when near bottom of viewport */
+.dropdown--flip {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: var(--space-2xs);
 }
 
 .dropdown.active {
