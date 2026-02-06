@@ -2083,11 +2083,29 @@ input::placeholder, textarea::placeholder {
 }
 
 /* Non-playable tracks are dimmed (more than --opacity-dim to make playable stand out) */
+/* Non-playable tracks: use color dimming on specific elements, not opacity on row
+   (row-level opacity would make dropdowns illegible) */
 .track-row:not(.track-playable) {
+    color: var(--text-muted);
+}
+
+/* Dim track info elements - but NOT interactive controls (toggle, dropdown triggers) */
+.track-row:not(.track-playable) .col-pos,
+.track-row:not(.track-playable) .track-title,
+.track-row:not(.track-playable) .col-duration,
+.track-row:not(.track-playable) .track-input,
+.track-row:not(.track-playable) .energy-bar,
+.track-row:not(.track-playable) .track-tags {
     opacity: var(--opacity-disabled);
 }
 
-.track-row:not(.track-playable):hover {
+/* Slightly brighten on hover */
+.track-row:not(.track-playable):hover .col-pos,
+.track-row:not(.track-playable):hover .track-title,
+.track-row:not(.track-playable):hover .col-duration,
+.track-row:not(.track-playable):hover .track-input,
+.track-row:not(.track-playable):hover .energy-bar,
+.track-row:not(.track-playable):hover .track-tags {
     opacity: var(--opacity-dim);
 }
 
@@ -6129,10 +6147,11 @@ body.crate-panel-open .crates-main {
     min-width: var(--dropdown-min-width);
     max-height: var(--dropdown-max-height);
     overflow-y: auto;
-    background-color: var(--bg-surface);
-    border: var(--border-width-md) solid var(--border);
+    background-color: var(--bg-elevated);
+    border: var(--border-width-md) solid var(--border-light);
     z-index: var(--z-dropdown);
     margin-top: var(--space-2xs);
+    box-shadow: var(--shadow-inset-sm);
 }
 
 /* Flipped dropdown - opens upward when near bottom of viewport */
@@ -6173,12 +6192,13 @@ body.crate-panel-open .crates-main {
 }
 
 .dropdown-item:hover {
-    background-color: var(--bg-elevated);
+    background-color: var(--bg-surface);
 }
 
+/* Selected item uses playable-accent to match track context */
 .dropdown-item.selected {
-    background-color: var(--primary-bg-muted);
-    color: var(--primary);
+    background-color: var(--btn-hover-bg);
+    color: var(--playable-accent);
 }
 
 /* Dropdown trigger button - styled like other inputs */
@@ -6192,11 +6212,11 @@ body.crate-panel-open .crates-main {
     border: var(--border-width-sm) solid transparent;
     font-family: var(--font-mono);
     font-size: var(--text-caption);
-    color: var(--text-primary);
+    color: var(--playable-accent, var(--text-primary));  /* Match track accent color */
     cursor: pointer;
     text-align: center;
     min-width: var(--input-sm-width);
-    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease;
+    transition: background-color var(--duration-base) ease, border-color var(--duration-base) ease, color var(--duration-base) ease;
 }
 
 .dropdown-trigger:hover {
@@ -6249,6 +6269,8 @@ body.crate-panel-open .crates-main {
     min-width: calc(var(--col-field-width) - var(--space-sm));
     left: 0;
     max-height: var(--dropdown-lg-max-height);
+    /* Ensure solid, opaque background for legibility */
+    background-color: var(--bg-elevated);
 }
 
 /* Ensure table cells with dropdowns don't clip or affect layout */

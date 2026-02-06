@@ -1024,6 +1024,40 @@ Dropdowns inside table cells require extra care:
 - Table cells containing dropdowns need `position: relative` and `overflow: visible`
 - Use `table-layout: fixed` to prevent column width recalculation when dropdown opens
 
+**Dropdown Styling Best Practices:**
+1. **Solid, opaque background** - Use `--bg-elevated` for dropdown panel background with `--border-light` border for contrast
+2. **Subtle depth** - Add `box-shadow: var(--shadow-inset-sm)` for visual separation from content below
+3. **Context-aware colors** - Selected items use `--playable-accent` (not hardcoded `--primary`) to match track/crate context
+4. **Trigger inherits accent** - Dropdown trigger uses `color: var(--playable-accent, var(--text-primary))` to match context
+
+**IMPORTANT - Opacity and Dropdowns:**
+> ⚠️ **NEVER use `opacity` on parent rows/containers that contain dropdowns.** CSS opacity is multiplicative - children cannot exceed parent opacity, making dropdowns illegible.
+
+**Wrong approach:**
+```css
+/* BAD - entire row opacity affects dropdown visibility */
+.track-row:not(.track-playable) {
+    opacity: 0.4;  /* Dropdown inside will also be 40% visible! */
+}
+```
+
+**Correct approach:**
+```css
+/* GOOD - dim specific elements, not the container */
+.track-row:not(.track-playable) {
+    color: var(--text-muted);  /* Overall muted color */
+}
+
+/* Apply opacity only to non-interactive elements */
+.track-row:not(.track-playable) .col-pos,
+.track-row:not(.track-playable) .track-title,
+.track-row:not(.track-playable) .col-duration,
+.track-row:not(.track-playable) .track-input,
+.track-row:not(.track-playable) .energy-bar {
+    opacity: var(--opacity-disabled);  /* Dropdowns stay fully visible */
+}
+```
+
 #### Emoji Icons (Noto Emoji Font)
 
 > ⚠️ **ALWAYS render icons via centralized files** - never hardcode emoji characters directly in templates or JS. This ensures all icons update from a single source.
